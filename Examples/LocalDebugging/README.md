@@ -20,7 +20,7 @@ using the relevant `MyLambda` and `MyApp` Xcode schemes.
 
 Start with running the `MyLambda` target.
 * Switch to the `MyLambda` scheme and select the "My Mac" destination
-* Set the `LOCAL_LAMBDA_SERVER_ENABLED` environment variable to `true` by editing the `MyLambda` scheme Run/Arguments options.
+* Set the `LOCAL_SCF_SERVER_ENABLED` environment variable to `true` by editing the `MyLambda` scheme Run/Arguments options.
 * Hit `Run`
 * Once it is up you should see a log message in the Xcode console saying
 `LocalLambdaServer started and listening on 127.0.0.1:7000, receiving events on /invoke`

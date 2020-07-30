@@ -146,7 +146,7 @@ public enum Lambda {
 
         // start local server for debugging in DEBUG mode only
         #if DEBUG
-        if Lambda.env("LOCAL_LAMBDA_SERVER_ENABLED").flatMap(Bool.init) ?? false {
+        if Lambda.env("LOCAL_SCF_SERVER_ENABLED").flatMap(Bool.init) ?? false {
             do {
                 return try Lambda.withLocalServer {
                     _run(configuration, factory)

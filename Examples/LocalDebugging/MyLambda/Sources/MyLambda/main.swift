@@ -28,7 +28,7 @@
 import AWSLambdaRuntime
 import Shared
 
-// set LOCAL_LAMBDA_SERVER_ENABLED env variable to "true" to start
+// set LOCAL_SCF_SERVER_ENABLED env variable to "true" to start
 // a local server simulator which will allow local debugging
 Lambda.run { (_, request: Request, callback: @escaping (Result<Response, Error>) -> Void) in
     // TODO: something useful
