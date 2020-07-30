@@ -13,8 +13,8 @@ _[what actually happened]_
 
 _[anything to help us reproducing the issue]_
 
-### SwiftAWSLambdaRuntime version/commit hash
+### SwiftTencentSCFRuntime version/commit hash
 
-_[the SwiftAWSLambdaRuntime tag/commit hash]_
+_[the SwiftTencentSCFRuntime tag/commit hash]_
 
 ### Swift & OS version (output of `swift --version && uname -a`)

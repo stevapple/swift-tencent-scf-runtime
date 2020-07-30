@@ -1,17 +1,16 @@
 ## Legal
 
 By submitting a pull request, you represent that you have the right to license
-your contribution to Apple and the community, and agree by submitting the patch
-that your contributions are licensed under the Apache 2.0 license (see
-`LICENSE.txt`).
+your contribution to the community, and agree by submitting the patch that
+your contributions are licensed under the Apache 2.0 license (see `LICENSE.txt`).
 
 
 ## How to submit a bug report
 
 Please ensure to specify the following:
 
-* SwiftAWSLambdaRuntime commit hash
-* Contextual information (e.g. what you were trying to achieve with SwiftAWSLambdaRuntime)
+* SwiftTencentSCFRuntime commit hash
+* Contextual information (e.g. what you were trying to achieve with )
 * Simplest possible steps to reproduce
   * More complex the steps are, lower the priority will be.
   * A pull request with failing test case is preferred, but it's just fine to paste the test case into the issue description.
@@ -24,10 +23,10 @@ Please ensure to specify the following:
 ### Example
 
 ```
-SwiftAWSLambdaRuntime commit hash: 22ec043dc9d24bb011b47ece4f9ee97ee5be2757
+SwiftTencentSCFRuntime commit hash: 22ec043dc9d24bb011b47ece4f9ee97ee5be2757
 
 Context:
-While load testing my Lambda written with SwiftAWSLambdaRuntime, I noticed
+While load testing my cloud function written with SwiftTencentSCFRuntime, I noticed
 that one file descriptor is leaked per request.
 
 Steps to reproduce:
@@ -50,7 +49,7 @@ My system has IPv6 disabled.
 
 ## Writing a Patch
 
-A good SwiftAWSLambdaRuntime patch is:
+A good SwiftTencentSCFRuntime patch is:
 
 1. Concise, and contains as few changes as needed to achieve the end result.
 2. Tested, ensuring that any tests provided failed before the patch and pass after it.
@@ -65,4 +64,4 @@ We require that your commit messages match our template. The easiest way to do t
 
 ## How to contribute your work
 
-Please open a pull request at https://github.com/apple/swift-nio. Make sure the CI passes, and then wait for code review.
+Please open a pull request at https://github.com/stevapple/swift-tencent-scf-runtime. Make sure the CI passes, and then wait for code review.

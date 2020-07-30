@@ -1,5 +1,5 @@
 For the purpose of tracking copyright, this is the list of individuals and
-organizations who have contributed source code to SwiftAWSLambdaRuntime.
+organizations who have contributed source code to SwiftTencentSCFRuntime.
 
 For employees of an organization/company where the copyright of work done
 by employees of that company is held by the company itself, only the company
@@ -7,28 +7,11 @@ needs to be listed here.
 
 ## COPYRIGHT HOLDERS
 
-- Apple Inc. (all contributors with '@apple.com')
+- YR Chen (stevapple@hotmail.com)
 
 ### Contributors
 
-- Adam Fowler <adamfowler71@gmail.com>
-- Andrea Scuderi <andreascuderi@ymail.com>
-- Brendan Kirchner <brendankirchner@me.com>
-- Bryan Bartow <bryanbartow@gmail.com>
-- Bryan Moffatt <bmoffatt@users.noreply.github.com>
-- Christoph Walcher <christoph-wa@gmx.de>
-- Colton Schlosser <cltnschlosser@gmail.com>
-- Eneko Alonso <eneko.alonso@gmail.com>
-- Fabian Fett <fabianfett@mac.com>
-- George Barnett <gbarnett@apple.com>
-- Johannes Weiss <johannesweiss@apple.com>
-- Max Desiatov <max@desiatov.com>
-- Norman Maurer <norman_maurer@apple.com>
-- Ro-M <Ro-M@users.noreply.github.com>
-- Tomer Doron <tomer@apple.com>
-- Zhibin Cai <TonyChol@users.noreply.github.com>
-- pmarrufo <p_marrufo94@hotmail.com>
-- tachyonics <simon@tachyonics.io>
+- YR Chen (stevapple@hotmail.com)
 
 **Updating this list**
 

@@ -1,17 +1,30 @@
 #!/bin/bash
-##===----------------------------------------------------------------------===##
+##===------------------------------------------------------------------------------------===##
 ##
-## This source file is part of the SwiftAWSLambdaRuntime open source project
+## This source file is part of the SwiftTencentSCFRuntime open source project
+##
+## Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+## Licensed under Apache License v2.0
+##
+## See LICENSE.txt for license information
+## See CONTRIBUTORS.txt for the list of SwiftTencentSCFRuntime project authors
+##
+## SPDX-License-Identifier: Apache-2.0
+##
+##===------------------------------------------------------------------------------------===##
+##
+## This source file was part of the SwiftAWSLambdaRuntime open source project
 ##
 ## Copyright (c) 2017-2018 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 ## Licensed under Apache License v2.0
 ##
 ## See LICENSE.txt for license information
-## See CONTRIBUTORS.txt for the list of SwiftAWSLambdaRuntime project authors
+## See http://github.com/swift-server/swift-aws-lambda-runtime/blob/master/CONTRIBUTORS.txt
+## for the list of SwiftAWSLambdaRuntime project authors
 ##
 ## SPDX-License-Identifier: Apache-2.0
 ##
-##===----------------------------------------------------------------------===##
+##===------------------------------------------------------------------------------------===##
 
 set -eu
 
@@ -19,7 +32,7 @@ here="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function replace_acceptable_years() {
     # this needs to replace all acceptable forms with 'YEARS'
-    sed -e 's/2017-2018/YEARS/' -e 's/2017-2020/YEARS/' -e 's/2019/YEARS/' -e 's/2020/YEARS/'
+    sed -e 's/2020/YEARS/'
 }
 
 printf "=> Checking format... "
@@ -34,7 +47,7 @@ else
   printf "\033[0;32mokay.\033[0m\n"
 fi
 
-printf "=> Checking license headers\n"
+printf "=> Checking license headers for SwiftTencentSCFRuntime\n"
 tmp=$(mktemp /tmp/.swift-aws-lambda-sanity_XXXXXX)
 
 for language in swift-or-c bash dtrace; do
@@ -48,57 +61,57 @@ for language in swift-or-c bash dtrace; do
         exceptions=( -name Package.swift )
         matching_files=( -name '*.swift' -o -name '*.c' -o -name '*.h' )
         cat > "$tmp" <<"EOF"
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------===//
 //
-// This source file is part of the SwiftAWSLambdaRuntime open source project
+// This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) YEARS Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) YEARS stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftAWSLambdaRuntime project authors
+// See CONTRIBUTORS.txt for the list of SwiftTencentSCFRuntime project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------===//
 EOF
         ;;
       bash)
         matching_files=( -name '*.sh' )
         cat > "$tmp" <<"EOF"
 #!/bin/bash
-##===----------------------------------------------------------------------===##
+##===------------------------------------------------------------------------------------===##
 ##
-## This source file is part of the SwiftAWSLambdaRuntime open source project
+## This source file is part of the SwiftTencentSCFRuntime open source project
 ##
-## Copyright (c) YEARS Apple Inc. and the SwiftAWSLambdaRuntime project authors
+## Copyright (c) YEARS stevapple and the SwiftTencentSCFRuntime project authors
 ## Licensed under Apache License v2.0
 ##
 ## See LICENSE.txt for license information
-## See CONTRIBUTORS.txt for the list of SwiftAWSLambdaRuntime project authors
+## See CONTRIBUTORS.txt for the list of SwiftTencentSCFRuntime project authors
 ##
 ## SPDX-License-Identifier: Apache-2.0
 ##
-##===----------------------------------------------------------------------===##
+##===------------------------------------------------------------------------------------===##
 EOF
       ;;
       dtrace)
         matching_files=( -name '*.d' )
         cat > "$tmp" <<"EOF"
 #!/usr/sbin/dtrace -q -s
-/*===----------------------------------------------------------------------===*
+/*===------------------------------------------------------------------------------------===*
  *
- *  This source file is part of the SwiftAWSLambdaRuntime open source project
+ * This source file is part of the SwiftTencentSCFRuntime open source project
  *
- *  Copyright (c) YEARS Apple Inc. and the SwiftAWSLambdaRuntime project authors
- *  Licensed under Apache License v2.0
+ * Copyright (c) YEARS stevapple and the SwiftTencentSCFRuntime project authors
+ * Licensed under Apache License v2.0
  *
- *  See LICENSE.txt for license information
- *  See CONTRIBUTORS.txt for the list of SwiftAWSLambdaRuntime project authors
+ * See LICENSE.txt for license information
+ * See CONTRIBUTORS.txt for the list of SwiftTencentSCFRuntime project authors
  *
- *  SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: Apache-2.0
  *
- *===----------------------------------------------------------------------===*/
+ *===------------------------------------------------------------------------------------===*/
 EOF
       ;;
     *)
