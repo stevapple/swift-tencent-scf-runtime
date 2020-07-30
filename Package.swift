@@ -3,19 +3,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "swift-aws-lambda-runtime",
+    name: "swift-tencent-scf-runtime",
     platforms: [
         .macOS(.v10_13),
     ],
     products: [
-        // this library exports `AWSLambdaRuntimeCore` and adds Foundation convenience methods
-        .library(name: "AWSLambdaRuntime", targets: ["AWSLambdaRuntime"]),
+        // this library exports `TencentSCFRuntimeCore` and adds Foundation convenience methods
+        .library(name: "TencentSCFRuntime", targets: ["TencentSCFRuntime"]),
         // this has all the main functionality for lambda and it does not link Foundation
-        .library(name: "AWSLambdaRuntimeCore", targets: ["AWSLambdaRuntimeCore"]),
-        // common AWS events
-        .library(name: "AWSLambdaEvents", targets: ["AWSLambdaEvents"]),
+        .library(name: "TencentSCFRuntimeCore", targets: ["TencentSCFRuntimeCore"]),
+        // common SCF events
+        .library(name: "TencentSCFEvents", targets: ["TencentSCFEvents"]),
         // for testing only
-        .library(name: "AWSLambdaTesting", targets: ["AWSLambdaTesting"]),
+        .library(name: "TencentSCFTesting", targets: ["TencentSCFTesting"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-nio.git", .upToNextMajor(from: "2.17.0")),
@@ -23,38 +23,38 @@ let package = Package(
         .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.1.0")),
     ],
     targets: [
-        .target(name: "AWSLambdaRuntime", dependencies: [
-            .byName(name: "AWSLambdaRuntimeCore"),
+        .target(name: "TencentSCFRuntime", dependencies: [
+            .byName(name: "TencentSCFRuntimeCore"),
             .product(name: "NIO", package: "swift-nio"),
             .product(name: "NIOFoundationCompat", package: "swift-nio"),
         ]),
-        .target(name: "AWSLambdaRuntimeCore", dependencies: [
+        .target(name: "TencentSCFRuntimeCore", dependencies: [
             .product(name: "Logging", package: "swift-log"),
             .product(name: "Backtrace", package: "swift-backtrace"),
             .product(name: "NIOHTTP1", package: "swift-nio"),
         ]),
-        .testTarget(name: "AWSLambdaRuntimeCoreTests", dependencies: [
-            .byName(name: "AWSLambdaRuntimeCore"),
+        .testTarget(name: "TencentSCFRuntimeCoreTests", dependencies: [
+            .byName(name: "TencentSCFRuntimeCore"),
             .product(name: "NIOTestUtils", package: "swift-nio"),
             .product(name: "NIOFoundationCompat", package: "swift-nio"),
         ]),
-        .testTarget(name: "AWSLambdaRuntimeTests", dependencies: [
-            .byName(name: "AWSLambdaRuntimeCore"),
-            .byName(name: "AWSLambdaRuntime"),
+        .testTarget(name: "TencentSCFRuntimeTests", dependencies: [
+            .byName(name: "TencentSCFRuntimeCore"),
+            .byName(name: "TencentSCFRuntime"),
         ]),
-        .target(name: "AWSLambdaEvents", dependencies: []),
-        .testTarget(name: "AWSLambdaEventsTests", dependencies: ["AWSLambdaEvents"]),
+        .target(name: "TencentSCFEvents", dependencies: []),
+        .testTarget(name: "TencentSCFEventsTests", dependencies: ["TencentSCFEvents"]),
         // testing helper
-        .target(name: "AWSLambdaTesting", dependencies: [
-            .byName(name: "AWSLambdaRuntime"),
+        .target(name: "TencentSCFTesting", dependencies: [
+            .byName(name: "TencentSCFRuntime"),
             .product(name: "NIO", package: "swift-nio"),
         ]),
-        .testTarget(name: "AWSLambdaTestingTests", dependencies: ["AWSLambdaTesting"]),
+        .testTarget(name: "TencentSCFTestingTests", dependencies: ["TencentSCFTesting"]),
         // for perf testing
         .target(name: "MockServer", dependencies: [
             .product(name: "NIOHTTP1", package: "swift-nio"),
         ]),
-        .target(name: "StringSample", dependencies: ["AWSLambdaRuntime"]),
-        .target(name: "CodableSample", dependencies: ["AWSLambdaRuntime"]),
+        .target(name: "StringSample", dependencies: ["TencentSCFRuntime"]),
+        .target(name: "CodableSample", dependencies: ["TencentSCFRuntime"]),
     ]
 )

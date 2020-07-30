@@ -33,16 +33,16 @@ First, create a SwiftPM project and pull Swift AWS Lambda Runtime as dependency 
  import PackageDescription
 
  let package = Package(
-     name: "my-lambda",
+     name: "my-cloud-function",
      products: [
-         .executable(name: "MyLambda", targets: ["MyLambda"]),
+         .executable(name: "MyCloudFunction", targets: ["MyCloudFunction"]),
      ],
      dependencies: [
-         .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", from: "0.1.0"),
+         .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "0.1.0"),
      ],
      targets: [
-         .target(name: "MyLambda", dependencies: [
-           .product(name: "AWSLambdaRuntime", package: "swift-aws-lambda-runtime"),
+         .target(name: "MyCloudFunction", dependencies: [
+           .product(name: "TencentSCFRuntime", package: "tencent-scf-runtime"),
          ]),
      ]
  )
@@ -52,11 +52,11 @@ Next, create a `main.swift` and implement your Lambda.
 
  ### Using Closures
 
- The simplest way to use `AWSLambdaRuntime` is to pass in a closure, for example:
+ The simplest way to use `TencentSCFRuntime` is to pass in a closure, for example:
 
  ```swift
  // Import the module
- import AWSLambdaRuntime
+ import TencentSCFRuntime
 
  // in this example we are receiving and responding with strings
  Lambda.run { (context, name: String, callback: @escaping (Result<String, Error>) -> Void) in
@@ -68,7 +68,7 @@ Next, create a `main.swift` and implement your Lambda.
 
  ```swift
  // Import the module
- import AWSLambdaRuntime
+ import TencentSCFRuntime
 
  // Request, uses Codable for transparent JSON encoding
  private struct Request: Codable {
@@ -90,8 +90,8 @@ Next, create a `main.swift` and implement your Lambda.
 
  ```swift
  // Import the modules
- import AWSLambdaRuntime
- import AWSLambdaEvents
+ import TencentSCFRuntime
+ import TencentSCFEvents
 
  // In this example we are receiving an SQS Message, with no response (Void).
  Lambda.run { (context, message: SQS.Message, callback: @escaping (Result<Void, Error>) -> Void) in
@@ -108,8 +108,8 @@ Next, create a `main.swift` and implement your Lambda.
 
  ```swift
  // Import the modules
- import AWSLambdaRuntime
- import AWSLambdaEvents
+ import TencentSCFRuntime
+ import TencentSCFEvents
  import NIO
 
  // Our Lambda handler, conforms to EventLoopLambdaHandler

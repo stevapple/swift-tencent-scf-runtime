@@ -5,7 +5,7 @@
       location = "group:Shared">
    </FileRef>
    <FileRef
-      location = "group:MyLambda">
+      location = "group:MyCloudFunction">
    </FileRef>
    <FileRef
       location = "group:MyApp/MyApp.xcodeproj">

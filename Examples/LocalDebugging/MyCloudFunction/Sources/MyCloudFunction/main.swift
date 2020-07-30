@@ -14,7 +14,7 @@
 //
 // This source file was part of the SwiftAWSLambdaRuntime open source project
 //
-// Copyright (c) 2017-2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) 2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -26,34 +26,11 @@
 //===------------------------------------------------------------------------------------===//
 
 import TencentSCFRuntime
-import NIO
+import Shared
 
-struct Request: Codable {
-    let body: String
+// set LOCAL_SCF_SERVER_ENABLED env variable to "true" to start
+// a local server simulator which will allow local debugging
+Lambda.run { (_, request: Request, callback: @escaping (Result<Response, Error>) -> Void) in
+    // TODO: something useful
+    callback(.success(Response(message: "Hello, \(request.name)!")))
 }
-
-struct Response: Codable {
-    let body: String
-}
-
-// in this example we are receiving and responding with codables. Request and Response above are examples of how to use
-// codables to model your reqeuest and response objects
-struct Handler: EventLoopLambdaHandler {
-    typealias In = Request
-    typealias Out = Response
-
-    func handle(context: Lambda.Context, event: Request) -> EventLoopFuture<Response> {
-        // as an example, respond with the input event's reversed body
-        context.eventLoop.makeSucceededFuture(Response(body: String(event.body.reversed())))
-    }
-}
-
-Lambda.run(Handler())
-
-// MARK: - this can also be expressed as a closure:
-
-/*
- Lambda.run { (_, request: Request, callback) in
-   callback(.success(Response(body: String(request.body.reversed()))))
- }
- */
