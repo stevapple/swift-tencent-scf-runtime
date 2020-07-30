@@ -1,16 +1,29 @@
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------===//
 //
-// This source file is part of the SwiftAWSLambdaRuntime open source project
+// This source file is part of the SwiftTencentSCFRuntime open source project
+//
+// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of SwiftTencentSCFRuntime project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===------------------------------------------------------------------------------------===//
+//
+// This source file was part of the SwiftAWSLambdaRuntime open source project
 //
 // Copyright (c) 2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftAWSLambdaRuntime project authors
+// See http://github.com/swift-server/swift-aws-lambda-runtime/blob/master/CONTRIBUTORS.txt
+// for the list of SwiftAWSLambdaRuntime project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------===//
 
 import AWSLambdaRuntime
 import AWSLambdaTesting
@@ -59,7 +72,7 @@ class LambdaTestingTests: XCTestCase {
             let message: String
         }
 
-        struct MyLambda: LambdaHandler {
+        struct MyCloudFunction: LambdaHandler {
             typealias In = Request
             typealias Out = Response
 
@@ -71,12 +84,12 @@ class LambdaTestingTests: XCTestCase {
 
         let request = Request(name: UUID().uuidString)
         var response: Response?
-        XCTAssertNoThrow(response = try Lambda.test(MyLambda(), with: request))
+        XCTAssertNoThrow(response = try Lambda.test(MyCloudFunction(), with: request))
         XCTAssertEqual(response?.message, "echo" + request.name)
     }
 
     func testEventLoopLambdaHandler() {
-        struct MyLambda: EventLoopLambdaHandler {
+        struct MyCloudFunction: EventLoopLambdaHandler {
             typealias In = String
             typealias Out = String
 
@@ -88,14 +101,14 @@ class LambdaTestingTests: XCTestCase {
 
         let input = UUID().uuidString
         var result: String?
-        XCTAssertNoThrow(result = try Lambda.test(MyLambda(), with: input))
+        XCTAssertNoThrow(result = try Lambda.test(MyCloudFunction(), with: input))
         XCTAssertEqual(result, "echo" + input)
     }
 
     func testFailure() {
         struct MyError: Error {}
 
-        struct MyLambda: LambdaHandler {
+        struct MyCloudFunction: LambdaHandler {
             typealias In = String
             typealias Out = Void
 
@@ -104,7 +117,7 @@ class LambdaTestingTests: XCTestCase {
             }
         }
 
-        XCTAssertThrowsError(try Lambda.test(MyLambda(), with: UUID().uuidString)) { error in
+        XCTAssertThrowsError(try Lambda.test(MyCloudFunction(), with: UUID().uuidString)) { error in
             XCTAssert(error is MyError)
         }
     }

@@ -1,16 +1,29 @@
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------===//
 //
-// This source file is part of the SwiftAWSLambdaRuntime open source project
+// This source file is part of the SwiftTencentSCFRuntime open source project
+//
+// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of SwiftTencentSCFRuntime project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===------------------------------------------------------------------------------------===//
+//
+// This source file was part of the SwiftAWSLambdaRuntime open source project
 //
 // Copyright (c) 2017-2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of SwiftAWSLambdaRuntime project authors
+// See http://github.com/swift-server/swift-aws-lambda-runtime/blob/master/CONTRIBUTORS.txt
+// for the list of SwiftAWSLambdaRuntime project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------===//
 
 import struct Foundation.Date
 
@@ -511,7 +524,7 @@ extension DynamoDB {
 
         func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: K) throws
             -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
-            return try self.decoderForKey(key).container(keyedBy: type)
+            try self.decoderForKey(key).container(keyedBy: type)
         }
 
         func nestedUnkeyedContainer(forKey key: K) throws -> UnkeyedDecodingContainer {
@@ -677,7 +690,7 @@ extension DynamoDB {
         }
 
         func decode<T>(_: T.Type) throws -> T where T: Decodable {
-            return try T(from: self.impl)
+            try T(from: self.impl)
         }
 
         @inline(__always) private func createTypeMismatchError(type: Any.Type, value: AttributeValue) -> DecodingError {
@@ -850,7 +863,7 @@ extension DynamoDB {
 
         mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws
             -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
-            return try self.impl.container(keyedBy: type)
+            try self.impl.container(keyedBy: type)
         }
 
         mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
