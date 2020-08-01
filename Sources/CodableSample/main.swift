@@ -25,8 +25,8 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import TencentSCFRuntime
 import NIO
+import TencentSCFRuntime
 
 struct Request: Codable {
     let body: String

@@ -25,9 +25,9 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-@testable import TencentSCFRuntimeCore
 import Logging
 import NIO
+@testable import TencentSCFRuntimeCore
 import XCTest
 
 func runLambda(behavior: LambdaServerBehavior, handler: Lambda.Handler) throws {

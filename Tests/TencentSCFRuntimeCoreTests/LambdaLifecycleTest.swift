@@ -25,10 +25,10 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-@testable import TencentSCFRuntimeCore
 import Logging
 import NIO
 import NIOHTTP1
+@testable import TencentSCFRuntimeCore
 import XCTest
 
 class LambdaLifecycleTest: XCTestCase {
@@ -85,7 +85,7 @@ class LambdaLifecycleTest: XCTestCase {
         var count = 0
         let handler = CallbackLambdaHandler({ XCTFail("Should not be reached"); return $0.eventLoop.makeSucceededFuture($1) }) { context in
             count += 1
-            return context.eventLoop.makeSucceededFuture(Void())
+            return context.eventLoop.makeSucceededFuture(())
         }
 
         let eventLoop = eventLoopGroup.next()

@@ -183,7 +183,8 @@ extension Lambda {
             }
 
             guard let deadline = headers.first(name: AmazonHeaders.deadline),
-                let unixTimeInMilliseconds = Int64(deadline) else {
+                let unixTimeInMilliseconds = Int64(deadline)
+            else {
                 throw RuntimeError.invocationMissingHeader(AmazonHeaders.deadline)
             }
 

@@ -25,8 +25,8 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import TencentSCFRuntimeCore
 import NIO
+import TencentSCFRuntimeCore
 
 // If you would like to benchmark Swift's Lambda Runtime,
 // use this example which is more performant.

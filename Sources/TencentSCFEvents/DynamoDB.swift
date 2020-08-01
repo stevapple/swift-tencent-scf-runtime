@@ -354,7 +354,8 @@ extension DynamoDB {
         }
 
         @usableFromInline func container<Key>(keyedBy type: Key.Type) throws ->
-            KeyedDecodingContainer<Key> where Key: CodingKey {
+            KeyedDecodingContainer<Key> where Key: CodingKey
+        {
             guard case .map(let dictionary) = self.value else {
                 throw DecodingError.typeMismatch([String: AttributeValue].self, DecodingError.Context(
                     codingPath: self.codingPath,
@@ -523,7 +524,8 @@ extension DynamoDB {
         }
 
         func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: K) throws
-            -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
+            -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey
+        {
             try self.decoderForKey(key).container(keyedBy: type)
         }
 
@@ -862,7 +864,8 @@ extension DynamoDB {
         }
 
         mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws
-            -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
+            -> KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey
+        {
             try self.impl.container(keyedBy: type)
         }
 

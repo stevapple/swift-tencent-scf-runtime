@@ -46,12 +46,13 @@
 //     XCTAssertEqual(result, "echo" + input)
 // }
 
-#if DEBUG
-@testable import TencentSCFRuntime
-@testable import TencentSCFRuntimeCore
 import Dispatch
 import Logging
 import NIO
+
+#if DEBUG
+@testable import TencentSCFRuntime
+@testable import TencentSCFRuntimeCore
 
 extension Lambda {
     public struct TestConfig {
@@ -63,7 +64,8 @@ extension Lambda {
         public init(requestID: String = "\(DispatchTime.now().uptimeNanoseconds)",
                     traceID: String = "Root=\(DispatchTime.now().uptimeNanoseconds);Parent=\(DispatchTime.now().uptimeNanoseconds);Sampled=1",
                     invokedFunctionARN: String = "arn:aws:lambda:us-west-1:\(DispatchTime.now().uptimeNanoseconds):function:custom-runtime",
-                    timeout: DispatchTimeInterval = .seconds(5)) {
+                    timeout: DispatchTimeInterval = .seconds(5))
+        {
             self.requestID = requestID
             self.traceID = traceID
             self.invokedFunctionARN = invokedFunctionARN
@@ -73,13 +75,15 @@ extension Lambda {
 
     public static func test(_ closure: @escaping Lambda.StringClosure,
                             with event: String,
-                            using config: TestConfig = .init()) throws -> String {
+                            using config: TestConfig = .init()) throws -> String
+    {
         try Self.test(StringClosureWrapper(closure), with: event, using: config)
     }
 
     public static func test(_ closure: @escaping Lambda.StringVoidClosure,
                             with event: String,
-                            using config: TestConfig = .init()) throws {
+                            using config: TestConfig = .init()) throws
+    {
         _ = try Self.test(StringVoidClosureWrapper(closure), with: event, using: config)
     }
 

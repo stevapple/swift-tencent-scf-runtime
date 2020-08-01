@@ -25,9 +25,9 @@
 //
 //===------------------------------------------------------------------------------------===//
 
+import NIO
 import TencentSCFRuntime
 import TencentSCFTesting
-import NIO
 import XCTest
 
 class LambdaTestingTests: XCTestCase {

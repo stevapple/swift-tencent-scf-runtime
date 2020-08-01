@@ -25,8 +25,8 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import TencentSCFRuntimeCore
 import NIO
+import TencentSCFRuntimeCore
 
 // in this example we are receiving and responding with strings
 struct Handler: EventLoopLambdaHandler {

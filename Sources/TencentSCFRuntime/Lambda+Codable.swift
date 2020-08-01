@@ -25,11 +25,11 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-@_exported import TencentSCFRuntimeCore
 import class Foundation.JSONDecoder
 import class Foundation.JSONEncoder
 import NIO
 import NIOFoundationCompat
+@_exported import TencentSCFRuntimeCore
 
 /// Extension to the `Lambda` companion to enable execution of Lambdas that take and return `Codable` events.
 extension Lambda {

@@ -25,11 +25,11 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-@testable import TencentSCFRuntime
-@testable import TencentSCFRuntimeCore
 import Logging
 import NIO
 import NIOFoundationCompat
+@testable import TencentSCFRuntime
+@testable import TencentSCFRuntimeCore
 import XCTest
 
 class CodableLambdaTest: XCTestCase {

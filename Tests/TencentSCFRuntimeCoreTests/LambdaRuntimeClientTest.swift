@@ -25,12 +25,12 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-@testable import TencentSCFRuntimeCore
 import Logging
 import NIO
 import NIOFoundationCompat
 import NIOHTTP1
 import NIOTestUtils
+@testable import TencentSCFRuntimeCore
 import XCTest
 
 class LambdaRuntimeClientTest: XCTestCase {

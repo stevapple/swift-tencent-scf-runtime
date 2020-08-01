@@ -25,8 +25,8 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import TencentSCFRuntimeCore
 import struct Foundation.Date
+import TencentSCFRuntimeCore
 
 extension Lambda.Context {
     var deadlineDate: Date {

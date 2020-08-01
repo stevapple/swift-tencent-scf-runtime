@@ -25,8 +25,8 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-@testable import TencentSCFRuntimeCore
 import NIO
+@testable import TencentSCFRuntimeCore
 import XCTest
 
 class StringLambdaTest: XCTestCase {

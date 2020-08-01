@@ -25,8 +25,8 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import TencentSCFRuntime
 import Shared
+import TencentSCFRuntime
 
 // set LOCAL_SCF_SERVER_ENABLED env variable to "true" to start
 // a local server simulator which will allow local debugging

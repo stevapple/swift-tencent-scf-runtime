@@ -25,9 +25,9 @@
 //
 //===------------------------------------------------------------------------------------===//
 
+import NIO
 import TencentSCFEvents
 import TencentSCFRuntime
-import NIO
 
 // MARK: - Run Lambda
 

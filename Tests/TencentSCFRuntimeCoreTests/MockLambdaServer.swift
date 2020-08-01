@@ -25,11 +25,11 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-@testable import TencentSCFRuntimeCore
 import Foundation // for JSON
 import Logging
 import NIO
 import NIOHTTP1
+@testable import TencentSCFRuntimeCore
 
 internal final class MockLambdaServer {
     private let logger = Logger(label: "MockLambdaServer")
