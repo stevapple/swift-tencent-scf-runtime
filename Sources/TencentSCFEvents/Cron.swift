@@ -16,7 +16,7 @@ import struct Foundation.Date
 
 // https://cloud.tencent.com/document/product/583/9708
 
-public enum SCFTimer {
+public enum Cron {
     public struct Event: Codable, Equatable {
         internal static let type: String = "Timer"
 
