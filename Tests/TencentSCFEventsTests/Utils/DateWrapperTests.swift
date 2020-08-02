@@ -56,7 +56,7 @@ class DateWrapperTests: XCTestCase {
             }
 
             XCTAssertEqual(context.codingPath.compactMap { $0.stringValue }, ["date"])
-            XCTAssertEqual(context.debugDescription, "Expected date to be in iso8601 date format, but `\(date)` does not forfill format")
+            XCTAssertEqual(context.debugDescription, "Expected date to be in ISO 8601 date format, but `\(date)` does not forfill format")
             XCTAssertNil(context.underlyingError)
         }
     }
@@ -80,7 +80,7 @@ class DateWrapperTests: XCTestCase {
             var date: Date?
         }
 
-        let json = "{}"
+        let json = #"{"date":null}"#
         var event: TestEvent?
         XCTAssertNoThrow(event = try JSONDecoder().decode(TestEvent.self, from: json.data(using: .utf8)!))
 
@@ -114,7 +114,7 @@ class DateWrapperTests: XCTestCase {
             }
 
             XCTAssertEqual(context.codingPath.compactMap { $0.stringValue }, ["date"])
-            XCTAssertEqual(context.debugDescription, "Expected date to be in iso8601 date format with fractional seconds, but `\(date)` does not forfill format")
+            XCTAssertEqual(context.debugDescription, "Expected date to be in ISO 8601 date format with fractional seconds, but `\(date)` does not forfill format")
             XCTAssertNil(context.underlyingError)
         }
     }
@@ -138,7 +138,7 @@ class DateWrapperTests: XCTestCase {
             var date: Date?
         }
 
-        let json = "{}"
+        let json = #"{"date":null}"#
         var event: TestEvent?
         XCTAssertNoThrow(event = try JSONDecoder().decode(TestEvent.self, from: json.data(using: .utf8)!))
 
@@ -198,7 +198,7 @@ class DateWrapperTests: XCTestCase {
             }
 
             XCTAssertEqual(context.codingPath.compactMap { $0.stringValue }, ["date"])
-            XCTAssertEqual(context.debugDescription, "Expected date to be in RFC5322 date-time format with fractional seconds, but `\(date)` does not forfill format")
+            XCTAssertEqual(context.debugDescription, "Expected date to be in RFC 5322 date-time format with fractional seconds, but `\(date)` does not forfill format")
             XCTAssertNil(context.underlyingError)
         }
     }
@@ -222,7 +222,7 @@ class DateWrapperTests: XCTestCase {
             var date: Date?
         }
 
-        let json = "{}"
+        let json = #"{"date":null}"#
         var event: TestEvent?
         XCTAssertNoThrow(event = try JSONDecoder().decode(TestEvent.self, from: json.data(using: .utf8)!))
 
@@ -279,7 +279,46 @@ class DateWrapperTests: XCTestCase {
             var date: Date?
         }
 
-        let json = "{}"
+        let json = #"{"date":null}"#
+        var event: TestEvent?
+        XCTAssertNoThrow(event = try JSONDecoder().decode(TestEvent.self, from: json.data(using: .utf8)!))
+
+        XCTAssertNil(event?.date)
+    }
+
+    func testUnixTimestampWithFractionalSecondsCodingWrapperSuccess() {
+        struct TestEvent: Decodable {
+            @UnixTimestampWithFractionalSecondsCoding
+            var date: Date
+        }
+
+        let json = #"{"date":1596301934.234}"#
+        var event: TestEvent?
+        XCTAssertNoThrow(event = try JSONDecoder().decode(TestEvent.self, from: json.data(using: .utf8)!))
+
+        XCTAssertEqual(event?.date.description, "2020-08-01 17:12:14 +0000")
+    }
+
+    func testUnixTimestampWithFractionalSecondsCodingOptionalWrapperSuccessWithValue() {
+        struct TestEvent: Decodable {
+            @UnixTimestampWithFractionalSecondsCodingOptional
+            var date: Date?
+        }
+
+        let json = #"{"date":1596301934}"#
+        var event: TestEvent?
+        XCTAssertNoThrow(event = try JSONDecoder().decode(TestEvent.self, from: json.data(using: .utf8)!))
+
+        XCTAssertEqual(event?.date?.description, "2020-08-01 17:12:14 +0000")
+    }
+
+    func testUnixTimestampWithFractionalSecondsCodingOptionalWrapperSuccessWithNil() {
+        struct TestEvent: Decodable {
+            @UnixTimestampWithFractionalSecondsCodingOptional
+            var date: Date?
+        }
+
+        let json = #"{"date":null}"#
         var event: TestEvent?
         XCTAssertNoThrow(event = try JSONDecoder().decode(TestEvent.self, from: json.data(using: .utf8)!))
 
