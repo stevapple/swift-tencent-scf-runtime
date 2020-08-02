@@ -93,9 +93,11 @@ Since most Lambda functions are triggered by events originating in the AWS platf
 import TencentSCFRuntime
 import TencentSCFEvents
 
-// In this example we are receiving an SQS Message, with no response (Void).
-Lambda.run { (context, message: SQS.Message, callback: @escaping (Result<Void, Error>) -> Void) in
-    ...
+// In this example we are receiving CMQ Messages from a CMQ Topic, with no response (Void).
+Lambda.run { (context, event: CMQ.Topic.Event, callback: @escaping (Result<Void, Error>) -> Void) in
+    for record in event.records {
+        ...
+    }
     callback(.success(Void()))
 }
 ```
@@ -114,10 +116,10 @@ import NIO
 
 // Our Lambda handler, conforms to EventLoopLambdaHandler
 struct Handler: EventLoopLambdaHandler {
-    typealias In = SNS.Message // Request type
+    typealias In = COS.Event // Request type
     typealias Out = Void // Response type
 
-    // In this example we are receiving an SNS Message, with no response (Void).
+    // In this example we are receiving a COS Event, with no response (Void).
     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
         ...
         context.eventLoop.makeSucceededFuture(Void())
