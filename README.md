@@ -337,6 +337,7 @@ Tencent SCFs can be invoked directly from the Tencent SCF console, Tencent SCF A
 
 * [COS Events](https://cloud.tencent.com/document/product/583/9707)
 * [Timer Events](https://cloud.tencent.com/document/product/583/9708)
+* [CKafka Messages](https://cloud.tencent.com/document/product/583/17530)
 
 **Note**: Each one of the integration points mentioned above includes a set of `Codable` structs that transform Tencent Cloud's data model for these APIs.
 
