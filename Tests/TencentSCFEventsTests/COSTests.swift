@@ -73,7 +73,7 @@ class COSTests: XCTestCase {
     """
 
     func testSimpleEventFromJSON() {
-        let data = COSTests.eventBody.data(using: .utf8)!
+        let data = Self.eventBody.data(using: .utf8)!
         var event: COS.Event?
         XCTAssertNoThrow(event = try JSONDecoder().decode(COS.Event.self, from: data))
 
@@ -108,7 +108,7 @@ class COSTests: XCTestCase {
     }
 
     func testEventDecodeAndEncode() {
-        let data = COSTests.eventBody.data(using: .utf8)!
+        let data = Self.eventBody.data(using: .utf8)!
         let decoder = JSONDecoder()
         var event: COS.Event?
         XCTAssertNoThrow(event = try decoder.decode(COS.Event.self, from: data))
