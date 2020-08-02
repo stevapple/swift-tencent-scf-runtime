@@ -50,7 +50,7 @@ class CKafkaTests: XCTestCase {
             XCTFail("Expected to have two records")
             return
         }
-        
+
         if let record = event?.records.first {
             XCTAssertEqual(record.topic, "test-topic")
             XCTAssertEqual(record.partition, 1)
@@ -61,7 +61,7 @@ class CKafkaTests: XCTestCase {
             XCTFail("Unexpected error")
             return
         }
-        
+
         if let record = event?.records.last {
             XCTAssertEqual(record.topic, "test-topic")
             XCTAssertEqual(record.partition, 1)

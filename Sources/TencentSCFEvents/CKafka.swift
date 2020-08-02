@@ -30,7 +30,7 @@ public enum CKafka {
         public let offset: UInt64
         public let key: String
         public let body: String
-        
+
         enum WrappingCodingKeys: String, CodingKey {
             case ckafka = "Ckafka"
         }
@@ -42,25 +42,25 @@ public enum CKafka {
             case key = "msgKey"
             case body = "msgBody"
         }
-        
-        public func encode(to encoder: Encoder) throws {
-            var wrapperContainer = encoder.container(keyedBy: WrappingCodingKeys.self)
-            var container = wrapperContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .ckafka)
-            try container.encode(topic, forKey: .topic)
-            try container.encode(partition, forKey: .partition)
-            try container.encode(offset, forKey: .offset)
-            try container.encode(key, forKey: .key)
-            try container.encode(body, forKey: .body)
-        }
-        
+
         public init(from decoder: Decoder) throws {
             let wrapperContainer = try decoder.container(keyedBy: WrappingCodingKeys.self)
             let container = try wrapperContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .ckafka)
-            topic = try container.decode(String.self, forKey: .topic)
-            partition = try container.decode(UInt64.self, forKey: .partition)
-            offset = try container.decode(UInt64.self, forKey: .offset)
-            key = try container.decode(String.self, forKey: .key)
-            body = try container.decode(String.self, forKey: .body)
+            self.topic = try container.decode(String.self, forKey: .topic)
+            self.partition = try container.decode(UInt64.self, forKey: .partition)
+            self.offset = try container.decode(UInt64.self, forKey: .offset)
+            self.key = try container.decode(String.self, forKey: .key)
+            self.body = try container.decode(String.self, forKey: .body)
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var wrapperContainer = encoder.container(keyedBy: WrappingCodingKeys.self)
+            var container = wrapperContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .ckafka)
+            try container.encode(self.topic, forKey: .topic)
+            try container.encode(self.partition, forKey: .partition)
+            try container.encode(self.offset, forKey: .offset)
+            try container.encode(self.key, forKey: .key)
+            try container.encode(self.body, forKey: .body)
         }
     }
 }
