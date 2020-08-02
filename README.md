@@ -27,107 +27,107 @@ If you have never used AWS Lambda or Docker before, check out this [getting star
 
 First, create a SwiftPM project and pull Swift AWS Lambda Runtime as dependency into your project
 
- ```swift
- // swift-tools-version:5.2
+```swift
+// swift-tools-version:5.2
 
- import PackageDescription
+import PackageDescription
 
- let package = Package(
-     name: "my-cloud-function",
-     products: [
-         .executable(name: "MyCloudFunction", targets: ["MyCloudFunction"]),
-     ],
-     dependencies: [
-         .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "0.1.0"),
-     ],
-     targets: [
-         .target(name: "MyCloudFunction", dependencies: [
-           .product(name: "TencentSCFRuntime", package: "tencent-scf-runtime"),
-         ]),
-     ]
- )
- ```
+let package = Package(
+    name: "my-cloud-function",
+    products: [
+        .executable(name: "MyCloudFunction", targets: ["MyCloudFunction"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "0.1.0"),
+    ],
+    targets: [
+        .target(name: "MyCloudFunction", dependencies: [
+            .product(name: "TencentSCFRuntime", package: "tencent-scf-runtime"),
+        ]),
+    ]
+)
+```
 
 Next, create a `main.swift` and implement your Lambda.
 
- ### Using Closures
+### Using Closures
 
- The simplest way to use `TencentSCFRuntime` is to pass in a closure, for example:
+The simplest way to use `TencentSCFRuntime` is to pass in a closure, for example:
 
- ```swift
- // Import the module
- import TencentSCFRuntime
+```swift
+// Import the module
+import TencentSCFRuntime
 
- // in this example we are receiving and responding with strings
- Lambda.run { (context, name: String, callback: @escaping (Result<String, Error>) -> Void) in
-   callback(.success("Hello, \(name)"))
- }
+// in this example we are receiving and responding with strings
+Lambda.run { (context, name: String, callback: @escaping (Result<String, Error>) -> Void) in
+    callback(.success("Hello, \(name)"))
+}
  ```
 
- More commonly, the event would be a JSON, which is modeled using `Codable`, for example:
+More commonly, the event would be a JSON, which is modeled using `Codable`, for example:
 
- ```swift
- // Import the module
- import TencentSCFRuntime
+```swift
+// Import the module
+import TencentSCFRuntime
 
- // Request, uses Codable for transparent JSON encoding
- private struct Request: Codable {
-   let name: String
- }
+// Request, uses Codable for transparent JSON encoding
+private struct Request: Codable {
+    let name: String
+}
 
- // Response, uses Codable for transparent JSON encoding
- private struct Response: Codable {
-   let message: String
- }
+// Response, uses Codable for transparent JSON encoding
+private struct Response: Codable {
+    let message: String
+}
 
- // In this example we are receiving and responding with `Codable`.
- Lambda.run { (context, request: Request, callback: @escaping (Result<Response, Error>) -> Void) in
-   callback(.success(Response(message: "Hello, \(request.name)")))
- }
- ```
+// In this example we are receiving and responding with `Codable`.
+Lambda.run { (context, request: Request, callback: @escaping (Result<Response, Error>) -> Void) in
+    callback(.success(Response(message: "Hello, \(request.name)")))
+}
+```
 
- Since most Lambda functions are triggered by events originating in the AWS platform like `SNS`, `SQS` or `APIGateway`, the package also includes a `AWSLambdaEvents` module that provides implementations for most common AWS event types further simplifying writing Lambda functions. For example, handling an `SQS` message:
+Since most Lambda functions are triggered by events originating in the AWS platform like `SNS`, `SQS` or `APIGateway`, the package also includes a `TencentSCFEvents` module that provides implementations for most common AWS event types further simplifying writing Lambda functions. For example, handling an `SQS` message:
 
- ```swift
- // Import the modules
- import TencentSCFRuntime
- import TencentSCFEvents
+```swift
+// Import the modules
+import TencentSCFRuntime
+import TencentSCFEvents
 
- // In this example we are receiving an SQS Message, with no response (Void).
- Lambda.run { (context, message: SQS.Message, callback: @escaping (Result<Void, Error>) -> Void) in
-   ...
-   callback(.success(Void()))
- }
- ```
+// In this example we are receiving an SQS Message, with no response (Void).
+Lambda.run { (context, message: SQS.Message, callback: @escaping (Result<Void, Error>) -> Void) in
+    ...
+    callback(.success(Void()))
+}
+```
 
- Modeling Lambda functions as Closures is both simple and safe. Swift AWS Lambda Runtime will ensure that the user-provided code is offloaded from the network processing thread such that even if the code becomes slow to respond or gets hang, the underlying process can continue to function. This safety comes at a small performance penalty from context switching between threads. In many cases, the simplicity and safety of using the Closure based API is often preferred over the complexity of the performance-oriented API.
+Modeling Lambda functions as Closures is both simple and safe. Swift AWS Lambda Runtime will ensure that the user-provided code is offloaded from the network processing thread such that even if the code becomes slow to respond or gets hang, the underlying process can continue to function. This safety comes at a small performance penalty from context switching between threads. In many cases, the simplicity and safety of using the Closure based API is often preferred over the complexity of the performance-oriented API.
 
 ### Using EventLoopLambdaHandler
 
- Performance sensitive Lambda functions may choose to use a more complex API which allows user code to run on the same thread as the networking handlers. Swift AWS Lambda Runtime uses [SwiftNIO](https://github.com/apple/swift-nio) as its underlying networking engine which means the APIs are based on [SwiftNIO](https://github.com/apple/swift-nio) concurrency primitives like the `EventLoop` and `EventLoopFuture`. For example:
+Performance sensitive Lambda functions may choose to use a more complex API which allows user code to run on the same thread as the networking handlers. Swift AWS Lambda Runtime uses [SwiftNIO](https://github.com/apple/swift-nio) as its underlying networking engine which means the APIs are based on [SwiftNIO](https://github.com/apple/swift-nio) concurrency primitives like the `EventLoop` and `EventLoopFuture`. For example:
 
- ```swift
- // Import the modules
- import TencentSCFRuntime
- import TencentSCFEvents
- import NIO
+```swift
+// Import the modules
+import TencentSCFRuntime
+import TencentSCFEvents
+import NIO
 
- // Our Lambda handler, conforms to EventLoopLambdaHandler
- struct Handler: EventLoopLambdaHandler {
-     typealias In = SNS.Message // Request type
-     typealias Out = Void // Response type
+// Our Lambda handler, conforms to EventLoopLambdaHandler
+struct Handler: EventLoopLambdaHandler {
+    typealias In = SNS.Message // Request type
+    typealias Out = Void // Response type
 
-     // In this example we are receiving an SNS Message, with no response (Void).
-     func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
-         ...
-         context.eventLoop.makeSucceededFuture(Void())
-     }
- }
+    // In this example we are receiving an SNS Message, with no response (Void).
+    func handle(context: Lambda.Context, event: In) -> EventLoopFuture<Out> {
+        ...
+        context.eventLoop.makeSucceededFuture(Void())
+    }
+}
 
- Lambda.run(Handler())
- ```
+Lambda.run(Handler())
+```
 
- Beyond the small cognitive complexity of using the `EventLoopFuture` based APIs, note these APIs should be used with extra care. An `EventLoopLambdaHandler` will execute the user code on the same `EventLoop` (thread) as the library, making processing faster but requiring the user code to never call blocking APIs as it might prevent the underlying process from functioning.
+Beyond the small cognitive complexity of using the `EventLoopFuture` based APIs, note these APIs should be used with extra care. An `EventLoopLambdaHandler` will execute the user code on the same `EventLoop` (thread) as the library, making processing faster but requiring the user code to never call blocking APIs as it might prevent the underlying process from functioning.
 
 ## Deploying to AWS Lambda   
 
@@ -331,12 +331,12 @@ That loop is broken if/when an internal error occurs, such as a failure to commu
 
 By default, the library also registers a Signal handler that traps `INT` and `TERM` , which are typical Signals used in modern deployment platforms to communicate shutdown request.
 
-### Integration with AWS Platform Events
+### Integration with Tencent Cloud Platform Events
 
-AWS Lambda functions can be invoked directly from the AWS Lambda console UI, AWS Lambda API, AWS SDKs, AWS CLI, and AWS toolkits. More commonly, they are invoked as a reaction to an events coming from the AWS platform. To make it easier to integrate with AWS platform events, the library includes an `AWSLambdaEvents` target which provides abstractions for many commonly used events. Additional events can be easily modeled when needed following the same patterns set by `AWSLambdaEvents`. Integration points with the AWS Platform include:
+Tencent SCFs can be invoked directly from the Tencent SCF console, Tencent SCF API, TCCLI and Tencent Cloud toolkit. More commonly, they are invoked as a reaction to an events coming from the Tencent Cloud platform. To make it easier to integrate with Tencent Cloud platform events, the library includes an `TencentSCFEvents` target which provides abstractions for many commonly used events. Additional events can be easily modeled when needed following the same patterns set by `TencentSCFEvents`. Integration points with the Tencent Cloud Platform include:
 
 * [APIGateway Proxy](https://docs.aws.amazon.com/lambda/latest/dg/services-apigateway.html)
-* [S3 Events](https://docs.aws.amazon.com/lambda/latest/dg/with-s3.html)
+* [COS](https://cloud.tencent.com/document/product/583/9707)
 * [SES Events](https://docs.aws.amazon.com/lambda/latest/dg/services-ses.html)
 * [SNS Events](https://docs.aws.amazon.com/lambda/latest/dg/with-sns.html)
 * [SQS Events](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html)
