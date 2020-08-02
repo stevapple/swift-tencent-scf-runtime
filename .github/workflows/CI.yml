@@ -1,0 +1,49 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test-cloud:
+    name: Test on Builder Environment
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version:
+          - nightly-master
+        os:
+          - centos7
+          - amazonlinux2
+    container:
+      image: swiftlang/swift:${{ matrix.version }}-${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test --enable-test-discovery
+
+  test-linux:
+    name: Test on Other Linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - bionic
+          - focal
+          - amazonlinux2
+          - centos8
+    container:
+      image: swift:5.2.4-${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test --enable-test-discovery
+
+  test-macos:
+    name: Test on macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test
