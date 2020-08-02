@@ -13,7 +13,6 @@
 //===------------------------------------------------------------------------------------===//
 
 import struct Foundation.Data
-import class Foundation.JSONEncoder
 
 // https://cloud.tencent.com/document/product/583/12513
 
