@@ -29,13 +29,13 @@ import NIO
 import TencentSCFEvents
 import TencentSCFRuntime
 
-// MARK: - Run Lambda
+// MARK: - Run SCF function
 
 Lambda.run(APIGatewayProxyLambda())
 
 // MARK: - Handler, Request and Response
 
-// FIXME: Use proper Event abstractions once added to AWSLambdaRuntime
+// FIXME: Use proper Event abstractions once added to TencentSCFRuntime
 struct APIGatewayProxyLambda: EventLoopLambdaHandler {
     public typealias In = APIGateway.Request
     public typealias Out = APIGateway.Response

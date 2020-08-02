@@ -28,10 +28,10 @@
 import NIO
 import TencentSCFRuntimeCore
 
-// If you would like to benchmark Swift's Lambda Runtime,
+// If you would like to benchmark Swift's SCF Runtime,
 // use this example which is more performant.
-// `EventLoopLambdaHandler` does not offload the Lambda processing to a separate thread
-// while the closure-based handlers do.
+// `EventLoopLambdaHandler` does not offload the cloud function processing to a separate thread
+// while the Closure-based handlers do.
 Lambda.run(BenchmarkHandler())
 
 struct BenchmarkHandler: EventLoopLambdaHandler {

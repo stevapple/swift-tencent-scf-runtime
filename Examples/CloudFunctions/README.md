@@ -1,14 +1,14 @@
-# Lambda Functions Examples
+# Serverless Cloud Functions Examples
 
-This sample project is a collection of Lambda functions that demonstrates
-how to write a simple Lambda function in Swift, and how to package and deploy it
-to the AWS Lambda platform.
+This sample project is a collection of cloud functions that demonstrates
+how to write a simple SCF function in Swift, and how to package and deploy it
+to the Tencent SCF platform.
 
 The scripts are prepared to work from the `CloudFunctions` folder.
 
 ```
 git clone https://github.com/stevapple/swift-tencent-scf-runtime.git
-cd tencent-scf-runtime/Examples/LambdaFunctions
+cd swift-tencent-scf-runtime/Examples/CloudFunctions
 ```
 
 Note: The example scripts assume you have [jq](https://stedolan.github.io/jq/download/) command line tool installed.
