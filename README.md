@@ -335,6 +335,7 @@ By default, the library also registers a Signal handler that traps `INT` and `TE
 
 Tencent SCFs can be invoked directly from the Tencent SCF console, Tencent SCF API, TCCLI and Tencent Cloud toolkit. More commonly, they are invoked as a reaction to an events coming from the Tencent Cloud platform. To make it easier to integrate with Tencent Cloud platform events, the library includes an `TencentSCFEvents` target which provides abstractions for many commonly used events. Additional events can be easily modeled when needed following the same patterns set by `TencentSCFEvents`. Integration points with the Tencent Cloud Platform include:
 
+* [APIGateway Request](https://cloud.tencent.com/document/product/583/12513)
 * [COS Events](https://cloud.tencent.com/document/product/583/9707)
 * [Timer Events](https://cloud.tencent.com/document/product/583/9708)
 * [CMQ Topic Messages](https://cloud.tencent.com/document/product/583/11517)
