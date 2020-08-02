@@ -36,8 +36,7 @@ public enum S3 {
             public let eventSource: String
             public let awsRegion: AWSRegion
 
-            @ISO8601WithFractionalSecondsCoding
-            public var eventTime: Date
+            @ISO8601DateWithFractionalSecondsCoding public var eventTime: Date
             public let eventName: String
             public let userIdentity: UserIdentity
             public let requestParameters: RequestParameters

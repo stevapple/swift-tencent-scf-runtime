@@ -65,7 +65,7 @@ public enum SNS {
         public let messageAttributes: [String: Attribute]
         public let signatureVersion: String
 
-        @ISO8601WithFractionalSecondsCoding
+        @ISO8601DateWithFractionalSecondsCoding
         public var timestamp: Date
         public let signingCertURL: String
         public let message: String

@@ -56,7 +56,7 @@ public enum SES {
         public let headersTruncated: Bool
         public let messageId: String
         public let source: String
-        @ISO8601WithFractionalSecondsCoding public var timestamp: Date
+        @ISO8601DateWithFractionalSecondsCoding public var timestamp: Date
     }
 
     public struct CommonHeaders: Decodable {
@@ -84,7 +84,7 @@ public enum SES {
         public let recipients: [String]
         public let spamVerdict: Verdict
         public let spfVerdict: Verdict
-        @ISO8601WithFractionalSecondsCoding public var timestamp: Date
+        @ISO8601DateWithFractionalSecondsCoding public var timestamp: Date
         public let virusVerdict: Verdict
     }
 
