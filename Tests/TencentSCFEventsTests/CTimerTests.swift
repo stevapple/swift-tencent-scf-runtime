@@ -15,7 +15,7 @@
 @testable import TencentSCFEvents
 import XCTest
 
-class CronTests: XCTestCase {
+class CTimerTests: XCTestCase {
     static let eventBody = """
     {
         "Type":"Timer",
@@ -27,8 +27,8 @@ class CronTests: XCTestCase {
 
     func testSimpleEventFromJSON() {
         let data = Self.eventBody.data(using: .utf8)!
-        var event: Cron.Event?
-        XCTAssertNoThrow(event = try JSONDecoder().decode(Cron.Event.self, from: data))
+        var event: CTimer.Event?
+        XCTAssertNoThrow(event = try JSONDecoder().decode(CTimer.Event.self, from: data))
 
         XCTAssertEqual(event?.message, "user define msg body")
         XCTAssertEqual(event?.trigger, "EveryDay")
@@ -47,7 +47,7 @@ class CronTests: XCTestCase {
         """
         let data = wrongJson.data(using: .utf8)!
 
-        XCTAssertThrowsError(_ = try JSONDecoder().decode(Cron.Event.self, from: data)) { error in
+        XCTAssertThrowsError(_ = try JSONDecoder().decode(CTimer.Event.self, from: data)) { error in
             guard case DecodingError.dataCorrupted(let context) = error else {
                 XCTFail("Unexpected error: \(error)"); return
             }
@@ -61,11 +61,11 @@ class CronTests: XCTestCase {
     func testEventDecodeAndEncode() {
         let data = Self.eventBody.data(using: .utf8)!
         let decoder = JSONDecoder()
-        var event: Cron.Event?
-        XCTAssertNoThrow(event = try decoder.decode(Cron.Event.self, from: data))
+        var event: CTimer.Event?
+        XCTAssertNoThrow(event = try decoder.decode(CTimer.Event.self, from: data))
 
-        var newEvent: Cron.Event?
-        XCTAssertNoThrow(newEvent = try decoder.decode(Cron.Event.self, from: try JSONEncoder().encode(event)))
+        var newEvent: CTimer.Event?
+        XCTAssertNoThrow(newEvent = try decoder.decode(CTimer.Event.self, from: try JSONEncoder().encode(event)))
 
         XCTAssertEqual(event, newEvent)
     }
