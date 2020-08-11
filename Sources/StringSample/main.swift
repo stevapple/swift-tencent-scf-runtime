@@ -45,6 +45,6 @@ SCF.run(Handler())
 
 /*
  SCF.run { (_, event: String, callback) in
-     callback(.success(String(event.reversed())))
+   callback(.success(String(event.reversed())))
  }
  */
