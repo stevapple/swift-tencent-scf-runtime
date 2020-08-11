@@ -12,10 +12,10 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-// list all available zones using tccli:
+// List all available zones using tccli:
 //   $ tccli cvm DescribeZones --region <Region>
 
-/// Enumeration of the Tencent Cloud regions and zones.
+/// A `struct` representing a Tencent Cloud zone.
 extension TencentCloud {
     public struct Zone: RawRepresentable, CustomStringConvertible, Equatable, Hashable {
         public typealias RawValue = String

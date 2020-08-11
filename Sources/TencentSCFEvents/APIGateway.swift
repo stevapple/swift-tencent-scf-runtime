@@ -16,8 +16,8 @@ import struct Foundation.Data
 
 // https://cloud.tencent.com/document/product/583/12513
 
+/// `APIGateway.Request` contains data coming from the API Gateway.
 public enum APIGateway {
-    /// APIGatewayRequest contains data coming from the API Gateway
     public struct Request: Codable {
         public struct Context: Codable {
             public let identity: [String: String]

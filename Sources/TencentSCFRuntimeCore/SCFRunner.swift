@@ -29,8 +29,8 @@ import Dispatch
 import Logging
 import NIO
 
-extension Lambda {
-    /// LambdaRunner manages the Lambda runtime workflow, or business logic.
+extension SCF {
+    /// `SCF.Runner` manages the SCF runtime workflow, or business logic.
     internal final class Runner {
         private let runtimeClient: RuntimeClient
         private let eventLoop: EventLoop
@@ -46,19 +46,20 @@ extension Lambda {
 
         /// Run the user provided initializer. This *must* only be called once.
         ///
-        /// - Returns: An `EventLoopFuture<LambdaHandler>` fulfilled with the outcome of the initialization.
+        /// - Returns: An `EventLoopFuture<SCFHandler>` fulfilled with the outcome of the initialization.
         func initialize(logger: Logger, factory: @escaping HandlerFactory) -> EventLoopFuture<Handler> {
-            logger.debug("initializing lambda")
-            // 1. create the handler from the factory
-            // 2. report initialization error if one occured
+            logger.debug("initializing cloud function")
+            // 1. Create the handler from the factory;
+            // 2. Report initialization error if one occured.
             let context = InitializationContext(logger: logger,
                                                 eventLoop: self.eventLoop,
                                                 allocator: self.allocator)
             return factory(context)
                 // Hopping back to "our" EventLoop is importnant in case the factory returns a future
                 // that originated from a foreign EventLoop/EventLoopGroup.
-                // This can happen if the factory uses a library (let's say a database client) that manages its own threads/loops
-                // for whatever reason and returns a future that originated from that foreign EventLoop.
+                // This can happen if the factory uses a library (let's say a database client) that
+                // manages its own threads/loops for whatever reason and returns a future that
+                // originated from that foreign EventLoop.
                 .hop(to: self.eventLoop)
                 .flatMap { handler in
                     self.runtimeClient.reportInitializationReady(logger: logger)
@@ -66,49 +67,50 @@ extension Lambda {
                 }
                 .peekError { error in
                     self.runtimeClient.reportInitializationError(logger: logger, error: error).peekError { reportingError in
-                        // We're going to bail out because the init failed, so there's not a lot we can do other than log
-                        // that we couldn't report this error back to the runtime.
-                        logger.error("failed reporting initialization error to lambda runtime engine: \(reportingError)")
+                        // We're going to bail out because the init failed, so there's not a lot we
+                        // can do other than log that we couldn't report this error back to the runtime.
+                        logger.error("failed reporting initialization error to scf runtime engine: \(reportingError)")
                     }
                 }
         }
 
         func run(logger: Logger, handler: Handler) -> EventLoopFuture<Void> {
-            logger.debug("lambda invocation sequence starting")
-            // 1. request invocation from lambda runtime engine
+            logger.debug("scf invocation sequence starting")
+            // 1. Request invocation from the SCF Runtime Engine;
             self.isGettingNextInvocation = true
             return self.runtimeClient.getNextInvocation(logger: logger).peekError { error in
-                logger.error("could not fetch work from lambda runtime engine: \(error)")
+                logger.error("could not fetch work from scf runtime engine: \(error)")
             }.flatMap { invocation, event in
-                // 2. send invocation to handler
+                // 2. Send invocation to the handler;
                 self.isGettingNextInvocation = false
                 let context = Context(logger: logger,
                                       eventLoop: self.eventLoop,
                                       allocator: self.allocator,
                                       invocation: invocation)
-                logger.debug("sending invocation to lambda handler \(handler)")
+                logger.debug("sending invocation to scf handler \(handler)")
                 return handler.handle(context: context, event: event)
-                    // Hopping back to "our" EventLoop is importnant in case the handler returns a future that
-                    // originiated from a foreign EventLoop/EventLoopGroup.
-                    // This can happen if the handler uses a library (lets say a DB client) that manages its own threads/loops
-                    // for whatever reason and returns a future that originated from that foreign EventLoop.
+                    // Hopping back to "our" EventLoop is importnant in case the factory returns a future
+                    // that originated from a foreign EventLoop/EventLoopGroup.
+                    // This can happen if the factory uses a library (let's say a database client) that
+                    // manages its own threads/loops for whatever reason and returns a future that
+                    // originated from that foreign EventLoop.
                     .hop(to: self.eventLoop)
                     .mapResult { result in
                         if case .failure(let error) = result {
-                            logger.warning("lambda handler returned an error: \(error)")
+                            logger.warning("scf handler returned an error: \(error)")
                         }
                         return (invocation, result)
                     }
             }.flatMap { invocation, result in
-                // 3. report results to runtime engine
+                // 3. Report results to the runtime engine.
                 self.runtimeClient.reportResults(logger: logger, invocation: invocation, result: result).peekError { error in
-                    logger.error("could not report results to lambda runtime engine: \(error)")
+                    logger.error("could not report results to scf runtime engine: \(error)")
                 }
             }
         }
 
-        /// cancels the current run, if we are waiting for next invocation (long poll from Lambda control plane)
-        /// only needed for debugging purposes.
+        /// Cancels the current run, if we are waiting for next invocation (long poll from the SCF API server).
+        /// Only needed for debugging purposes.
         func cancelWaitingForNextInvocation() {
             if self.isGettingNextInvocation {
                 self.runtimeClient.cancel()
@@ -117,8 +119,8 @@ extension Lambda {
     }
 }
 
-private extension Lambda.Context {
-    convenience init(logger: Logger, eventLoop: EventLoop, allocator: ByteBufferAllocator, invocation: Lambda.Invocation) {
+private extension SCF.Context {
+    convenience init(logger: Logger, eventLoop: EventLoop, allocator: ByteBufferAllocator, invocation: SCF.Invocation) {
         self.init(requestID: invocation.requestID,
                   memoryLimit: invocation.memoryLimit,
                   timeLimit: .milliseconds(Int(invocation.timeLimit)),
@@ -130,7 +132,7 @@ private extension Lambda.Context {
 
 // TODO: move to nio?
 extension EventLoopFuture {
-    // callback does not have side effects, failing with original result
+    // Callback does not have side effects, failing with original result.
     func peekError(_ callback: @escaping (Error) -> Void) -> EventLoopFuture<Value> {
         self.flatMapError { error in
             callback(error)
@@ -138,7 +140,7 @@ extension EventLoopFuture {
         }
     }
 
-    // callback does not have side effects, failing with original result
+    // Callback does not have side effects, failing with original result.
     func peekError(_ callback: @escaping (Error) -> EventLoopFuture<Void>) -> EventLoopFuture<Value> {
         self.flatMapError { error in
             let promise = self.eventLoop.makePromise(of: Value.self)

@@ -28,23 +28,23 @@
 import NIO
 import TencentSCFRuntimeCore
 
-// in this example we are receiving and responding with strings
-struct Handler: EventLoopLambdaHandler {
+// In this example we are receiving and responding with strings.
+struct Handler: EventLoopSCFHandler {
     typealias In = String
     typealias Out = String
 
-    func handle(context: Lambda.Context, event: String) -> EventLoopFuture<String> {
-        // as an example, respond with the event's reversed body
+    func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
+        // As an example, respond with the event's reversed body.
         context.eventLoop.makeSucceededFuture(String(event.reversed()))
     }
 }
 
-Lambda.run(Handler())
+SCF.run(Handler())
 
 // MARK: - this can also be expressed as a closure:
 
 /*
- Lambda.run { (_, event: String, callback) in
-   callback(.success(String(event.reversed())))
+ SCF.run { (_, event: String, callback) in
+     callback(.success(String(event.reversed())))
  }
  */

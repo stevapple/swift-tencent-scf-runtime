@@ -31,22 +31,22 @@ import NIO
 
 // MARK: - InitializationContext
 
-extension Lambda {
-    /// Lambda runtime initialization context.
-    /// The Lambda runtime generates and passes the `InitializationContext` to the Lambda factory as an argument.
+extension SCF {
+    /// SCF runtime initialization context.
+    /// The `SCF.runtime` generates and passes the `InitializationContext` to the SCF factory as an argument.
     public final class InitializationContext {
-        /// `Logger` to log with
+        /// `Logger` to log with.
         ///
         /// - note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
         public let logger: Logger
 
-        /// The `EventLoop` the Lambda is executed on. Use this to schedule work with.
+        /// The `EventLoop` the SCF function is executed on. Use this to schedule work with.
         ///
-        /// - note: The `EventLoop` is shared with the Lambda runtime engine and should be handled with extra care.
+        /// - note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
         ///         Most importantly the `EventLoop` must never be blocked.
         public let eventLoop: EventLoop
 
-        /// `ByteBufferAllocator` to allocate `ByteBuffer`
+        /// `ByteBufferAllocator` to allocate `ByteBuffer`.
         public let allocator: ByteBufferAllocator
 
         internal init(logger: Logger, eventLoop: EventLoop, allocator: ByteBufferAllocator) {
@@ -59,9 +59,9 @@ extension Lambda {
 
 // MARK: - Context
 
-extension Lambda {
-    /// Lambda runtime context.
-    /// The Lambda runtime generates and passes the `Context` to the Lambda handler as an argument.
+extension SCF {
+    /// SCF runtime context.
+    /// The SCF runtime generates and passes the `Context` to the SCF handler as an argument.
     public final class Context: CustomDebugStringConvertible {
         /// The request ID, which identifies the request that triggered the function invocation.
         public let requestID: String
@@ -76,37 +76,37 @@ extension Lambda {
         public let deadline: DispatchWallTime
 
         /// The UIN of cloud function actor.
-        public static let uin = Lambda.env("TENCENTCLOUD_UIN") ?? ""
+        public static let uin = SCF.env("TENCENTCLOUD_UIN") ?? ""
 
-        /// The AppID that the cloud function belongs to.
-        public static let appId = Lambda.env("TENCENTCLOUD_APPID") ?? ""
+        /// The APPID that the cloud function belongs to.
+        public static let appid = SCF.env("TENCENTCLOUD_APPID") ?? ""
 
         /// The Tencent Cloud region that the cloud function is in.
-        public static let region = Lambda.env("TENCENTCLOUD_REGION") ?? ""
+        public static let region = SCF.env("TENCENTCLOUD_REGION") ?? ""
 
         /// The name of the cloud function.
-        public static let name = Lambda.env("SCF_FUNCTIONNAME") ?? ""
+        public static let name = SCF.env("SCF_FUNCTIONNAME") ?? ""
 
         /// The namespace of the cloud function.
-        public static let namespace = Lambda.env("SCF_NAMESPACE") ?? ""
+        public static let namespace = SCF.env("SCF_NAMESPACE") ?? ""
 
         /// The version of the cloud function.
-        public static let version: Version = .init(stringLiteral: Lambda.env("SCF_FUNCTIONVERSION") ?? "")
+        public static let version: Version = .init(stringLiteral: SCF.env("SCF_FUNCTIONVERSION") ?? "")
 
-        /// `Logger` to log with
+        /// `Logger` to log with.
         ///
         /// - note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
         public let logger: Logger
 
-        /// The `EventLoop` the Lambda is executed on. Use this to schedule work with.
-        /// This is useful when implementing the `EventLoopLambdaHandler` protocol.
+        /// The `EventLoop` the SCF function is executed on. Use this to schedule work with.
+        /// This is useful when implementing the `EventLoopSCFHandler` protocol.
         ///
-        /// - note: The `EventLoop` is shared with the Lambda runtime engine and should be handled with extra care.
+        /// - note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
         ///         Most importantly the `EventLoop` must never be blocked.
         public let eventLoop: EventLoop
 
-        /// `ByteBufferAllocator` to allocate `ByteBuffer`
-        /// This is useful when implementing `EventLoopLambdaHandler`
+        /// `ByteBufferAllocator` to allocate `ByteBuffer`.
+        /// This is useful when implementing `EventLoopSCFHandler`.
         public let allocator: ByteBufferAllocator
 
         internal init(requestID: String,
@@ -120,10 +120,10 @@ extension Lambda {
             self.memoryLimit = memoryLimit
             self.deadline = DispatchWallTime.now() + timeLimit
             self.timeLimit = timeLimit
-            // utility
+            // utilities
             self.eventLoop = eventLoop
             self.allocator = allocator
-            // mutate logger with context
+            // Mutate logger with context.
             var logger = logger
             logger[metadataKey: "scfRequestID"] = .string(requestID)
             self.logger = logger
@@ -178,18 +178,18 @@ extension Lambda {
 
 // MARK: - ShutdownContext
 
-extension Lambda {
-    /// Lambda runtime shutdown context.
-    /// The Lambda runtime generates and passes the `ShutdownContext` to the Lambda handler as an argument.
+extension SCF {
+    /// SCF runtime shutdown context.
+    /// The SCF runtime generates and passes the `ShutdownContext` to the SCF handler as an argument.
     public final class ShutdownContext {
         /// `Logger` to log with
         ///
         /// - note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
         public let logger: Logger
 
-        /// The `EventLoop` the Lambda is executed on. Use this to schedule work with.
+        /// The `EventLoop` the cloud function is executed on. Use this to schedule work with.
         ///
-        /// - note: The `EventLoop` is shared with the Lambda runtime engine and should be handled with extra care.
+        /// - note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
         ///         Most importantly the `EventLoop` must never be blocked.
         public let eventLoop: EventLoop
 

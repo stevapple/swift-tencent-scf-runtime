@@ -32,7 +32,7 @@ import NIOFoundationCompat
 @testable import TencentSCFRuntimeCore
 import XCTest
 
-class CodableLambdaTest: XCTestCase {
+class CodableSCFTest: XCTestCase {
     var eventLoopGroup: EventLoopGroup!
     let allocator = ByteBufferAllocator()
 
@@ -77,13 +77,13 @@ class CodableLambdaTest: XCTestCase {
     }
 
     // convencience method
-    func newContext() -> Lambda.Context {
-        Lambda.Context(requestID: UUID().uuidString.lowercased(),
-                       memoryLimit: 128,
-                       timeLimit: .seconds(3),
-                       logger: Logger(label: "test"),
-                       eventLoop: self.eventLoopGroup.next(),
-                       allocator: ByteBufferAllocator())
+    func newContext() -> SCF.Context {
+        SCF.Context(requestID: UUID().uuidString.lowercased(),
+                    memoryLimit: 128,
+                    timeLimit: .seconds(3),
+                    logger: Logger(label: "test"),
+                    eventLoop: self.eventLoopGroup.next(),
+                    allocator: ByteBufferAllocator())
     }
 }
 

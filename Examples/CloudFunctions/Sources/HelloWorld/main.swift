@@ -27,7 +27,7 @@
 
 import TencentSCFRuntime
 
-// introductory example, the obligatory "hello, world!"
-Lambda.run { (_: Lambda.Context, _: String, callback: (Result<String, Error>) -> Void) in
-    callback(.success("hello, world!"))
+// Introductory example, the obligatory "Hello, world!"
+SCF.run { (_: SCF.Context, _: String, callback: (Result<String, Error>) -> Void) in
+    callback(.success("Hello, world!"))
 }

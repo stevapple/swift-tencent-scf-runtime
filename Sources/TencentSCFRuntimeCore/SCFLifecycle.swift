@@ -29,8 +29,8 @@ import Logging
 import NIO
 import NIOConcurrencyHelpers
 
-extension Lambda {
-    /// `Lifecycle` manages the Lambda process lifecycle.
+extension SCF {
+    /// `Lifecycle` manages the SCF process lifecycle.
     ///
     /// - note: It is intended to be used within a single `EventLoop`. For this reason this class is not thread safe.
     public final class Lifecycle {
@@ -50,9 +50,9 @@ extension Lambda {
         /// Create a new `Lifecycle`.
         ///
         /// - parameters:
-        ///     - eventLoop: An `EventLoop` to run the Lambda on.
-        ///     - logger: A `Logger` to log the Lambda events.
-        ///     - factory: A `LambdaHandlerFactory` to create the concrete  Lambda handler.
+        ///     - eventLoop: An `EventLoop` to run the cloud function on.
+        ///     - logger: A `Logger` to log the SCF events.
+        ///     - factory: A `SCFHandlerFactory` to create the concrete SCF handler.
         public convenience init(eventLoop: EventLoop, logger: Logger, factory: @escaping HandlerFactory) {
             self.init(eventLoop: eventLoop, logger: logger, configuration: .init(), factory: factory)
         }
@@ -73,20 +73,20 @@ extension Lambda {
 
         /// The `Lifecycle` shutdown future.
         ///
-        /// - Returns: An `EventLoopFuture` that is fulfilled after the Lambda lifecycle has fully shutdown.
+        /// - Returns: An `EventLoopFuture` that is fulfilled after the SCF lifecycle has fully shutdown.
         public var shutdownFuture: EventLoopFuture<Int> {
             self.shutdownPromise.futureResult
         }
 
         /// Start the `Lifecycle`.
         ///
-        /// - Returns: An `EventLoopFuture` that is fulfilled after the Lambda hander has been created and initiliazed, and a first run has been scheduled.
+        /// - Returns: An `EventLoopFuture` that is fulfilled after the SCF hander has been created and initiliazed, and a first run has been scheduled.
         ///
         /// - note: This method must be called  on the `EventLoop` the `Lifecycle` has been initialized with.
         public func start() -> EventLoopFuture<Void> {
             self.eventLoop.assertInEventLoop()
 
-            logger.info("lambda lifecycle starting with \(self.configuration)")
+            logger.info("scf lifecycle starting with \(self.configuration)")
             self.state = .initializing
 
             var logger = self.logger
@@ -94,29 +94,30 @@ extension Lambda {
             let runner = Runner(eventLoop: self.eventLoop, configuration: self.configuration)
 
             let startupFuture = runner.initialize(logger: logger, factory: self.factory)
-            startupFuture.flatMap { handler -> EventLoopFuture<(ByteBufferLambdaHandler, Result<Int, Error>)> in
-                // after the startup future has succeeded, we have a handler that we can use
-                // to `run` the lambda.
+            startupFuture.flatMap { handler -> EventLoopFuture<(ByteBufferSCFHandler, Result<Int, Error>)> in
+                // After the startup future has succeeded, we have a handler that we can use to
+                // `run` the cloud function.
                 let finishedPromise = self.eventLoop.makePromise(of: Int.self)
                 self.state = .active(runner, handler)
                 self.run(promise: finishedPromise)
                 return finishedPromise.futureResult.mapResult { (handler, $0) }
             }
             .flatMap { (handler, runnerResult) -> EventLoopFuture<Int> in
-                // after the lambda finishPromise has succeeded or failed we need to
-                // shutdown the handler
+                // After the SCF finishPromise has succeeded or failed we need to shutdown
+                // the handler.
                 let shutdownContext = ShutdownContext(logger: logger, eventLoop: self.eventLoop)
                 return handler.shutdown(context: shutdownContext).flatMapErrorThrowing { error in
-                    // if, we had an error shuting down the lambda, we want to concatenate it with
-                    // the runner result
+                    // If we had an error shuting down the SCF function, we want to concatenate
+                    // it with the runner result.
                     logger.error("Error shutting down handler: \(error)")
                     throw RuntimeError.shutdownError(shutdownError: error, runnerResult: runnerResult)
                 }.flatMapResult { (_) -> Result<Int, Error> in
-                    // we had no error shutting down the lambda. let's return the runner's result
+                    // We had no error shutting down the cloud function, so let's return the
+                    // runner's result.
                     runnerResult
                 }
             }.always { _ in
-                // triggered when the Lambda has finished its last run or has a startup failure.
+                // Triggered when the cloud function has finished its last run or has a startup failure.
                 self.markShutdown()
             }.cascade(to: self.shutdownPromise)
 
@@ -128,7 +129,7 @@ extension Lambda {
         #if DEBUG
         /// Begin the `Lifecycle` shutdown. Only needed for debugging purposes, hence behind a `DEBUG` flag.
         public func shutdown() {
-            // make this method thread safe by dispatching onto the eventloop
+            // Make this method thread safe by dispatching onto the eventLoop.
             self.eventLoop.execute {
                 let oldState = self.state
                 self.state = .shuttingdown
@@ -156,21 +157,22 @@ extension Lambda {
                     runner.run(logger: logger, handler: handler).whenComplete { result in
                         switch result {
                         case .success:
-                            logger.log(level: .debug, "lambda invocation sequence completed successfully")
-                            // recursive! per aws lambda runtime spec the polling requests are to be done one at a time
+                            logger.log(level: .debug, "scf invocation sequence completed successfully")
+                            // Recursive! According to the Tencent SCF Custom Runtime spec, the
+                            // polling requests are to be done one at a time.
                             _run(count + 1)
                         case .failure(HTTPClient.Errors.cancelled):
                             if case .shuttingdown = self.state {
-                                // if we ware shutting down, we expect to that the get next
-                                // invocation request might have been cancelled. For this reason we
-                                // succeed the promise here.
-                                logger.log(level: .info, "lambda invocation sequence has been cancelled for shutdown")
+                                // If we are shutting down, we expect that the `getNextInvocation`
+                                // request might have been cancelled.  For this reason we succeed
+                                // the promise here.
+                                logger.log(level: .info, "scf invocation sequence has been cancelled for shutdown")
                                 return promise.succeed(count)
                             }
-                            logger.log(level: .error, "lambda invocation sequence has been cancelled unexpectedly")
+                            logger.log(level: .error, "scf invocation sequence has been cancelled unexpectedly")
                             promise.fail(HTTPClient.Errors.cancelled)
                         case .failure(let error):
-                            logger.log(level: .error, "lambda invocation sequence completed with error: \(error)")
+                            logger.log(level: .error, "scf invocation sequence completed with error: \(error)")
                             promise.fail(error)
                         }
                     }

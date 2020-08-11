@@ -29,18 +29,18 @@ import NIO
 import NIOConcurrencyHelpers
 import NIOHTTP1
 
-/// A barebone HTTP client to interact with AWS Runtime Engine which is an HTTP server.
-/// Note that Lambda Runtime API dictate that only one requests runs at a time.
-/// This means we can avoid locks and other concurrency concern we would otherwise need to build into the client
+/// A barebone HTTP client to interact with SCF Runtime Engine which is an HTTP server.
+/// Note that SCF Custom Runtime API dictate that only one requests runs at a time.
+/// This means we can avoid locks and other concurrency concern we would otherwise need to build into the client.
 internal final class HTTPClient {
     private let eventLoop: EventLoop
-    private let configuration: Lambda.Configuration.RuntimeEngine
+    private let configuration: SCF.Configuration.RuntimeEngine
     private let targetHost: String
 
     private var state = State.disconnected
     private var executing = false
 
-    init(eventLoop: EventLoop, configuration: Lambda.Configuration.RuntimeEngine) {
+    init(eventLoop: EventLoop, configuration: SCF.Configuration.RuntimeEngine) {
         self.eventLoop = eventLoop
         self.configuration = configuration
         self.targetHost = "\(self.configuration.ip):\(self.configuration.port)"
@@ -63,10 +63,10 @@ internal final class HTTPClient {
                              timeout: timeout ?? self.configuration.requestTimeout))
     }
 
-    /// cancels the current request if there is one
+    /// Cancels the current request if there is already one.
     func cancel() {
         guard self.executing else {
-            // there is no request running. nothing to cancel
+            // There is no request running, nothing to cancel.
             return
         }
 
@@ -117,7 +117,7 @@ internal final class HTTPClient {
             }
 
         do {
-            // connect directly via socket address to avoid happy eyeballs (perf)
+            // Connect directly via socket address to avoid happy eyeballs (perf).
             let address = try SocketAddress(ipAddress: self.configuration.ip, port: self.configuration.port)
             return bootstrap.connect(to: address)
         } catch {
@@ -190,12 +190,11 @@ private final class HTTPHandler: ChannelDuplexHandler {
         // We don't add a "Connection" header here if we want to keep the connection open,
         // HTTP/1.1 defines specifies the following in RFC 2616, Section 8.1.2.1:
         //
-        // An HTTP/1.1 server MAY assume that a HTTP/1.1 client intends to
-        // maintain a persistent connection unless a Connection header including
-        // the connection-token "close" was sent in the request. If the server
-        // chooses to close the connection immediately after sending the
-        // response, it SHOULD send a Connection header including the
-        // connection-token close.
+        // An HTTP/1.1 server MAY assume that a HTTP/1.1 client intends to maintain a
+        // persistent connection unless a Connection header including the connection-token
+        // "close" was sent in the request. If the server chooses to close the connection
+        // immediately after sending the response, it SHOULD send a Connection header
+        // including the connection-token close.
         //
         // See also UnaryHandler.channelRead below.
         if !self.keepAlive {
@@ -252,7 +251,7 @@ private final class HTTPHandler: ChannelDuplexHandler {
     }
 }
 
-// no need in locks since we validate only one request can run at a time
+// No need in locks since we validate only one request can run at a time.
 private final class UnaryHandler: ChannelDuplexHandler {
     typealias OutboundIn = HTTPRequestWrapper
     typealias InboundIn = HTTPClient.Response
@@ -290,14 +289,14 @@ private final class UnaryHandler: ChannelDuplexHandler {
         }
 
         // As defined in RFC 7230 Section 6.3:
-        // HTTP/1.1 defaults to the use of "persistent connections", allowing
-        // multiple requests and responses to be carried over a single
-        // connection.  The "close" connection option is used to signal that a
-        // connection will not persist after the current request/response.  HTTP
-        // implementations SHOULD support persistent connections.
+        // HTTP/1.1 defaults to the use of "persistent connections", allowing multiple
+        // requests and responses to be carried over a single connection.  The "close"
+        // connection option is used to signal that a connection will not persist after
+        // the current request/response.  HTTP implementations SHOULD support persistent
+        // connections.
         //
-        // That's why we only assume the connection shall be closed if we receive
-        // a "connection = close" header.
+        // That's why we only assume the connection shall be closed if we receive a
+        // "connection = close" header.
         let serverCloseConnection = response.headers.first(name: "connection")?.lowercased() == "close"
 
         if !self.keepAlive || serverCloseConnection || response.version != .init(major: 1, minor: 1) {
@@ -309,13 +308,13 @@ private final class UnaryHandler: ChannelDuplexHandler {
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        // pending responses will fail with lastError in channelInactive since we are calling context.close
+        // Pending responses will fail with lastError in channelInactive since we are calling context.close
         self.lastError = error
         context.channel.close(promise: nil)
     }
 
     func channelInactive(context: ChannelHandlerContext) {
-        // fail any pending responses with last error or assume peer disconnected
+        // Fail any pending responses with last error or assume peer disconnected.
         if self.pending != nil {
             let error = self.lastError ?? HTTPClient.Errors.connectionResetByPeer
             self.completeWith(.failure(error))
@@ -328,8 +327,8 @@ private final class UnaryHandler: ChannelDuplexHandler {
         case is RequestCancelEvent:
             if self.pending != nil {
                 self.completeWith(.failure(HTTPClient.Errors.cancelled))
-                // after the cancel error has been send, we want to close the connection so
-                // that no more packets can be read on this connection.
+                // After the cancel error has been send, we want to close the connection so that
+                // no more packets can be read on this connection.
                 _ = context.channel.close()
             }
         default:

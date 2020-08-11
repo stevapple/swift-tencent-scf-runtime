@@ -31,17 +31,17 @@ import TencentSCFRuntime
 
 // MARK: - Run SCF function
 
-Lambda.run(APIGatewayProxyLambda())
+SCF.run(APIGatewayProxySCF())
 
 // MARK: - Handler, Request and Response
 
 // FIXME: Use proper Event abstractions once added to TencentSCFRuntime
-struct APIGatewayProxyLambda: EventLoopLambdaHandler {
+struct APIGatewayProxySCF: EventLoopSCFHandler {
     public typealias In = APIGateway.Request
     public typealias Out = APIGateway.Response
 
-    public func handle(context: Lambda.Context, event: APIGateway.Request) -> EventLoopFuture<APIGateway.Response> {
+    public func handle(context: SCF.Context, event: APIGateway.Request) -> EventLoopFuture<APIGateway.Response> {
         context.logger.debug("hello, api gateway!")
-        return context.eventLoop.makeSucceededFuture(APIGateway.Response(statusCode: .ok, body: "hello, world!"))
+        return context.eventLoop.makeSucceededFuture(APIGateway.Response(statusCode: .ok, body: "Hello, world!"))
     }
 }

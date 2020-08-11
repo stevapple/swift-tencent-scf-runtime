@@ -12,10 +12,10 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-// list all available regions using tccli:
+// List all available regions using tccli:
 //   $ tccli cvm DescribeRegions
 
-/// Enumeration of the Tencent Cloud regions and zones.
+/// Enumeration of the Tencent Cloud regions.
 public enum TencentCloud {
     public struct Region: RawRepresentable, CustomStringConvertible, Equatable, Hashable {
         public typealias RawValue = String

@@ -30,89 +30,89 @@ import NIO
 @testable import TencentSCFRuntimeCore
 import XCTest
 
-class LambdaTest: XCTestCase {
+class SCFTest: XCTestCase {
     func testSuccess() {
-        let server = MockLambdaServer(behavior: Behavior())
+        let server = MockSCFServer(behavior: Behavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         let maxTimes = Int.random(in: 10 ... 20)
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = Lambda.run(configuration: configuration, handler: EchoHandler())
-        assertLambdaLifecycleResult(result, shoudHaveRun: maxTimes)
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
+        let result = SCF.run(configuration: configuration, handler: EchoHandler())
+        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
     func testFailure() {
-        let server = MockLambdaServer(behavior: Behavior(result: .failure(TestError("boom"))))
+        let server = MockSCFServer(behavior: Behavior(result: .failure(TestError("boom"))))
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         let maxTimes = Int.random(in: 10 ... 20)
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = Lambda.run(configuration: configuration, handler: FailedHandler("boom"))
-        assertLambdaLifecycleResult(result, shoudHaveRun: maxTimes)
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
+        let result = SCF.run(configuration: configuration, handler: FailedHandler("boom"))
+        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
     func testBootstrapOnce() {
-        let server = MockLambdaServer(behavior: Behavior())
+        let server = MockSCFServer(behavior: Behavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        struct Handler: LambdaHandler {
+        struct Handler: SCFHandler {
             typealias In = String
             typealias Out = String
 
             var initialized = false
 
-            init(context: Lambda.InitializationContext) {
+            init(context: SCF.InitializationContext) {
                 XCTAssertFalse(self.initialized)
                 self.initialized = true
             }
 
-            func handle(context: Lambda.Context, event: String, callback: (Result<String, Error>) -> Void) {
+            func handle(context: SCF.Context, event: String, callback: (Result<String, Error>) -> Void) {
                 callback(.success(event))
             }
         }
 
         let maxTimes = Int.random(in: 10 ... 20)
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = Lambda.run(configuration: configuration, factory: Handler.init)
-        assertLambdaLifecycleResult(result, shoudHaveRun: maxTimes)
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
+        let result = SCF.run(configuration: configuration, factory: Handler.init)
+        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
     func testBootstrapFailure() {
-        let server = MockLambdaServer(behavior: FailedBootstrapBehavior())
+        let server = MockSCFServer(behavior: FailedBootstrapBehavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        let result = Lambda.run(factory: { $0.eventLoop.makeFailedFuture(TestError("kaboom")) })
-        assertLambdaLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
+        let result = SCF.run(factory: { $0.eventLoop.makeFailedFuture(TestError("kaboom")) })
+        assertSCFLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
     }
 
     func testBootstrapFailure2() {
-        let server = MockLambdaServer(behavior: FailedBootstrapBehavior())
+        let server = MockSCFServer(behavior: FailedBootstrapBehavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        struct Handler: LambdaHandler {
+        struct Handler: SCFHandler {
             typealias In = String
             typealias Out = Void
 
-            init(context: Lambda.InitializationContext) throws {
+            init(context: SCF.InitializationContext) throws {
                 throw TestError("kaboom")
             }
 
-            func handle(context: Lambda.Context, event: String, callback: (Result<Void, Error>) -> Void) {
+            func handle(context: SCF.Context, event: String, callback: (Result<Void, Error>) -> Void) {
                 callback(.failure(TestError("should not be called")))
             }
         }
 
-        let result = Lambda.run(factory: Handler.init)
-        assertLambdaLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
+        let result = SCF.run(factory: Handler.init)
+        assertSCFLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
     }
 
     func testBootstrapFailureAndReportErrorFailure() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             func getInvocation() -> GetInvocationResult {
                 XCTFail("should not get invocation")
                 return .failure(.internalServerError)
@@ -133,30 +133,30 @@ class LambdaTest: XCTestCase {
             }
         }
 
-        let server = MockLambdaServer(behavior: FailedBootstrapBehavior())
+        let server = MockSCFServer(behavior: FailedBootstrapBehavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        let result = Lambda.run(factory: { $0.eventLoop.makeFailedFuture(TestError("kaboom")) })
-        assertLambdaLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
+        let result = SCF.run(factory: { $0.eventLoop.makeFailedFuture(TestError("kaboom")) })
+        assertSCFLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
     }
 
     func testStartStopInDebugMode() {
-        let server = MockLambdaServer(behavior: Behavior())
+        let server = MockSCFServer(behavior: Behavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         let signal = Signal.ALRM
         let maxTimes = 1000
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: maxTimes, stopSignal: signal))
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes, stopSignal: signal))
 
         DispatchQueue(label: "test").async {
-            // we need to schedule the signal before we start the long running `Lambda.run`, since
-            // `Lambda.run` will block the main thread.
+            // we need to schedule the signal before we start the long running `SCF.run`, since
+            // `SCF.run` will block the main thread.
             usleep(100_000)
             kill(getpid(), signal.rawValue)
         }
-        let result = Lambda.run(configuration: configuration, factory: { $0.eventLoop.makeSucceededFuture(EchoHandler()) })
+        let result = SCF.run(configuration: configuration, factory: { $0.eventLoop.makeSucceededFuture(EchoHandler()) })
 
         switch result {
         case .success(let invocationCount):
@@ -169,65 +169,65 @@ class LambdaTest: XCTestCase {
 
     func testTimeout() {
         let timeout: Int64 = 100
-        let server = MockLambdaServer(behavior: Behavior(requestId: "timeout", event: "\(timeout * 2)"))
+        let server = MockSCFServer(behavior: Behavior(requestId: "timeout", event: "\(timeout * 2)"))
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: 1),
-                                                 runtimeEngine: .init(requestTimeout: .milliseconds(timeout)))
-        let result = Lambda.run(configuration: configuration, handler: EchoHandler())
-        assertLambdaLifecycleResult(result, shouldFailWithError: Lambda.RuntimeError.upstreamError("timeout"))
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: 1),
+                                              runtimeEngine: .init(requestTimeout: .milliseconds(timeout)))
+        let result = SCF.run(configuration: configuration, handler: EchoHandler())
+        assertSCFLifecycleResult(result, shouldFailWithError: SCF.RuntimeError.upstreamError("timeout"))
     }
 
     func testDisconnect() {
-        let server = MockLambdaServer(behavior: Behavior(requestId: "disconnect"))
+        let server = MockSCFServer(behavior: Behavior(requestId: "disconnect"))
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: 1))
-        let result = Lambda.run(configuration: configuration, handler: EchoHandler())
-        assertLambdaLifecycleResult(result, shouldFailWithError: Lambda.RuntimeError.upstreamError("connectionResetByPeer"))
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: 1))
+        let result = SCF.run(configuration: configuration, handler: EchoHandler())
+        assertSCFLifecycleResult(result, shouldFailWithError: SCF.RuntimeError.upstreamError("connectionResetByPeer"))
     }
 
     func testBigEvent() {
         let event = String(repeating: "*", count: 104_448)
-        let server = MockLambdaServer(behavior: Behavior(event: event, result: .success(event)))
+        let server = MockSCFServer(behavior: Behavior(event: event, result: .success(event)))
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: 1))
-        let result = Lambda.run(configuration: configuration, handler: EchoHandler())
-        assertLambdaLifecycleResult(result, shoudHaveRun: 1)
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: 1))
+        let result = SCF.run(configuration: configuration, handler: EchoHandler())
+        assertSCFLifecycleResult(result, shoudHaveRun: 1)
     }
 
     func testKeepAliveServer() {
-        let server = MockLambdaServer(behavior: Behavior(), keepAlive: true)
+        let server = MockSCFServer(behavior: Behavior(), keepAlive: true)
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         let maxTimes = 10
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = Lambda.run(configuration: configuration, handler: EchoHandler())
-        assertLambdaLifecycleResult(result, shoudHaveRun: maxTimes)
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
+        let result = SCF.run(configuration: configuration, handler: EchoHandler())
+        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
     func testNoKeepAliveServer() {
-        let server = MockLambdaServer(behavior: Behavior(), keepAlive: false)
+        let server = MockSCFServer(behavior: Behavior(), keepAlive: false)
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         let maxTimes = 10
-        let configuration = Lambda.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = Lambda.run(configuration: configuration, handler: EchoHandler())
-        assertLambdaLifecycleResult(result, shoudHaveRun: maxTimes)
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
+        let result = SCF.run(configuration: configuration, handler: EchoHandler())
+        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
     func testServerFailure() {
-        let server = MockLambdaServer(behavior: Behavior())
+        let server = MockSCFServer(behavior: Behavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             func getInvocation() -> GetInvocationResult {
                 .failure(.internalServerError)
             }
@@ -246,8 +246,8 @@ class LambdaTest: XCTestCase {
             }
         }
 
-        let result = Lambda.run(handler: EchoHandler())
-        assertLambdaLifecycleResult(result, shouldFailWithError: Lambda.RuntimeError.badStatusCode(.internalServerError))
+        let result = SCF.run(handler: EchoHandler())
+        assertSCFLifecycleResult(result, shouldFailWithError: SCF.RuntimeError.badStatusCode(.internalServerError))
     }
 
     func testDeadline() {
@@ -269,28 +269,28 @@ class LambdaTest: XCTestCase {
         let past2 = DispatchWallTime(millisSinceEpoch: Date(timeIntervalSinceNow: Double(-delta)).millisSinceEpoch)
         XCTAssertEqual(Double(past1.rawValue), Double(past2.rawValue), accuracy: 2_000_000.0)
 
-        let context = Lambda.Context(requestID: UUID().uuidString.lowercased(),
-                                     memoryLimit: 128,
-                                     timeLimit: .seconds(3),
-                                     logger: Logger(label: "test"),
-                                     eventLoop: MultiThreadedEventLoopGroup(numberOfThreads: 1).next(),
-                                     allocator: ByteBufferAllocator())
+        let context = SCF.Context(requestID: UUID().uuidString.lowercased(),
+                                  memoryLimit: 128,
+                                  timeLimit: .seconds(3),
+                                  logger: Logger(label: "test"),
+                                  eventLoop: MultiThreadedEventLoopGroup(numberOfThreads: 1).next(),
+                                  allocator: ByteBufferAllocator())
         XCTAssertGreaterThan(context.deadline, .now())
     }
 
     func testGetRemainingTime() {
-        let context = Lambda.Context(requestID: UUID().uuidString.lowercased(),
-                                     memoryLimit: 128,
-                                     timeLimit: .seconds(3),
-                                     logger: Logger(label: "test"),
-                                     eventLoop: MultiThreadedEventLoopGroup(numberOfThreads: 1).next(),
-                                     allocator: ByteBufferAllocator())
+        let context = SCF.Context(requestID: UUID().uuidString.lowercased(),
+                                  memoryLimit: 128,
+                                  timeLimit: .seconds(3),
+                                  logger: Logger(label: "test"),
+                                  eventLoop: MultiThreadedEventLoopGroup(numberOfThreads: 1).next(),
+                                  allocator: ByteBufferAllocator())
         XCTAssertLessThanOrEqual(context.getRemainingTime(), .seconds(3))
         XCTAssertGreaterThan(context.getRemainingTime(), .milliseconds(800))
     }
 }
 
-private struct Behavior: LambdaServerBehavior {
+private struct Behavior: SCFServerBehavior {
     let requestId: String
     let event: String
     let result: Result<String?, TestError>
@@ -335,7 +335,7 @@ private struct Behavior: LambdaServerBehavior {
     }
 }
 
-struct FailedBootstrapBehavior: LambdaServerBehavior {
+struct FailedBootstrapBehavior: SCFServerBehavior {
     func getInvocation() -> GetInvocationResult {
         XCTFail("should not get invocation")
         return .failure(.internalServerError)

@@ -29,19 +29,19 @@ import TencentSCFRuntime
 
 // MARK: - Run SCF function
 
-// switch over the error type "requested" by the request, and trigger such error accordingly
-Lambda.run { (context: Lambda.Context, request: Request, callback: (Result<Response, Error>) -> Void) in
+// Switch over the error type "requested" by the request, and trigger such error accordingly.
+SCF.run { (context: SCF.Context, request: Request, callback: (Result<Response, Error>) -> Void) in
     switch request.error {
-    // no error here!
+    // No error here!
     case .none:
         callback(.success(Response(scfRequestID: context.requestID, requestID: request.requestID, status: .ok)))
-    // trigger a "managed" error - domain specific business logic failure
+    // Trigger a "managed" error - domain specific business logic failure.
     case .managed:
         callback(.success(Response(scfRequestID: context.requestID, requestID: request.requestID, status: .error)))
-    // trigger an "unmanaged" error - an unexpected Swift Error triggered while processing the request
+    // Trigger an "unmanaged" error - an unexpected Swift Error triggered while processing the request.
     case .unmanaged(let error):
         callback(.failure(UnmanagedError(description: error)))
-    // trigger a "fatal" error - a panic type error which will crash the process
+    // Trigger a "fatal" error - a panic type error which will crash the process.
     case .fatal:
         fatalError("crash!")
     }

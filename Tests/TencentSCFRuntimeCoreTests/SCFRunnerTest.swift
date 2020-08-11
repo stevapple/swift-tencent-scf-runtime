@@ -28,9 +28,9 @@
 @testable import TencentSCFRuntimeCore
 import XCTest
 
-class LambdaRunnerTest: XCTestCase {
+class SCFRunnerTest: XCTestCase {
     func testSuccess() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             let requestId = UUID().uuidString.lowercased()
             let event = "hello"
             func getInvocation() -> GetInvocationResult {
@@ -52,11 +52,11 @@ class LambdaRunnerTest: XCTestCase {
                 return .failure(.internalServerError)
             }
         }
-        XCTAssertNoThrow(try runLambda(behavior: Behavior(), handler: EchoHandler()))
+        XCTAssertNoThrow(try runSCF(behavior: Behavior(), handler: EchoHandler()))
     }
 
     func testFailure() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             static let error = "boom"
             let requestId = UUID().uuidString.lowercased()
             func getInvocation() -> GetInvocationResult {
@@ -78,6 +78,6 @@ class LambdaRunnerTest: XCTestCase {
                 return .failure(.internalServerError)
             }
         }
-        XCTAssertNoThrow(try runLambda(behavior: Behavior(), handler: FailedHandler(Behavior.error)))
+        XCTAssertNoThrow(try runSCF(behavior: Behavior(), handler: FailedHandler(Behavior.error)))
     }
 }

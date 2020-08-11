@@ -31,9 +31,9 @@ import NIO
 import NIOHTTP1
 @testable import TencentSCFRuntimeCore
 
-internal final class MockLambdaServer {
-    private let logger = Logger(label: "MockLambdaServer")
-    private let behavior: LambdaServerBehavior
+internal final class MockSCFServer {
+    private let logger = Logger(label: "MockSCFServer")
+    private let behavior: SCFServerBehavior
     private let host: String
     private let port: Int
     private let keepAlive: Bool
@@ -42,7 +42,7 @@ internal final class MockLambdaServer {
     private var channel: Channel?
     private var shutdown = false
 
-    public init(behavior: LambdaServerBehavior, host: String = "127.0.0.1", port: Int = 9001, keepAlive: Bool = true) {
+    public init(behavior: SCFServerBehavior, host: String = "127.0.0.1", port: Int = 9001, keepAlive: Bool = true) {
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.behavior = behavior
         self.host = host
@@ -54,7 +54,7 @@ internal final class MockLambdaServer {
         assert(shutdown)
     }
 
-    func start() -> EventLoopFuture<MockLambdaServer> {
+    func start() -> EventLoopFuture<MockSCFServer> {
         let bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
@@ -90,11 +90,11 @@ internal final class HTTPHandler: ChannelInboundHandler {
 
     private let logger: Logger
     private let keepAlive: Bool
-    private let behavior: LambdaServerBehavior
+    private let behavior: SCFServerBehavior
 
     private var pending = CircularBuffer<(head: HTTPRequestHead, body: ByteBuffer?)>()
 
-    public init(logger: Logger, keepAlive: Bool, behavior: LambdaServerBehavior) {
+    public init(logger: Logger, keepAlive: Bool, behavior: SCFServerBehavior) {
         self.logger = logger
         self.keepAlive = keepAlive
         self.behavior = behavior
@@ -219,7 +219,7 @@ internal final class HTTPHandler: ChannelInboundHandler {
     }
 }
 
-internal protocol LambdaServerBehavior {
+internal protocol SCFServerBehavior {
     func getInvocation() -> GetInvocationResult
     func process(response: String?) -> Result<Void, ProcessResponseError>
     func process(error: ErrorResponse) -> Result<Void, ProcessErrorError>

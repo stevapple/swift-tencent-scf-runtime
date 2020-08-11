@@ -30,33 +30,33 @@ import NIO
 @testable import TencentSCFRuntimeCore
 import XCTest
 
-func runLambda(behavior: LambdaServerBehavior, handler: Lambda.Handler) throws {
-    try runLambda(behavior: behavior, factory: { $0.eventLoop.makeSucceededFuture(handler) })
+func runSCF(behavior: SCFServerBehavior, handler: SCF.Handler) throws {
+    try runSCF(behavior: behavior, factory: { $0.eventLoop.makeSucceededFuture(handler) })
 }
 
-func runLambda(behavior: LambdaServerBehavior, factory: @escaping Lambda.HandlerFactory) throws {
+func runSCF(behavior: SCFServerBehavior, factory: @escaping SCF.HandlerFactory) throws {
     let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
     defer { XCTAssertNoThrow(try eventLoopGroup.syncShutdownGracefully()) }
     let logger = Logger(label: "TestLogger")
-    let configuration = Lambda.Configuration(runtimeEngine: .init(requestTimeout: .milliseconds(100)))
-    let runner = Lambda.Runner(eventLoop: eventLoopGroup.next(), configuration: configuration)
-    let server = try MockLambdaServer(behavior: behavior).start().wait()
+    let configuration = SCF.Configuration(runtimeEngine: .init(requestTimeout: .milliseconds(100)))
+    let runner = SCF.Runner(eventLoop: eventLoopGroup.next(), configuration: configuration)
+    let server = try MockSCFServer(behavior: behavior).start().wait()
     defer { XCTAssertNoThrow(try server.stop().wait()) }
     try runner.initialize(logger: logger, factory: factory).flatMap { handler in
         runner.run(logger: logger, handler: handler)
     }.wait()
 }
 
-struct EchoHandler: LambdaHandler {
+struct EchoHandler: SCFHandler {
     typealias In = String
     typealias Out = String
 
-    func handle(context: Lambda.Context, event: String, callback: (Result<String, Error>) -> Void) {
+    func handle(context: SCF.Context, event: String, callback: (Result<String, Error>) -> Void) {
         callback(.success(event))
     }
 }
 
-struct FailedHandler: LambdaHandler {
+struct FailedHandler: SCFHandler {
     typealias In = String
     typealias Out = Void
 
@@ -66,12 +66,12 @@ struct FailedHandler: LambdaHandler {
         self.reason = reason
     }
 
-    func handle(context: Lambda.Context, event: String, callback: (Result<Void, Error>) -> Void) {
+    func handle(context: SCF.Context, event: String, callback: (Result<Void, Error>) -> Void) {
         callback(.failure(TestError(self.reason)))
     }
 }
 
-func assertLambdaLifecycleResult(_ result: Result<Int, Error>, shoudHaveRun: Int = 0, shouldFailWithError: Error? = nil, file: StaticString = #file, line: UInt = #line) {
+func assertSCFLifecycleResult(_ result: Result<Int, Error>, shoudHaveRun: Int = 0, shouldFailWithError: Error? = nil, file: StaticString = #file, line: UInt = #line) {
     switch result {
     case .success where shouldFailWithError != nil:
         XCTFail("should fail with \(shouldFailWithError!)", file: file, line: line)
@@ -100,8 +100,8 @@ internal extension Date {
     }
 }
 
-extension Lambda.RuntimeError: Equatable {
-    public static func == (lhs: Lambda.RuntimeError, rhs: Lambda.RuntimeError) -> Bool {
+extension SCF.RuntimeError: Equatable {
+    public static func == (lhs: SCF.RuntimeError, rhs: SCF.RuntimeError) -> Bool {
         // technically incorrect, but good enough for our tests
         String(describing: lhs) == String(describing: rhs)
     }

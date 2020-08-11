@@ -29,7 +29,7 @@
 import XCTest
 
 class Base64Tests: XCTestCase {
-    // MARK: - Decoding -
+    // MARK: Decoding
 
     func testDecodeEmptyString() throws {
         var decoded: [UInt8]?

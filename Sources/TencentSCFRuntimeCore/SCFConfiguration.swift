@@ -29,7 +29,7 @@ import Dispatch
 import Logging
 import NIO
 
-extension Lambda {
+extension SCF {
     internal struct Configuration: CustomStringConvertible {
         let general: General
         let lifecycle: Lifecycle

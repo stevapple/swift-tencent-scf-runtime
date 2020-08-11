@@ -35,47 +35,46 @@ import Backtrace
 import Logging
 import NIO
 
-public enum Lambda {
-    public typealias Handler = ByteBufferLambdaHandler
+public enum SCF {
+    public typealias Handler = ByteBufferSCFHandler
 
-    /// `ByteBufferLambdaHandler` factory.
-    ///
-    /// A function that takes a `InitializationContext` and returns an `EventLoopFuture` of a `ByteBufferLambdaHandler`
+    /// `ByteBufferSCFHandler` factory.
+    /// A function that takes a `InitializationContext` and returns an `EventLoopFuture` of a `ByteBufferSCFHandler`.
     public typealias HandlerFactory = (InitializationContext) -> EventLoopFuture<Handler>
 
-    /// Run a Lambda defined by implementing the `LambdaHandler` protocol.
+    /// Run a cloud function defined by implementing the `SCFHandler` protocol.
     ///
     /// - parameters:
-    ///     - handler: `ByteBufferLambdaHandler` based Lambda.
+    ///     - handler: `ByteBufferSCFHandler` based SCF function.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the AWS Lambda Runtime Engine.
+    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run(_ handler: Handler) {
         self.run(handler: handler)
     }
 
-    /// Run a Lambda defined by implementing the `LambdaHandler` protocol provided via a `LambdaHandlerFactory`.
+    /// Run a cloud function defined by implementing the `SCFHandler` protocol provided via a `SCFHandlerFactory`.
     /// Use this to initialize all your resources that you want to cache between invocations. This could be database connections and HTTP clients for example.
     /// It is encouraged to use the given `EventLoop`'s conformance to `EventLoopGroup` when initializing NIO dependencies. This will improve overall performance.
     ///
     /// - parameters:
-    ///     - factory: A `ByteBufferLambdaHandler` factory.
+    ///     - factory: A `ByteBufferSCFHandler` factory.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the AWS Lambda Runtime Engine.
+    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run(_ factory: @escaping HandlerFactory) {
         self.run(factory: factory)
     }
 
-    /// Run a Lambda defined by implementing the `LambdaHandler` protocol provided via a factory, typically a constructor.
+    /// Run a cloud function defined by implementing the `SCFHandler` protocol provided via a factory, typically a constructor.
     ///
     /// - parameters:
-    ///     - factory: A `ByteBufferLambdaHandler` factory.
+    ///     - factory: A `ByteBufferSCFHandler` factory.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the AWS Lambda Runtime Engine.
+    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run(_ factory: @escaping (InitializationContext) throws -> Handler) {
         self.run(factory: factory)
     }
 
-    /// Utility to access/read environment variables
+    /// Utility to access/read environment variables.
     public static func env(_ name: String) -> String? {
         guard let value = getenv(name) else {
             return nil
@@ -94,9 +93,9 @@ public enum Lambda {
     internal static func run(configuration: Configuration = .init(), factory: @escaping (InitializationContext) throws -> Handler) -> Result<Int, Error> {
         self.run(configuration: configuration, factory: { context -> EventLoopFuture<Handler> in
             let promise = context.eventLoop.makePromise(of: Handler.self)
-            // if we have a callback based handler factory, we offload the creation of the handler
+            // If we have a callback based handler factory, we offload the creation of the handler
             // onto the default offload queue, to ensure that the eventloop is never blocked.
-            Lambda.defaultOffloadQueue.async {
+            SCF.defaultOffloadQueue.async {
                 do {
                     promise.succeed(try factory(context))
                 } catch {
@@ -112,7 +111,7 @@ public enum Lambda {
     internal static func run(configuration: Configuration = .init(), factory: @escaping HandlerFactory) -> Result<Int, Error> {
         let _run = { (configuration: Configuration, factory: @escaping HandlerFactory) -> Result<Int, Error> in
             Backtrace.install()
-            var logger = Logger(label: "Lambda")
+            var logger = Logger(label: "SCF")
             logger.logLevel = configuration.general.logLevel
 
             var result: Result<Int, Error>!
@@ -144,11 +143,11 @@ public enum Lambda {
             return result
         }
 
-        // start local server for debugging in DEBUG mode only
+        // Start local server for debugging in DEBUG mode only.
         #if DEBUG
-        if Lambda.env("LOCAL_SCF_SERVER_ENABLED").flatMap(Bool.init) ?? false {
+        if SCF.env("LOCAL_SCF_SERVER_ENABLED").flatMap(Bool.init) ?? false {
             do {
-                return try Lambda.withLocalServer {
+                return try SCF.withLocalServer {
                     _run(configuration, factory)
                 }
             } catch {

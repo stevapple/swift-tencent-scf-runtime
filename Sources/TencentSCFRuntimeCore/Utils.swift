@@ -38,14 +38,14 @@ internal enum Consts {
     static let initializationError = "InitializationError"
 }
 
-/// Tencent SCF HTTP Headers, used to populate the `LambdaContext` object.
+/// Tencent SCF HTTP Headers, used to populate the `SCF.Context` object.
 internal enum SCFHeaders {
     static let requestID = "request_id"
     static let memoryLimit = "memory_limit_in_mb"
     static let timeLimit = "time_limit_in_ms"
 }
 
-/// Helper function to trap signals
+/// Helper function to trap signals.
 internal func trap(signal sig: Signal, handler: @escaping (Signal) -> Void) -> DispatchSourceSignal {
     let signalSource = DispatchSource.makeSignalSource(signal: sig.rawValue, queue: DispatchQueue.global())
     signal(sig.rawValue, SIG_IGN)
@@ -90,13 +90,13 @@ extension String {
         while nextIndex != stringBytes.endIndex {
             switch stringBytes[nextIndex] {
             case 0 ..< 32, UInt8(ascii: "\""), UInt8(ascii: "\\"):
-                // All Unicode characters may be placed within the
-                // quotation marks, except for the characters that MUST be escaped:
-                // quotation mark, reverse solidus, and the control characters (U+0000
-                // through U+001F).
+                // All Unicode characters may be placed within the quotation marks, except for the
+                // characters that MUST be escaped:
+                // quotation mark, reverse solidus, and the control characters (U+0000 through
+                // U+001F).
                 // https://tools.ietf.org/html/rfc7159#section-7
 
-                // copy the current range over
+                // Copy the current range over.
                 bytes.append(contentsOf: stringBytes[startCopyIndex ..< nextIndex])
                 bytes.append(UInt8(ascii: "\\"))
                 bytes.append(stringBytes[nextIndex])
@@ -108,7 +108,7 @@ extension String {
             }
         }
 
-        // copy everything, that hasn't been copied yet
+        // Copy everything that hasn't been copied yet.
         bytes.append(contentsOf: stringBytes[startCopyIndex ..< nextIndex])
         bytes.append(UInt8(ascii: "\""))
     }

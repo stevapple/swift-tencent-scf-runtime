@@ -34,16 +34,17 @@ import FoundationXML
 #endif
 import Logging
 
-// MARK: - Run Lambda
+// MARK: - Run SCF function
 
-Lambda.run { (context: Lambda.Context, _: Request, callback: @escaping (Result<[Exchange], Error>) -> Void) in
+SCF.run { (context: SCF.Context, _: Request, callback: @escaping (Result<[Exchange], Error>) -> Void) in
     let calculator = ExchangeRatesCalculator()
     calculator.run(logger: context.logger, callback: callback)
 }
 
 // MARK: - Business Logic
 
-// This is a contrived example performing currency exchange rate lookup and conversion using URLSession and XML parsing
+// This is a contrived example performing currency exchange rate lookup and conversion using
+// URLSession and XML parsing.
 struct ExchangeRatesCalculator {
     static let currencies = ["EUR", "USD", "JPY"]
     static let currenciesEmojies = [
@@ -56,7 +57,8 @@ struct ExchangeRatesCalculator {
     let calendar: Calendar
 
     init() {
-        // This is data from HMRC, the UK tax authority. Therefore we want to use their locale when interpreting data from the server.
+        // This is data from HMRC, the UK tax authority. Therefore we want to use their
+        // locale when interpreting data from the server.
         self.locale = Locale(identifier: "en_GB")
         // Use the UK calendar, not the system one.
         var calendar = self.locale.calendar

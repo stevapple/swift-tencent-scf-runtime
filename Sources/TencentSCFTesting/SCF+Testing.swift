@@ -25,24 +25,24 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-// This functionality is designed to help with Lambda unit testing with XCTest
-// #if filter required for release builds which do not support @testable import
-// @testable is used to access of internal functions
+// This functionality is designed to help with SCF unit testing with XCTest.
+// #if filter is required for release builds which do not support @testable import.
+// @testable is used to access of internal functions.
 // For exmaple:
 //
 // func test() {
-//     struct MyLambda: EventLoopLambdaHandler {
+//     struct MyCloudFunction: EventLoopSCFHandler {
 //         typealias In = String
 //         typealias Out = String
 //
-//         func handle(context: Lambda.Context, event: String) -> EventLoopFuture<String> {
+//         func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
 //             return context.eventLoop.makeSucceededFuture("echo" + event)
 //         }
 //     }
 //
 //     let input = UUID().uuidString.lowercased()
 //     var result: String?
-//     XCTAssertNoThrow(result = try Lambda.test(MyLambda(), with: input))
+//     XCTAssertNoThrow(result = try SCF.test(MyCloudFunction(), with: input))
 //     XCTAssertEqual(result, "echo" + input)
 // }
 
@@ -54,7 +54,7 @@ import NIO
 @testable import TencentSCFRuntime
 @testable import TencentSCFRuntimeCore
 
-extension Lambda {
+extension SCF {
     public struct TestConfig {
         public var requestID: String
         public var memoryLimit: UInt
@@ -70,14 +70,14 @@ extension Lambda {
         }
     }
 
-    public static func test(_ closure: @escaping Lambda.StringClosure,
+    public static func test(_ closure: @escaping SCF.StringClosure,
                             with event: String,
                             using config: TestConfig = .init()) throws -> String
     {
         try Self.test(StringClosureWrapper(closure), with: event, using: config)
     }
 
-    public static func test(_ closure: @escaping Lambda.StringVoidClosure,
+    public static func test(_ closure: @escaping SCF.StringVoidClosure,
                             with event: String,
                             using config: TestConfig = .init()) throws
     {
@@ -85,7 +85,7 @@ extension Lambda {
     }
 
     public static func test<In: Decodable, Out: Encodable>(
-        _ closure: @escaping Lambda.CodableClosure<In, Out>,
+        _ closure: @escaping SCF.CodableClosure<In, Out>,
         with event: In,
         using config: TestConfig = .init()
     ) throws -> Out {
@@ -93,14 +93,14 @@ extension Lambda {
     }
 
     public static func test<In: Decodable>(
-        _ closure: @escaping Lambda.CodableVoidClosure<In>,
+        _ closure: @escaping SCF.CodableVoidClosure<In>,
         with event: In,
         using config: TestConfig = .init()
     ) throws {
         _ = try Self.test(CodableVoidClosureWrapper(closure), with: event, using: config)
     }
 
-    public static func test<In, Out, Handler: EventLoopLambdaHandler>(
+    public static func test<In, Out, Handler: EventLoopSCFHandler>(
         _ handler: Handler,
         with event: In,
         using config: TestConfig = .init()

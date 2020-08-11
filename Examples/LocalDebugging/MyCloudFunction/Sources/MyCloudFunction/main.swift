@@ -28,9 +28,9 @@
 import Shared
 import TencentSCFRuntime
 
-// set LOCAL_SCF_SERVER_ENABLED env variable to "true" to start
-// a local server simulator which will allow local debugging
-Lambda.run { (_, request: Request, callback: @escaping (Result<Response, Error>) -> Void) in
+// Set LOCAL_SCF_SERVER_ENABLED env variable to "true" to start a local server simulator
+// which will allow local debugging.
+SCF.run { (_, request: Request, callback: @escaping (Result<Response, Error>) -> Void) in
     // TODO: something useful
     callback(.success(Response(message: "Hello, \(request.name)!")))
 }

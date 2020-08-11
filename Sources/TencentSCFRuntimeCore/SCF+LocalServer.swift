@@ -36,31 +36,31 @@ import NIOHTTP1
 // This functionality is designed for local testing hence beind a #if DEBUG flag.
 // For example:
 //
-// try Lambda.withLocalServer {
-//     Lambda.run { (context: Lambda.Context, event: String, callback: @escaping (Result<String, Error>) -> Void) in
+// try SCF.withLocalServer {
+//     SCF.run { (context: SCF.Context, event: String, callback: @escaping (Result<String, Error>) -> Void) in
 //         callback(.success("Hello, \(event)!"))
 //     }
 // }
-extension Lambda {
-    /// Execute code in the context of a mock Lambda server.
+extension SCF {
+    /// Execute code in the context of a mock SCF server.
     ///
     /// - parameters:
-    ///     - invocationEndpoint: The endpoint  to post events to.
-    ///     - body: Code to run within the context of the mock server. Typically this would be a Lambda.run function call.
+    ///     - invocationEndpoint: The endpoint to post events to.
+    ///     - body: Code to run within the context of the mock server. Typically this would be a `SCF.run` function call.
     ///
-    /// - note: This API is designed stricly for local testing and is behind a DEBUG flag
+    /// - note: This API is designed stricly for local testing and is behind a DEBUG flag.
     @discardableResult
     static func withLocalServer<Value>(invocationEndpoint: String? = nil, _ body: @escaping () -> Value) throws -> Value {
-        let server = LocalLambda.Server(invocationEndpoint: invocationEndpoint)
+        let server = LocalFunction.Server(invocationEndpoint: invocationEndpoint)
         try server.start().wait()
         defer { try! server.stop() } // FIXME:
         return body()
     }
 }
 
-// MARK: - Local Mock Server
+// MARK: Local Mock Server
 
-private enum LocalLambda {
+private enum LocalFunction {
     struct Server {
         private let logger: Logger
         private let group: EventLoopGroup
@@ -69,8 +69,8 @@ private enum LocalLambda {
         private let invocationEndpoint: String
 
         public init(invocationEndpoint: String?) {
-            let configuration = Lambda.Configuration()
-            var logger = Logger(label: "LocalLambdaServer")
+            let configuration = SCF.Configuration()
+            var logger = Logger(label: "LocalSCFServer")
             logger.logLevel = configuration.general.logLevel
             self.logger = logger
             self.group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -91,7 +91,7 @@ private enum LocalLambda {
                 guard channel.localAddress != nil else {
                     return channel.eventLoop.makeFailedFuture(ServerError.cantBind)
                 }
-                self.logger.info("LocalLambdaServer started and listening on \(self.host):\(self.port), receiving events on \(self.invocationEndpoint)")
+                self.logger.info("LocalSCFServer started and listening on \(self.host):\(self.port), receiving events on \(self.invocationEndpoint)")
                 return channel.eventLoop.makeSucceededFuture(())
             }
         }
@@ -108,7 +108,7 @@ private enum LocalLambda {
         private var pending = CircularBuffer<(head: HTTPRequestHead, body: ByteBuffer?)>()
 
         private static var invocations = CircularBuffer<Invocation>()
-        private static var invocationState = InvocationState.waitingForLambdaRequest
+        private static var invocationState = InvocationState.waitingForSCFRequest
 
         private let logger: Logger
         private let invocationEndpoint: String
@@ -140,7 +140,7 @@ private enum LocalLambda {
 
         func processRequest(context: ChannelHandlerContext, request: (head: HTTPRequestHead, body: ByteBuffer?)) {
             switch (request.head.method, request.head.uri) {
-            // this endpoint is called by the client invoking the lambda
+            // This endpoint is called by the client invoking the cloud function.
             case (.POST, let url) where url.hasSuffix(self.invocationEndpoint):
                 guard let work = request.body else {
                     return self.writeResponse(context: context, response: .init(status: .badRequest))
@@ -160,24 +160,24 @@ private enum LocalLambda {
                 switch Self.invocationState {
                 case .waitingForInvocation(let promise):
                     promise.succeed(invocation)
-                case .waitingForLambdaRequest, .waitingForLambdaResponse:
+                case .waitingForSCFRequest, .waitingForSCFResponse:
                     Self.invocations.append(invocation)
                 }
 
-            // /next endpoint is called by the lambda polling for work
+            // `/next` endpoint is called by the SCF instance polling for work.
             case (.GET, let url) where url == Consts.getNextInvocationURL:
-                // check if our server is in the correct state
-                guard case .waitingForLambdaRequest = Self.invocationState else {
+                // Check if our server is in the correct state.
+                guard case .waitingForSCFRequest = Self.invocationState else {
                     self.logger.error("invalid invocation state \(Self.invocationState)")
                     self.writeResponse(context: context, response: .init(status: .unprocessableEntity))
                     return
                 }
 
-                // pop the first task from the queue
+                // Pop the first task from the queue.
                 switch Self.invocations.popFirst() {
                 case .none:
-                    // if there is nothing in the queue,
-                    // create a promise that we can fullfill when we get a new task
+                    // If there is nothing in the queue, create a promise that we can fullfill
+                    // when we get a new task.
                     let promise = context.eventLoop.makePromise(of: Invocation.self)
                     promise.futureResult.whenComplete { result in
                         switch result {
@@ -185,40 +185,40 @@ private enum LocalLambda {
                             self.logger.error("invocation error: \(error)")
                             self.writeResponse(context: context, status: .internalServerError)
                         case .success(let invocation):
-                            Self.invocationState = .waitingForLambdaResponse(invocation)
+                            Self.invocationState = .waitingForSCFResponse(invocation)
                             self.writeResponse(context: context, response: invocation.makeResponse())
                         }
                     }
                     Self.invocationState = .waitingForInvocation(promise)
                 case .some(let invocation):
-                    // if there is a task pending, we can immediatly respond with it.
-                    Self.invocationState = .waitingForLambdaResponse(invocation)
+                    // If there is a task pending, we can immediatly respond with it.
+                    Self.invocationState = .waitingForSCFResponse(invocation)
                     self.writeResponse(context: context, response: invocation.makeResponse())
                 }
 
-            // response endpoint is called by the lambda posting the response
+            // `/response` endpoint is called by the cloud function posting the response.
             case (.POST, let url) where url == Consts.postResponseURL:
-                guard case .waitingForLambdaResponse(let invocation) = Self.invocationState else {
-                    // a response was send, but we did not expect to receive one
+                guard case .waitingForSCFResponse(let invocation) = Self.invocationState else {
+                    // A response was sent, but we did not expect to receive one.
                     self.logger.error("invalid invocation state \(Self.invocationState)")
                     return self.writeResponse(context: context, status: .unprocessableEntity)
                 }
 
                 invocation.responsePromise.succeed(.init(status: .ok, body: request.body))
                 self.writeResponse(context: context, status: .ok)
-                Self.invocationState = .waitingForLambdaRequest
+                Self.invocationState = .waitingForSCFRequest
 
-            // error endpoint is called by the lambda posting an error response
+            // `/error` endpoint is called by the cloud function posting an error response.
             case (.POST, let url) where url == Consts.postErrorURL:
-                guard case .waitingForLambdaResponse(let invocation) = Self.invocationState else {
-                    // a response was send, but we did not expect to receive one
+                guard case .waitingForSCFResponse(let invocation) = Self.invocationState else {
+                    // A response was sent, but we did not expect to receive one.
                     self.logger.error("invalid invocation state \(Self.invocationState)")
                     return self.writeResponse(context: context, status: .unprocessableEntity)
                 }
 
                 invocation.responsePromise.succeed(.init(status: .internalServerError, body: request.body))
                 self.writeResponse(context: context, status: .ok)
-                Self.invocationState = .waitingForLambdaRequest
+                Self.invocationState = .waitingForSCFRequest
 
             // unknown call
             default:
@@ -278,8 +278,8 @@ private enum LocalLambda {
 
         enum InvocationState {
             case waitingForInvocation(EventLoopPromise<Invocation>)
-            case waitingForLambdaRequest
-            case waitingForLambdaResponse(Invocation)
+            case waitingForSCFRequest
+            case waitingForSCFResponse(Invocation)
         }
     }
 
@@ -288,5 +288,4 @@ private enum LocalLambda {
         case cantBind
     }
 }
-
 #endif

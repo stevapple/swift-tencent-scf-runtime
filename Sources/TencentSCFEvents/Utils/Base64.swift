@@ -25,13 +25,12 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-//===----------------------------------------------------------------------===//
 // This is a vendored version from:
 // https://github.com/fabianfett/swift-base64-kit
 
 struct Base64 {}
 
-// MARK: - Decode -
+// MARK: Decode
 
 extension Base64 {
     struct DecodingOptions: OptionSet {
@@ -56,8 +55,8 @@ extension Base64 {
             ? Base64.decodeBase64Url
             : Base64.decodeBase64
 
-        // In Base64 4 encoded bytes, become 3 decoded bytes. We pad to the
-        // nearest multiple of three.
+        // In Base64 every 4 encoded bytes, become 3 decoded bytes. We pad to the nearest
+        // multiple of three.
         let inputLength = encoded.count
         guard inputLength > 0 else { return [] }
         guard inputLength % 4 == 0 else {
@@ -71,7 +70,7 @@ extension Base64 {
         var outputBytes = [UInt8]()
         outputBytes.reserveCapacity(outputLength)
 
-        // fast loop. we don't expect any padding in here.
+        // Fast loop where we don't expect any padding.
         for _ in 0 ..< fullQualified {
             let firstValue: UInt8 = try iterator.nextValue(alphabet: alphabet)
             let secondValue: UInt8 = try iterator.nextValue(alphabet: alphabet)
@@ -83,7 +82,7 @@ extension Base64 {
             outputBytes.append((thirdValue << 6) | forthValue)
         }
 
-        // last 4 bytes. we expect padding characters in three and four
+        // Last 4 bytes. We expect padding characters in three and four.
         let firstValue: UInt8 = try iterator.nextValue(alphabet: alphabet)
         let secondValue: UInt8 = try iterator.nextValue(alphabet: alphabet)
         let thirdValue: UInt8? = try iterator.nextValueOrEmpty(alphabet: alphabet)
@@ -103,12 +102,11 @@ extension Base64 {
 
     @inlinable
     static func decode(encoded: String, options: DecodingOptions = []) throws -> [UInt8] {
-        // A string can be backed by a contiguous storage (pure swift string)
-        // or a nsstring (bridged string from objc). We only get a pointer
-        // to the contiguous storage, if the input string is a swift string.
-        // Therefore to transform the nsstring backed input into a swift
-        // string we concat the input with nothing, causing a copy on write
-        // into a swift string.
+        // A `String` can be backed by a contiguous storage (pure Swift String) or an `NSString`
+        // (bridged string from objc). We only get a pointer to the contiguous storage, if the
+        // input string is a Swift String. Therefore, to transform the NSString backed input
+        // into a Swift String, we concat the input with nothing, causing a copy-on-write into
+        // a Swift String.
         let decoded = try encoded.utf8.withContiguousStorageIfAvailable { pointer in
             try self.decode(encoded: pointer, options: options)
         }
@@ -226,7 +224,7 @@ extension IteratorProtocol where Self.Element == UInt8 {
 
 extension String {
     func base64decoded(options: Base64.DecodingOptions = []) throws -> [UInt8] {
-        // In Base64, 3 bytes become 4 output characters, and we pad to the nearest multiple
+        // In Base64 every 3 bytes become 4 output characters. We pad to the nearest multiple
         // of four.
         try Base64.decode(encoded: self, options: options)
     }

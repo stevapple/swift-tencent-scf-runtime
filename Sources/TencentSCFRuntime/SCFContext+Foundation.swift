@@ -28,7 +28,7 @@
 import struct Foundation.Date
 import TencentSCFRuntimeCore
 
-extension Lambda.Context {
+extension SCF.Context {
     var deadlineDate: Date {
         let secondsSinceEpoch = Double(Int64(bitPattern: self.deadline.rawValue)) / -1_000_000_000
         return Date(timeIntervalSince1970: secondsSinceEpoch)

@@ -33,29 +33,29 @@ import NIOTestUtils
 @testable import TencentSCFRuntimeCore
 import XCTest
 
-class LambdaRuntimeClientTest: XCTestCase {
+class SCFRuntimeClientTest: XCTestCase {
     func testSuccess() {
         let behavior = Behavior()
-        XCTAssertNoThrow(try runLambda(behavior: behavior, handler: EchoHandler()))
+        XCTAssertNoThrow(try runSCF(behavior: behavior, handler: EchoHandler()))
         XCTAssertEqual(behavior.state, 6)
     }
 
     func testFailure() {
         let behavior = Behavior()
-        XCTAssertNoThrow(try runLambda(behavior: behavior, handler: FailedHandler("boom")))
+        XCTAssertNoThrow(try runSCF(behavior: behavior, handler: FailedHandler("boom")))
         XCTAssertEqual(behavior.state, 10)
     }
 
     func testBootstrapFailure() {
         let behavior = Behavior()
-        XCTAssertThrowsError(try runLambda(behavior: behavior, factory: { $0.eventLoop.makeFailedFuture(TestError("boom")) })) { error in
+        XCTAssertThrowsError(try runSCF(behavior: behavior, factory: { $0.eventLoop.makeFailedFuture(TestError("boom")) })) { error in
             XCTAssertEqual(error as? TestError, TestError("boom"))
         }
         XCTAssertEqual(behavior.state, 1)
     }
 
     func testGetInvocationServerInternalError() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             func getInvocation() -> GetInvocationResult {
                 .failure(.internalServerError)
             }
@@ -75,13 +75,13 @@ class LambdaRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
         }
-        XCTAssertThrowsError(try runLambda(behavior: Behavior(), handler: EchoHandler())) { error in
-            XCTAssertEqual(error as? Lambda.RuntimeError, .badStatusCode(.internalServerError))
+        XCTAssertThrowsError(try runSCF(behavior: Behavior(), handler: EchoHandler())) { error in
+            XCTAssertEqual(error as? SCF.RuntimeError, .badStatusCode(.internalServerError))
         }
     }
 
     func testGetInvocationServerNoBodyError() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             func getInvocation() -> GetInvocationResult {
                 .success(("1", ""))
             }
@@ -101,13 +101,13 @@ class LambdaRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
         }
-        XCTAssertThrowsError(try runLambda(behavior: Behavior(), handler: EchoHandler())) { error in
-            XCTAssertEqual(error as? Lambda.RuntimeError, .noBody)
+        XCTAssertThrowsError(try runSCF(behavior: Behavior(), handler: EchoHandler())) { error in
+            XCTAssertEqual(error as? SCF.RuntimeError, .noBody)
         }
     }
 
     func testGetInvocationServerMissingHeaderRequestIDError() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             func getInvocation() -> GetInvocationResult {
                 // no request id -> no context
                 .success(("", "hello"))
@@ -128,13 +128,13 @@ class LambdaRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
         }
-        XCTAssertThrowsError(try runLambda(behavior: Behavior(), handler: EchoHandler())) { error in
-            XCTAssertEqual(error as? Lambda.RuntimeError, .invocationMissingHeader(SCFHeaders.requestID))
+        XCTAssertThrowsError(try runSCF(behavior: Behavior(), handler: EchoHandler())) { error in
+            XCTAssertEqual(error as? SCF.RuntimeError, .invocationMissingHeader(SCFHeaders.requestID))
         }
     }
 
     func testProcessResponseInternalServerError() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             func getInvocation() -> GetInvocationResult {
                 .success((requestId: "1", event: "event"))
             }
@@ -153,13 +153,13 @@ class LambdaRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
         }
-        XCTAssertThrowsError(try runLambda(behavior: Behavior(), handler: EchoHandler())) { error in
-            XCTAssertEqual(error as? Lambda.RuntimeError, .badStatusCode(.internalServerError))
+        XCTAssertThrowsError(try runSCF(behavior: Behavior(), handler: EchoHandler())) { error in
+            XCTAssertEqual(error as? SCF.RuntimeError, .badStatusCode(.internalServerError))
         }
     }
 
     func testProcessErrorInternalServerError() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             func getInvocation() -> GetInvocationResult {
                 .success((requestId: "1", event: "event"))
             }
@@ -178,13 +178,13 @@ class LambdaRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
         }
-        XCTAssertThrowsError(try runLambda(behavior: Behavior(), handler: FailedHandler("boom"))) { error in
-            XCTAssertEqual(error as? Lambda.RuntimeError, .badStatusCode(.internalServerError))
+        XCTAssertThrowsError(try runSCF(behavior: Behavior(), handler: FailedHandler("boom"))) { error in
+            XCTAssertEqual(error as? SCF.RuntimeError, .badStatusCode(.internalServerError))
         }
     }
 
     func testProcessInitErrorOnBootstrapFailure() {
-        struct Behavior: LambdaServerBehavior {
+        struct Behavior: SCFServerBehavior {
             func getInvocation() -> GetInvocationResult {
                 XCTFail("should not get invocation")
                 return .failure(.internalServerError)
@@ -204,7 +204,7 @@ class LambdaRuntimeClientTest: XCTestCase {
                 .failure(.internalServerError)
             }
         }
-        XCTAssertThrowsError(try runLambda(behavior: Behavior(), factory: { $0.eventLoop.makeFailedFuture(TestError("boom")) })) { error in
+        XCTAssertThrowsError(try runSCF(behavior: Behavior(), factory: { $0.eventLoop.makeFailedFuture(TestError("boom")) })) { error in
             XCTAssertEqual(error as? TestError, TestError("boom"))
         }
     }
@@ -235,14 +235,13 @@ class LambdaRuntimeClientTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop()) }
 
         let logger = Logger(label: "TestLogger")
-        let client = Lambda.RuntimeClient(eventLoop: eventLoopGroup.next(), configuration: .init(address: "127.0.0.1:\(server.serverPort)"))
+        let client = SCF.RuntimeClient(eventLoop: eventLoopGroup.next(), configuration: .init(address: "127.0.0.1:\(server.serverPort)"))
         let result = client.reportInitializationError(logger: logger, error: TestError("boom"))
 
         var inboundHeader: HTTPServerRequestPart?
         XCTAssertNoThrow(inboundHeader = try server.readInbound())
         guard case .head(let head) = try? XCTUnwrap(inboundHeader) else { XCTFail("Expected to get a head first"); return }
-        XCTAssertEqual(head.headers["lambda-runtime-function-error-type"], ["Unhandled"])
-        XCTAssertEqual(head.headers["user-agent"], ["Swift-Lambda/Unknown"])
+        XCTAssertEqual(head.headers["user-agent"], ["Swift-SCF/Unknown"])
 
         var inboundBody: HTTPServerRequestPart?
         XCTAssertNoThrow(inboundBody = try server.readInbound())
@@ -264,15 +263,15 @@ class LambdaRuntimeClientTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop()) }
 
         let logger = Logger(label: "TestLogger")
-        let client = Lambda.RuntimeClient(eventLoop: eventLoopGroup.next(), configuration: .init(address: "127.0.0.1:\(server.serverPort)"))
+        let client = SCF.RuntimeClient(eventLoop: eventLoopGroup.next(), configuration: .init(address: "127.0.0.1:\(server.serverPort)"))
 
         let header = HTTPHeaders([
             (SCFHeaders.requestID, "test"),
             (SCFHeaders.timeLimit, "3000"),
             (SCFHeaders.memoryLimit, "128"),
         ])
-        var inv: Lambda.Invocation?
-        XCTAssertNoThrow(inv = try Lambda.Invocation(headers: header))
+        var inv: SCF.Invocation?
+        XCTAssertNoThrow(inv = try SCF.Invocation(headers: header))
         guard let invocation = inv else { return }
 
         let result = client.reportResults(logger: logger, invocation: invocation, result: Result.failure(TestError("boom")))
@@ -280,8 +279,7 @@ class LambdaRuntimeClientTest: XCTestCase {
         var inboundHeader: HTTPServerRequestPart?
         XCTAssertNoThrow(inboundHeader = try server.readInbound())
         guard case .head(let head) = try? XCTUnwrap(inboundHeader) else { XCTFail("Expected to get a head first"); return }
-        XCTAssertEqual(head.headers["lambda-runtime-function-error-type"], ["Unhandled"])
-        XCTAssertEqual(head.headers["user-agent"], ["Swift-Lambda/Unknown"])
+        XCTAssertEqual(head.headers["user-agent"], ["Swift-SCF/Unknown"])
 
         var inboundBody: HTTPServerRequestPart?
         XCTAssertNoThrow(inboundBody = try server.readInbound())
@@ -303,15 +301,15 @@ class LambdaRuntimeClientTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop()) }
 
         let logger = Logger(label: "TestLogger")
-        let client = Lambda.RuntimeClient(eventLoop: eventLoopGroup.next(), configuration: .init(address: "127.0.0.1:\(server.serverPort)"))
+        let client = SCF.RuntimeClient(eventLoop: eventLoopGroup.next(), configuration: .init(address: "127.0.0.1:\(server.serverPort)"))
 
         let header = HTTPHeaders([
             (SCFHeaders.requestID, "test"),
             (SCFHeaders.timeLimit, "3000"),
             (SCFHeaders.memoryLimit, "128"),
         ])
-        var inv: Lambda.Invocation?
-        XCTAssertNoThrow(inv = try Lambda.Invocation(headers: header))
+        var inv: SCF.Invocation?
+        XCTAssertNoThrow(inv = try SCF.Invocation(headers: header))
         guard let invocation = inv else { return }
 
         let result = client.reportResults(logger: logger, invocation: invocation, result: .success(nil))
@@ -319,8 +317,7 @@ class LambdaRuntimeClientTest: XCTestCase {
         var inboundHeader: HTTPServerRequestPart?
         XCTAssertNoThrow(inboundHeader = try server.readInbound())
         guard case .head(let head) = try? XCTUnwrap(inboundHeader) else { XCTFail("Expected to get a head first"); return }
-        XCTAssertFalse(head.headers.contains(name: "lambda-runtime-function-error-type"))
-        XCTAssertEqual(head.headers["user-agent"], ["Swift-Lambda/Unknown"])
+        XCTAssertEqual(head.headers["user-agent"], ["Swift-SCF/Unknown"])
 
         XCTAssertEqual(try server.readInbound(), .end(nil))
 
@@ -329,7 +326,7 @@ class LambdaRuntimeClientTest: XCTestCase {
         XCTAssertNoThrow(try result.wait())
     }
 
-    class Behavior: LambdaServerBehavior {
+    class Behavior: SCFServerBehavior {
         var state = 0
 
         func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {

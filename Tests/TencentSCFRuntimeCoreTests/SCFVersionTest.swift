@@ -16,7 +16,7 @@ import NIO
 @testable import TencentSCFRuntimeCore
 import XCTest
 
-class LamdbaVersionTest: XCTestCase {
+class SCFVersionTest: XCTestCase {
     func testSpecialVersionEqual() {
         assertVersionEqual(.latest, "$LATEST")
         assertVersionEqual(.null, "")
@@ -40,7 +40,7 @@ class LamdbaVersionTest: XCTestCase {
     }
 }
 
-func assertVersionEqual(_ versionEnum: Lambda.Version, _ versionString: String) {
+func assertVersionEqual(_ versionEnum: SCF.Version, _ versionString: String) {
     XCTAssertEqual(versionEnum.description, versionString)
-    XCTAssertEqual(Lambda.Version(stringLiteral: versionString), versionEnum)
+    XCTAssertEqual(SCF.Version(stringLiteral: versionString), versionEnum)
 }

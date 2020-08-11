@@ -31,113 +31,113 @@ import NIO
 import NIOFoundationCompat
 @_exported import TencentSCFRuntimeCore
 
-/// Extension to the `Lambda` companion to enable execution of Lambdas that take and return `Codable` events.
-extension Lambda {
-    /// An asynchronous Lambda Closure that takes a `In: Decodable` and returns a `Result<Out: Encodable, Error>` via a completion handler.
-    public typealias CodableClosure<In: Decodable, Out: Encodable> = (Lambda.Context, In, @escaping (Result<Out, Error>) -> Void) -> Void
+/// Extension to the `SCF` companion to enable execution of cloud functions that take and return `Codable` events.
+extension SCF {
+    /// An asynchronous SCF Closure that takes a `In: Decodable` and returns a `Result<Out: Encodable, Error>` via a completion handler.
+    public typealias CodableClosure<In: Decodable, Out: Encodable> = (SCF.Context, In, @escaping (Result<Out, Error>) -> Void) -> Void
 
-    /// Run a Lambda defined by implementing the `CodableClosure` function.
+    /// Run a cloud function defined by implementing the `CodableClosure` function.
     ///
     /// - parameters:
-    ///     - closure: `CodableClosure` based Lambda.
+    ///     - closure: `CodableClosure` based SCF function.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the AWS Lambda Runtime Engine.
+    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run<In: Decodable, Out: Encodable>(_ closure: @escaping CodableClosure<In, Out>) {
         self.run(CodableClosureWrapper(closure))
     }
 
-    /// An asynchronous Lambda Closure that takes a `In: Decodable` and returns a `Result<Void, Error>` via a completion handler.
-    public typealias CodableVoidClosure<In: Decodable> = (Lambda.Context, In, @escaping (Result<Void, Error>) -> Void) -> Void
+    /// An asynchronous SCF Closure that takes a `In: Decodable` and returns a `Result<Void, Error>` via a completion handler.
+    public typealias CodableVoidClosure<In: Decodable> = (SCF.Context, In, @escaping (Result<Void, Error>) -> Void) -> Void
 
-    /// Run a Lambda defined by implementing the `CodableVoidClosure` function.
+    /// Run a cloud function defined by implementing the `CodableVoidClosure` function.
     ///
     /// - parameters:
-    ///     - closure: `CodableVoidClosure` based Lambda.
+    ///     - closure: `CodableVoidClosure` based SCF function.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the AWS Lambda Runtime Engine.
+    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run<In: Decodable>(_ closure: @escaping CodableVoidClosure<In>) {
         self.run(CodableVoidClosureWrapper(closure))
     }
 }
 
-internal struct CodableClosureWrapper<In: Decodable, Out: Encodable>: LambdaHandler {
+internal struct CodableClosureWrapper<In: Decodable, Out: Encodable>: SCFHandler {
     typealias In = In
     typealias Out = Out
 
-    private let closure: Lambda.CodableClosure<In, Out>
+    private let closure: SCF.CodableClosure<In, Out>
 
-    init(_ closure: @escaping Lambda.CodableClosure<In, Out>) {
+    init(_ closure: @escaping SCF.CodableClosure<In, Out>) {
         self.closure = closure
     }
 
-    func handle(context: Lambda.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
+    func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
         self.closure(context, event, callback)
     }
 }
 
-internal struct CodableVoidClosureWrapper<In: Decodable>: LambdaHandler {
+internal struct CodableVoidClosureWrapper<In: Decodable>: SCFHandler {
     typealias In = In
     typealias Out = Void
 
-    private let closure: Lambda.CodableVoidClosure<In>
+    private let closure: SCF.CodableVoidClosure<In>
 
-    init(_ closure: @escaping Lambda.CodableVoidClosure<In>) {
+    init(_ closure: @escaping SCF.CodableVoidClosure<In>) {
         self.closure = closure
     }
 
-    func handle(context: Lambda.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
+    func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
         self.closure(context, event, callback)
     }
 }
 
-/// Implementation of  a`ByteBuffer` to `In` decoding
-public extension EventLoopLambdaHandler where In: Decodable {
+/// Implementation of  a`ByteBuffer` to `In` decoding.
+public extension EventLoopSCFHandler where In: Decodable {
     func decode(buffer: ByteBuffer) throws -> In {
         try self.decoder.decode(In.self, from: buffer)
     }
 }
 
-/// Implementation of  `Out` to `ByteBuffer` encoding
-public extension EventLoopLambdaHandler where Out: Encodable {
+/// Implementation of  `Out` to `ByteBuffer` encoding.
+public extension EventLoopSCFHandler where Out: Encodable {
     func encode(allocator: ByteBufferAllocator, value: Out) throws -> ByteBuffer? {
         try self.encoder.encode(value, using: allocator)
     }
 }
 
-/// Default `ByteBuffer` to `In` decoder using Foundation's JSONDecoder
+/// Default `ByteBuffer` to `In` decoder using Foundation's JSONDecoder.
 /// Advanced users that want to inject their own codec can do it by overriding these functions.
-public extension EventLoopLambdaHandler where In: Decodable {
-    var decoder: LambdaCodableDecoder {
-        Lambda.defaultJSONDecoder
+public extension EventLoopSCFHandler where In: Decodable {
+    var decoder: SCFCodableDecoder {
+        SCF.defaultJSONDecoder
     }
 }
 
-/// Default `Out` to `ByteBuffer` encoder using Foundation's JSONEncoder
+/// Default `Out` to `ByteBuffer` encoder using Foundation's JSONEncoder.
 /// Advanced users that want to inject their own codec can do it by overriding these functions.
-public extension EventLoopLambdaHandler where Out: Encodable {
-    var encoder: LambdaCodableEncoder {
-        Lambda.defaultJSONEncoder
+public extension EventLoopSCFHandler where Out: Encodable {
+    var encoder: SCFCodableEncoder {
+        SCF.defaultJSONEncoder
     }
 }
 
-public protocol LambdaCodableDecoder {
+public protocol SCFCodableDecoder {
     func decode<T: Decodable>(_ type: T.Type, from buffer: ByteBuffer) throws -> T
 }
 
-public protocol LambdaCodableEncoder {
+public protocol SCFCodableEncoder {
     func encode<T: Encodable>(_ value: T, using allocator: ByteBufferAllocator) throws -> ByteBuffer
 }
 
-private extension Lambda {
+private extension SCF {
     static let defaultJSONDecoder = JSONDecoder()
     static let defaultJSONEncoder = JSONEncoder()
 }
 
-extension JSONDecoder: LambdaCodableDecoder {}
+extension JSONDecoder: SCFCodableDecoder {}
 
-extension JSONEncoder: LambdaCodableEncoder {
+extension JSONEncoder: SCFCodableEncoder {
     public func encode<T>(_ value: T, using allocator: ByteBufferAllocator) throws -> ByteBuffer where T: Encodable {
-        // nio will resize the buffer if necessary
+        // NIO will resize the buffer if necessary.
         var buffer = allocator.buffer(capacity: 1024)
         try self.encode(value, into: &buffer)
         return buffer

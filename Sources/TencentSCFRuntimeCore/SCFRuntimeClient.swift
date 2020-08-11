@@ -29,12 +29,13 @@ import Logging
 import NIO
 import NIOHTTP1
 
-/// An HTTP based client for AWS Runtime Engine. This encapsulates the RESTful methods exposed by the Runtime Engine:
+/// An HTTP based client for SCF Runtime Engine. This encapsulates the RESTful methods exposed by the runtime engine:
 /// * /runtime/invocation/next
 /// * /runtime/invocation/response
 /// * /runtime/invocation/error
+/// * /runtime/init/ready
 /// * /runtime/init/error
-extension Lambda {
+extension SCF {
     internal struct RuntimeClient {
         private let eventLoop: EventLoop
         private let allocator = ByteBufferAllocator()
@@ -45,10 +46,10 @@ extension Lambda {
             self.httpClient = HTTPClient(eventLoop: eventLoop, configuration: configuration)
         }
 
-        /// Requests invocation from the control plane.
+        /// Requests invocation from the API server.
         func getNextInvocation(logger: Logger) -> EventLoopFuture<(Invocation, ByteBuffer)> {
             let url = Consts.getNextInvocationURL
-            logger.debug("requesting work from lambda runtime engine using \(url)")
+            logger.debug("requesting work from scf runtime engine using \(url)")
             return self.httpClient.get(url: url, headers: RuntimeClient.defaultHeaders).flatMapThrowing { response in
                 guard response.status == .ok else {
                     throw RuntimeError.badStatusCode(response.status)
@@ -70,7 +71,7 @@ extension Lambda {
             }
         }
 
-        /// Reports a result to the Runtime Engine.
+        /// Reports a result to the runtime engine.
         func reportResults(logger: Logger, invocation: Invocation, result: Result<ByteBuffer?, Error>) -> EventLoopFuture<Void> {
             let url: String
             var body: ByteBuffer?
@@ -89,7 +90,7 @@ extension Lambda {
                 body!.writeBytes(bytes)
                 headers = RuntimeClient.errorHeaders
             }
-            logger.debug("reporting results to lambda runtime engine using \(url)")
+            logger.debug("reporting results to scf runtime engine using \(url)")
             return self.httpClient.post(url: url, headers: headers, body: body).flatMapThrowing { response in
                 guard response.status == .ok else {
                     throw RuntimeError.badStatusCode(response.status)
@@ -107,35 +108,10 @@ extension Lambda {
             }
         }
 
-        /// Reports an initialization error to the Runtime Engine.
-        func reportInitializationError(logger: Logger, error: Error) -> EventLoopFuture<Void> {
-            let url = Consts.postInitErrorURL
-            let errorResponse = ErrorResponse(errorType: Consts.initializationError, errorMessage: "\(error)")
-            let bytes = errorResponse.toJSONBytes()
-            var body = self.allocator.buffer(capacity: bytes.count)
-            body.writeBytes(bytes)
-            logger.warning("reporting initialization error to lambda runtime engine using \(url)")
-            return self.httpClient.post(url: url, headers: RuntimeClient.errorHeaders, body: body).flatMapThrowing { response in
-                guard response.status == .ok else {
-                    throw RuntimeError.badStatusCode(response.status)
-                }
-                return ()
-            }.flatMapErrorThrowing { error in
-                switch error {
-                case HTTPClient.Errors.timeout:
-                    throw RuntimeError.upstreamError("timeout")
-                case HTTPClient.Errors.connectionResetByPeer:
-                    throw RuntimeError.upstreamError("connectionResetByPeer")
-                default:
-                    throw error
-                }
-            }
-        }
-
-        /// Reports initialization ready to the Runtime Engine.
+        /// Reports initialization ready to the runtime engine.
         func reportInitializationReady(logger: Logger) -> EventLoopFuture<Void> {
             let url = Consts.postInitReadyURL
-            logger.info("reporting initialization ready to lambda runtime engine using \(url)")
+            logger.info("reporting initialization ready to scf runtime engine using \(url)")
             return self.httpClient.post(url: url, headers: RuntimeClient.defaultHeaders, body: .init(string: " ")).flatMapThrowing { response in
                 guard response.status == .ok else {
                     throw RuntimeError.badStatusCode(response.status)
@@ -153,14 +129,39 @@ extension Lambda {
             }
         }
 
-        /// Cancels the current request, if one is running. Only needed for debugging purposes
+        /// Reports an initialization error to the runtime engine.
+        func reportInitializationError(logger: Logger, error: Error) -> EventLoopFuture<Void> {
+            let url = Consts.postInitErrorURL
+            let errorResponse = ErrorResponse(errorType: Consts.initializationError, errorMessage: "\(error)")
+            let bytes = errorResponse.toJSONBytes()
+            var body = self.allocator.buffer(capacity: bytes.count)
+            body.writeBytes(bytes)
+            logger.warning("reporting initialization error to scf runtime engine using \(url)")
+            return self.httpClient.post(url: url, headers: RuntimeClient.errorHeaders, body: body).flatMapThrowing { response in
+                guard response.status == .ok else {
+                    throw RuntimeError.badStatusCode(response.status)
+                }
+                return ()
+            }.flatMapErrorThrowing { error in
+                switch error {
+                case HTTPClient.Errors.timeout:
+                    throw RuntimeError.upstreamError("timeout")
+                case HTTPClient.Errors.connectionResetByPeer:
+                    throw RuntimeError.upstreamError("connectionResetByPeer")
+                default:
+                    throw error
+                }
+            }
+        }
+
+        /// Cancels the current request if one is already running. Only needed for debugging purposes.
         func cancel() {
             self.httpClient.cancel()
         }
     }
 }
 
-internal extension Lambda {
+internal extension SCF {
     enum RuntimeError: Error {
         case badStatusCode(HTTPResponseStatus)
         case upstreamError(String)
@@ -189,7 +190,7 @@ internal extension ErrorResponse {
     }
 }
 
-extension Lambda {
+extension SCF {
     internal struct Invocation {
         let requestID: String
         let memoryLimit: UInt
@@ -219,12 +220,11 @@ extension Lambda {
     }
 }
 
-extension Lambda.RuntimeClient {
-    internal static let defaultHeaders = HTTPHeaders([("user-agent", "Swift-Lambda/Unknown")])
+extension SCF.RuntimeClient {
+    internal static let defaultHeaders = HTTPHeaders([("user-agent", "Swift-SCF/Unknown")])
 
-    /// These headers must be sent along an invocation or initialization error report
+    /// These headers must be sent along an invocation or initialization error report.
     internal static let errorHeaders = HTTPHeaders([
-        ("user-agent", "Swift-Lambda/Unknown"),
-        ("lambda-runtime-function-error-type", "Unhandled"),
+        ("user-agent", "Swift-SCF/Unknown"),
     ])
 }

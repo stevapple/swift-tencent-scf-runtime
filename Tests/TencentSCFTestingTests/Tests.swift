@@ -30,7 +30,7 @@ import TencentSCFRuntime
 import TencentSCFTesting
 import XCTest
 
-class LambdaTestingTests: XCTestCase {
+class SCFTestingTests: XCTestCase {
     func testCodableClosure() {
         struct Request: Codable {
             let name: String
@@ -40,13 +40,13 @@ class LambdaTestingTests: XCTestCase {
             let message: String
         }
 
-        let myLambda = { (_: Lambda.Context, request: Request, callback: (Result<Response, Error>) -> Void) in
+        let myFunction = { (_: SCF.Context, request: Request, callback: (Result<Response, Error>) -> Void) in
             callback(.success(Response(message: "echo" + request.name)))
         }
 
         let request = Request(name: UUID().uuidString.lowercased())
         var response: Response?
-        XCTAssertNoThrow(response = try Lambda.test(myLambda, with: request))
+        XCTAssertNoThrow(response = try SCF.test(myFunction, with: request))
         XCTAssertEqual(response?.message, "echo" + request.name)
     }
 
@@ -55,15 +55,15 @@ class LambdaTestingTests: XCTestCase {
             let name: String
         }
 
-        let myLambda = { (_: Lambda.Context, _: Request, callback: (Result<Void, Error>) -> Void) in
+        let myFunction = { (_: SCF.Context, _: Request, callback: (Result<Void, Error>) -> Void) in
             callback(.success(()))
         }
 
         let request = Request(name: UUID().uuidString.lowercased())
-        XCTAssertNoThrow(try Lambda.test(myLambda, with: request))
+        XCTAssertNoThrow(try SCF.test(myFunction, with: request))
     }
 
-    func testLambdaHandler() {
+    func testSCFHandler() {
         struct Request: Codable {
             let name: String
         }
@@ -72,11 +72,11 @@ class LambdaTestingTests: XCTestCase {
             let message: String
         }
 
-        struct MyCloudFunction: LambdaHandler {
+        struct MyCloudFunction: SCFHandler {
             typealias In = Request
             typealias Out = Response
 
-            func handle(context: Lambda.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
+            func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
                 XCTAssertFalse(context.eventLoop.inEventLoop)
                 callback(.success(Response(message: "echo" + event.name)))
             }
@@ -84,16 +84,16 @@ class LambdaTestingTests: XCTestCase {
 
         let request = Request(name: UUID().uuidString.lowercased())
         var response: Response?
-        XCTAssertNoThrow(response = try Lambda.test(MyCloudFunction(), with: request))
+        XCTAssertNoThrow(response = try SCF.test(MyCloudFunction(), with: request))
         XCTAssertEqual(response?.message, "echo" + request.name)
     }
 
-    func testEventLoopLambdaHandler() {
-        struct MyCloudFunction: EventLoopLambdaHandler {
+    func testEventLoopSCFHandler() {
+        struct MyCloudFunction: EventLoopSCFHandler {
             typealias In = String
             typealias Out = String
 
-            func handle(context: Lambda.Context, event: String) -> EventLoopFuture<String> {
+            func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
                 XCTAssertTrue(context.eventLoop.inEventLoop)
                 return context.eventLoop.makeSucceededFuture("echo" + event)
             }
@@ -101,49 +101,49 @@ class LambdaTestingTests: XCTestCase {
 
         let input = UUID().uuidString.lowercased()
         var result: String?
-        XCTAssertNoThrow(result = try Lambda.test(MyCloudFunction(), with: input))
+        XCTAssertNoThrow(result = try SCF.test(MyCloudFunction(), with: input))
         XCTAssertEqual(result, "echo" + input)
     }
 
     func testFailure() {
         struct MyError: Error {}
 
-        struct MyCloudFunction: LambdaHandler {
+        struct MyCloudFunction: SCFHandler {
             typealias In = String
             typealias Out = Void
 
-            func handle(context: Lambda.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
+            func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
                 callback(.failure(MyError()))
             }
         }
 
-        XCTAssertThrowsError(try Lambda.test(MyCloudFunction(), with: UUID().uuidString.lowercased())) { error in
+        XCTAssertThrowsError(try SCF.test(MyCloudFunction(), with: UUID().uuidString.lowercased())) { error in
             XCTAssert(error is MyError)
         }
     }
 
     func testAsyncLongRunning() {
         var executed: Bool = false
-        let myLambda = { (_: Lambda.Context, _: String, callback: @escaping (Result<Void, Error>) -> Void) in
+        let myFunction = { (_: SCF.Context, _: String, callback: @escaping (Result<Void, Error>) -> Void) in
             DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 0.5) {
                 executed = true
                 callback(.success(()))
             }
         }
 
-        XCTAssertNoThrow(try Lambda.test(myLambda, with: UUID().uuidString.lowercased()))
+        XCTAssertNoThrow(try SCF.test(myFunction, with: UUID().uuidString.lowercased()))
         XCTAssertTrue(executed)
     }
 
     func testConfigValues() {
         let timeout: TimeInterval = 4
-        let config = Lambda.TestConfig(
+        let config = SCF.TestConfig(
             requestID: UUID().uuidString.lowercased(),
             memoryLimit: 512,
             timeLimit: .seconds(4)
         )
 
-        let myLambda = { (ctx: Lambda.Context, _: String, callback: @escaping (Result<Void, Error>) -> Void) in
+        let myFunction = { (ctx: SCF.Context, _: String, callback: @escaping (Result<Void, Error>) -> Void) in
             XCTAssertEqual(ctx.requestID, config.requestID)
             XCTAssertEqual(ctx.memoryLimit, config.memoryLimit)
             XCTAssertEqual(ctx.timeLimit, config.timeLimit)
@@ -154,6 +154,6 @@ class LambdaTestingTests: XCTestCase {
             callback(.success(()))
         }
 
-        XCTAssertNoThrow(try Lambda.test(myLambda, with: UUID().uuidString.lowercased(), using: config))
+        XCTAssertNoThrow(try SCF.test(myFunction, with: UUID().uuidString.lowercased(), using: config))
     }
 }
