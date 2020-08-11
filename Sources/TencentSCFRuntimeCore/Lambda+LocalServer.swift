@@ -27,6 +27,7 @@
 
 #if DEBUG
 import Dispatch
+import struct Foundation.UUID
 import Logging
 import NIO
 import NIOConcurrencyHelpers
@@ -144,7 +145,7 @@ private enum LocalLambda {
                 guard let work = request.body else {
                     return self.writeResponse(context: context, response: .init(status: .badRequest))
                 }
-                let requestID = "\(DispatchTime.now().uptimeNanoseconds)" // FIXME:
+                let requestID = UUID().uuidString.lowercased()
                 let promise = context.eventLoop.makePromise(of: Response.self)
                 promise.futureResult.whenComplete { result in
                     switch result {
@@ -164,7 +165,7 @@ private enum LocalLambda {
                 }
 
             // /next endpoint is called by the lambda polling for work
-            case (.GET, let url) where url.hasSuffix(Consts.getNextInvocationURLSuffix):
+            case (.GET, let url) where url == Consts.getNextInvocationURL:
                 // check if our server is in the correct state
                 guard case .waitingForLambdaRequest = Self.invocationState else {
                     self.logger.error("invalid invocation state \(Self.invocationState)")
@@ -195,48 +196,28 @@ private enum LocalLambda {
                     self.writeResponse(context: context, response: invocation.makeResponse())
                 }
 
-            // :requestID/response endpoint is called by the lambda posting the response
-            case (.POST, let url) where url.hasSuffix(Consts.postResponseURLSuffix):
-                let parts = request.head.uri.split(separator: "/")
-                guard let requestID = parts.count > 2 ? String(parts[parts.count - 2]) : nil else {
-                    // the request is malformed, since we were expecting a requestId in the path
-                    return self.writeResponse(context: context, status: .badRequest)
-                }
+            // response endpoint is called by the lambda posting the response
+            case (.POST, let url) where url == Consts.postResponseURL:
                 guard case .waitingForLambdaResponse(let invocation) = Self.invocationState else {
                     // a response was send, but we did not expect to receive one
                     self.logger.error("invalid invocation state \(Self.invocationState)")
                     return self.writeResponse(context: context, status: .unprocessableEntity)
-                }
-                guard requestID == invocation.requestID else {
-                    // the request's requestId is not matching the one we are expecting
-                    self.logger.error("invalid invocation state request ID \(requestID) does not match expected \(invocation.requestID)")
-                    return self.writeResponse(context: context, status: .badRequest)
                 }
 
                 invocation.responsePromise.succeed(.init(status: .ok, body: request.body))
-                self.writeResponse(context: context, status: .accepted)
+                self.writeResponse(context: context, status: .ok)
                 Self.invocationState = .waitingForLambdaRequest
 
-            // :requestID/error endpoint is called by the lambda posting an error response
-            case (.POST, let url) where url.hasSuffix(Consts.postErrorURLSuffix):
-                let parts = request.head.uri.split(separator: "/")
-                guard let requestID = parts.count > 2 ? String(parts[parts.count - 2]) : nil else {
-                    // the request is malformed, since we were expecting a requestId in the path
-                    return self.writeResponse(context: context, status: .badRequest)
-                }
+            // error endpoint is called by the lambda posting an error response
+            case (.POST, let url) where url == Consts.postErrorURL:
                 guard case .waitingForLambdaResponse(let invocation) = Self.invocationState else {
                     // a response was send, but we did not expect to receive one
                     self.logger.error("invalid invocation state \(Self.invocationState)")
                     return self.writeResponse(context: context, status: .unprocessableEntity)
                 }
-                guard requestID == invocation.requestID else {
-                    // the request's requestId is not matching the one we are expecting
-                    self.logger.error("invalid invocation state request ID \(requestID) does not match expected \(invocation.requestID)")
-                    return self.writeResponse(context: context, status: .badRequest)
-                }
 
                 invocation.responsePromise.succeed(.init(status: .internalServerError, body: request.body))
-                self.writeResponse(context: context, status: .accepted)
+                self.writeResponse(context: context, status: .ok)
                 Self.invocationState = .waitingForLambdaRequest
 
             // unknown call
@@ -287,10 +268,9 @@ private enum LocalLambda {
                 response.body = self.request
                 // required headers
                 response.headers = [
-                    (AmazonHeaders.requestID, self.requestID),
-                    (AmazonHeaders.invokedFunctionARN, "arn:aws:lambda:us-east-1:\(Int16.random(in: Int16.min ... Int16.max)):function:custom-runtime"),
-                    (AmazonHeaders.traceID, "Root=\(AmazonHeaders.generateXRayTraceID());Sampled=1"),
-                    (AmazonHeaders.deadline, "\(DispatchWallTime.distantFuture.millisSinceEpoch)"),
+                    (SCFHeaders.requestID, self.requestID),
+                    (SCFHeaders.timeLimit, "3000"),
+                    (SCFHeaders.memoryLimit, "128"),
                 ]
                 return response
             }

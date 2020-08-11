@@ -33,13 +33,11 @@ internal struct MockServer {
     private let group: EventLoopGroup
     private let host: String
     private let port: Int
-    private let mode: Mode
 
     public init() {
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
-        self.host = env("HOST") ?? "127.0.0.1"
-        self.port = env("PORT").flatMap(Int.init) ?? 7000
-        self.mode = env("MODE").flatMap(Mode.init) ?? .string
+        self.host = env("SCF_RUNTIME_API") ?? "127.0.0.1"
+        self.port = env("SCF_RUNTIME_API_PORT").flatMap(Int.init) ?? 9001
     }
 
     func start() throws {
@@ -47,7 +45,7 @@ internal struct MockServer {
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
                 channel.pipeline.configureHTTPServerPipeline(withErrorHandling: true).flatMap { _ in
-                    channel.pipeline.addHandler(HTTPHandler(mode: self.mode))
+                    channel.pipeline.addHandler(HTTPHandler())
                 }
             }
         try bootstrap.bind(host: self.host, port: self.port).flatMap { channel -> EventLoopFuture<Void> in
@@ -64,13 +62,7 @@ internal final class HTTPHandler: ChannelInboundHandler {
     public typealias InboundIn = HTTPServerRequestPart
     public typealias OutboundOut = HTTPServerResponsePart
 
-    private let mode: Mode
-
     private var pending = CircularBuffer<(head: HTTPRequestHead, body: ByteBuffer?)>()
-
-    public init(mode: Mode) {
-        self.mode = mode
-    }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let requestPart = unwrapInboundIn(data)
@@ -98,23 +90,16 @@ internal final class HTTPHandler: ChannelInboundHandler {
         var responseHeaders: [(String, String)]?
 
         if request.head.uri.hasSuffix("/next") {
-            let requestId = UUID().uuidString
+            let requestId = UUID().uuidString.lowercased()
             responseStatus = .ok
-            switch self.mode {
-            case .string:
-                responseBody = requestId
-            case .json:
-                responseBody = "{ \"body\": \"\(requestId)\" }"
-            }
-            let deadline = Int64(Date(timeIntervalSinceNow: 60).timeIntervalSince1970 * 1000)
+            responseBody = "{ \"body\": \"\(requestId)\" }"
             responseHeaders = [
-                (AmazonHeaders.requestID, requestId),
-                (AmazonHeaders.invokedFunctionARN, "arn:aws:lambda:us-east-1:123456789012:function:custom-runtime"),
-                (AmazonHeaders.traceID, "Root=1-5bef4de7-ad49b0e87f6ef6c87fc2e700;Parent=9a9197af755a6419;Sampled=1"),
-                (AmazonHeaders.deadline, String(deadline)),
+                (SCFHeaders.requestID, requestId),
+                (SCFHeaders.memoryLimit, "128"),
+                (SCFHeaders.timeLimit, "3000"),
             ]
         } else if request.head.uri.hasSuffix("/response") {
-            responseStatus = .accepted
+            responseStatus = .ok
         } else {
             responseStatus = .notFound
         }
@@ -151,13 +136,10 @@ internal enum ServerError: Error {
     case cantBind
 }
 
-internal enum AmazonHeaders {
-    static let requestID = "Lambda-Runtime-Aws-Request-Id"
-    static let traceID = "Lambda-Runtime-Trace-Id"
-    static let clientContext = "X-Amz-Client-Context"
-    static let cognitoIdentity = "X-Amz-Cognito-Identity"
-    static let deadline = "Lambda-Runtime-Deadline-Ms"
-    static let invokedFunctionARN = "Lambda-Runtime-Invoked-Function-Arn"
+internal enum SCFHeaders {
+    static let requestID = "request_id"
+    static let memoryLimit = "memory_limit_in_mb"
+    static let timeLimit = "time_limit_in_ms"
 }
 
 internal enum Mode: String {

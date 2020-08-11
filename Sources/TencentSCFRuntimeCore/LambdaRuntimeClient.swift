@@ -47,7 +47,7 @@ extension Lambda {
 
         /// Requests invocation from the control plane.
         func getNextInvocation(logger: Logger) -> EventLoopFuture<(Invocation, ByteBuffer)> {
-            let url = Consts.invocationURLPrefix + Consts.getNextInvocationURLSuffix
+            let url = Consts.getNextInvocationURL
             logger.debug("requesting work from lambda runtime engine using \(url)")
             return self.httpClient.get(url: url, headers: RuntimeClient.defaultHeaders).flatMapThrowing { response in
                 guard response.status == .ok else {
@@ -72,17 +72,17 @@ extension Lambda {
 
         /// Reports a result to the Runtime Engine.
         func reportResults(logger: Logger, invocation: Invocation, result: Result<ByteBuffer?, Error>) -> EventLoopFuture<Void> {
-            var url = Consts.invocationURLPrefix + "/" + invocation.requestID
+            let url: String
             var body: ByteBuffer?
             let headers: HTTPHeaders
 
             switch result {
             case .success(let buffer):
-                url += Consts.postResponseURLSuffix
+                url = Consts.postResponseURL
                 body = buffer
                 headers = RuntimeClient.defaultHeaders
             case .failure(let error):
-                url += Consts.postErrorURLSuffix
+                url = Consts.postErrorURL
                 let errorResponse = ErrorResponse(errorType: Consts.functionError, errorMessage: "\(error)")
                 let bytes = errorResponse.toJSONBytes()
                 body = self.allocator.buffer(capacity: bytes.count)
@@ -91,7 +91,7 @@ extension Lambda {
             }
             logger.debug("reporting results to lambda runtime engine using \(url)")
             return self.httpClient.post(url: url, headers: headers, body: body).flatMapThrowing { response in
-                guard response.status == .accepted else {
+                guard response.status == .ok else {
                     throw RuntimeError.badStatusCode(response.status)
                 }
                 return ()
@@ -116,7 +116,28 @@ extension Lambda {
             body.writeBytes(bytes)
             logger.warning("reporting initialization error to lambda runtime engine using \(url)")
             return self.httpClient.post(url: url, headers: RuntimeClient.errorHeaders, body: body).flatMapThrowing { response in
-                guard response.status == .accepted else {
+                guard response.status == .ok else {
+                    throw RuntimeError.badStatusCode(response.status)
+                }
+                return ()
+            }.flatMapErrorThrowing { error in
+                switch error {
+                case HTTPClient.Errors.timeout:
+                    throw RuntimeError.upstreamError("timeout")
+                case HTTPClient.Errors.connectionResetByPeer:
+                    throw RuntimeError.upstreamError("connectionResetByPeer")
+                default:
+                    throw error
+                }
+            }
+        }
+
+        /// Reports initialization ready to the Runtime Engine.
+        func reportInitializationReady(logger: Logger) -> EventLoopFuture<Void> {
+            let url = Consts.postInitReadyURL
+            logger.info("reporting initialization ready to lambda runtime engine using \(url)")
+            return self.httpClient.post(url: url, headers: RuntimeClient.defaultHeaders, body: .init(string: " ")).flatMapThrowing { response in
+                guard response.status == .ok else {
                     throw RuntimeError.badStatusCode(response.status)
                 }
                 return ()
@@ -171,37 +192,29 @@ internal extension ErrorResponse {
 extension Lambda {
     internal struct Invocation {
         let requestID: String
-        let deadlineInMillisSinceEpoch: Int64
-        let invokedFunctionARN: String
-        let traceID: String
-        let clientContext: String?
-        let cognitoIdentity: String?
+        let memoryLimit: UInt
+        let timeLimit: UInt
 
         init(headers: HTTPHeaders) throws {
-            guard let requestID = headers.first(name: AmazonHeaders.requestID), !requestID.isEmpty else {
-                throw RuntimeError.invocationMissingHeader(AmazonHeaders.requestID)
+            guard let requestID = headers.first(name: SCFHeaders.requestID), !requestID.isEmpty else {
+                throw RuntimeError.invocationMissingHeader(SCFHeaders.requestID)
             }
 
-            guard let deadline = headers.first(name: AmazonHeaders.deadline),
-                let unixTimeInMilliseconds = Int64(deadline)
+            guard let memoryLimit = headers.first(name: SCFHeaders.memoryLimit),
+                let memoryLimitInMB = UInt(memoryLimit)
             else {
-                throw RuntimeError.invocationMissingHeader(AmazonHeaders.deadline)
+                throw RuntimeError.invocationMissingHeader(SCFHeaders.memoryLimit)
             }
 
-            guard let invokedFunctionARN = headers.first(name: AmazonHeaders.invokedFunctionARN) else {
-                throw RuntimeError.invocationMissingHeader(AmazonHeaders.invokedFunctionARN)
-            }
-
-            guard let traceID = headers.first(name: AmazonHeaders.traceID) else {
-                throw RuntimeError.invocationMissingHeader(AmazonHeaders.traceID)
+            guard let timeLimit = headers.first(name: SCFHeaders.timeLimit),
+                let timeLimitInMs = UInt(timeLimit)
+            else {
+                throw RuntimeError.invocationMissingHeader(SCFHeaders.timeLimit)
             }
 
             self.requestID = requestID
-            self.deadlineInMillisSinceEpoch = unixTimeInMilliseconds
-            self.invokedFunctionARN = invokedFunctionARN
-            self.traceID = traceID
-            self.clientContext = headers["Lambda-Runtime-Client-Context"].first
-            self.cognitoIdentity = headers["Lambda-Runtime-Cognito-Identity"].first
+            self.memoryLimit = memoryLimitInMB
+            self.timeLimit = timeLimitInMs
         }
     }
 }

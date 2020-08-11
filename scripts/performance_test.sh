@@ -28,9 +28,8 @@
 
 set -eu
 
-export HOST=127.0.0.1
-export PORT=3000
-export TENCENT_SCF_RUNTIME_API="$HOST:$PORT"
+export SCF_RUNTIME_API=127.0.0.1
+export SCF_RUNTIME_API_PORT=3000
 export LOG_LEVEL=warning # important, otherwise log becomes a bottleneck
 
 # using gdate on mdarwin for nanoseconds

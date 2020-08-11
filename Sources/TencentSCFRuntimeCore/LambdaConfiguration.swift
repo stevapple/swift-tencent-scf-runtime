@@ -81,12 +81,16 @@ extension Lambda {
             let requestTimeout: TimeAmount?
 
             init(address: String? = nil, keepAlive: Bool? = nil, requestTimeout: TimeAmount? = nil) {
-                let ipPort = (address ?? env("TENCENT_SCF_RUNTIME_API"))?.split(separator: ":") ?? ["127.0.0.1", "7000"]
-                guard ipPort.count == 2, let port = Int(ipPort[1]) else {
-                    preconditionFailure("invalid ip+port configuration \(ipPort)")
+                if let ipPort = address?.split(separator: ":") {
+                    guard ipPort.count == 2, let port = Int(ipPort[1]) else {
+                        preconditionFailure("invalid ip+port configuration \(ipPort)")
+                    }
+                    self.ip = String(ipPort[0])
+                    self.port = port
+                } else {
+                    self.ip = env("SCF_RUNTIME_API") ?? "127.0.0.1"
+                    self.port = env("SCF_RUNTIME_API_PORT").flatMap(Int.init) ?? 9001
                 }
-                self.ip = String(ipPort[0])
-                self.port = port
                 self.keepAlive = keepAlive ?? env("KEEP_ALIVE").flatMap(Bool.init) ?? true
                 self.requestTimeout = requestTimeout ?? env("REQUEST_TIMEOUT").flatMap(Int64.init).flatMap { .milliseconds($0) }
             }

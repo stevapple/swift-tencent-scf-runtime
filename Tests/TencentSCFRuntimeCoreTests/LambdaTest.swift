@@ -118,17 +118,17 @@ class LambdaTest: XCTestCase {
                 return .failure(.internalServerError)
             }
 
-            func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError> {
+            func process(response: String?) -> Result<Void, ProcessResponseError> {
                 XCTFail("should not report a response")
                 return .failure(.internalServerError)
             }
 
-            func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report an error")
                 return .failure(.internalServerError)
             }
 
-            func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
                 .failure(.internalServerError)
             }
         }
@@ -232,15 +232,15 @@ class LambdaTest: XCTestCase {
                 .failure(.internalServerError)
             }
 
-            func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError> {
+            func process(response: String?) -> Result<Void, ProcessResponseError> {
                 .failure(.internalServerError)
             }
 
-            func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
                 .failure(.internalServerError)
             }
 
-            func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report init error")
                 return .failure(.internalServerError)
             }
@@ -269,40 +269,23 @@ class LambdaTest: XCTestCase {
         let past2 = DispatchWallTime(millisSinceEpoch: Date(timeIntervalSinceNow: Double(-delta)).millisSinceEpoch)
         XCTAssertEqual(Double(past1.rawValue), Double(past2.rawValue), accuracy: 2_000_000.0)
 
-        let context = Lambda.Context(requestID: UUID().uuidString,
-                                     traceID: UUID().uuidString,
-                                     invokedFunctionARN: UUID().uuidString,
-                                     deadline: .now() + .seconds(1),
-                                     cognitoIdentity: nil,
-                                     clientContext: nil,
+        let context = Lambda.Context(requestID: UUID().uuidString.lowercased(),
+                                     memoryLimit: 128,
+                                     timeLimit: .seconds(3),
                                      logger: Logger(label: "test"),
                                      eventLoop: MultiThreadedEventLoopGroup(numberOfThreads: 1).next(),
                                      allocator: ByteBufferAllocator())
         XCTAssertGreaterThan(context.deadline, .now())
-
-        let expiredContext = Lambda.Context(requestID: context.requestID,
-                                            traceID: context.traceID,
-                                            invokedFunctionARN: context.invokedFunctionARN,
-                                            deadline: .now() - .seconds(1),
-                                            cognitoIdentity: context.cognitoIdentity,
-                                            clientContext: context.clientContext,
-                                            logger: context.logger,
-                                            eventLoop: context.eventLoop,
-                                            allocator: context.allocator)
-        XCTAssertLessThan(expiredContext.deadline, .now())
     }
 
     func testGetRemainingTime() {
-        let context = Lambda.Context(requestID: UUID().uuidString,
-                                     traceID: UUID().uuidString,
-                                     invokedFunctionARN: UUID().uuidString,
-                                     deadline: .now() + .seconds(1),
-                                     cognitoIdentity: nil,
-                                     clientContext: nil,
+        let context = Lambda.Context(requestID: UUID().uuidString.lowercased(),
+                                     memoryLimit: 128,
+                                     timeLimit: .seconds(3),
                                      logger: Logger(label: "test"),
                                      eventLoop: MultiThreadedEventLoopGroup(numberOfThreads: 1).next(),
                                      allocator: ByteBufferAllocator())
-        XCTAssertLessThanOrEqual(context.getRemainingTime(), .seconds(1))
+        XCTAssertLessThanOrEqual(context.getRemainingTime(), .seconds(3))
         XCTAssertGreaterThan(context.getRemainingTime(), .milliseconds(800))
     }
 }
@@ -312,7 +295,7 @@ private struct Behavior: LambdaServerBehavior {
     let event: String
     let result: Result<String?, TestError>
 
-    init(requestId: String = UUID().uuidString, event: String = "hello", result: Result<String?, TestError> = .success("hello")) {
+    init(requestId: String = UUID().uuidString.lowercased(), event: String = "hello", result: Result<String?, TestError> = .success("hello")) {
         self.requestId = requestId
         self.event = event
         self.result = result
@@ -322,8 +305,8 @@ private struct Behavior: LambdaServerBehavior {
         .success((requestId: self.requestId, event: self.event))
     }
 
-    func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError> {
-        XCTAssertEqual(self.requestId, requestId, "expecting requestId to match")
+    func process(response: String?) -> Result<Void, ProcessResponseError> {
+        XCTAssertEqual(self.requestId, self.requestId, "expecting requestId to match")
         switch self.result {
         case .success(let expected):
             XCTAssertEqual(expected, response, "expecting response to match")
@@ -334,8 +317,8 @@ private struct Behavior: LambdaServerBehavior {
         }
     }
 
-    func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError> {
-        XCTAssertEqual(self.requestId, requestId, "expecting requestId to match")
+    func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+        XCTAssertEqual(self.requestId, self.requestId, "expecting requestId to match")
         switch self.result {
         case .success:
             XCTFail("unexpected to succeed, but failed with: \(error)")
@@ -346,7 +329,7 @@ private struct Behavior: LambdaServerBehavior {
         }
     }
 
-    func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+    func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
         XCTFail("should not report init error")
         return .failure(.internalServerError)
     }
@@ -358,17 +341,17 @@ struct FailedBootstrapBehavior: LambdaServerBehavior {
         return .failure(.internalServerError)
     }
 
-    func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError> {
+    func process(response: String?) -> Result<Void, ProcessResponseError> {
         XCTFail("should not report a response")
         return .failure(.internalServerError)
     }
 
-    func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+    func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
         XCTFail("should not report an error")
         return .failure(.internalServerError)
     }
 
-    func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+    func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
         .success(())
     }
 }

@@ -44,7 +44,7 @@ class LambdaTestingTests: XCTestCase {
             callback(.success(Response(message: "echo" + request.name)))
         }
 
-        let request = Request(name: UUID().uuidString)
+        let request = Request(name: UUID().uuidString.lowercased())
         var response: Response?
         XCTAssertNoThrow(response = try Lambda.test(myLambda, with: request))
         XCTAssertEqual(response?.message, "echo" + request.name)
@@ -59,7 +59,7 @@ class LambdaTestingTests: XCTestCase {
             callback(.success(()))
         }
 
-        let request = Request(name: UUID().uuidString)
+        let request = Request(name: UUID().uuidString.lowercased())
         XCTAssertNoThrow(try Lambda.test(myLambda, with: request))
     }
 
@@ -82,7 +82,7 @@ class LambdaTestingTests: XCTestCase {
             }
         }
 
-        let request = Request(name: UUID().uuidString)
+        let request = Request(name: UUID().uuidString.lowercased())
         var response: Response?
         XCTAssertNoThrow(response = try Lambda.test(MyCloudFunction(), with: request))
         XCTAssertEqual(response?.message, "echo" + request.name)
@@ -99,7 +99,7 @@ class LambdaTestingTests: XCTestCase {
             }
         }
 
-        let input = UUID().uuidString
+        let input = UUID().uuidString.lowercased()
         var result: String?
         XCTAssertNoThrow(result = try Lambda.test(MyCloudFunction(), with: input))
         XCTAssertEqual(result, "echo" + input)
@@ -117,7 +117,7 @@ class LambdaTestingTests: XCTestCase {
             }
         }
 
-        XCTAssertThrowsError(try Lambda.test(MyCloudFunction(), with: UUID().uuidString)) { error in
+        XCTAssertThrowsError(try Lambda.test(MyCloudFunction(), with: UUID().uuidString.lowercased())) { error in
             XCTAssert(error is MyError)
         }
     }
@@ -131,23 +131,22 @@ class LambdaTestingTests: XCTestCase {
             }
         }
 
-        XCTAssertNoThrow(try Lambda.test(myLambda, with: UUID().uuidString))
+        XCTAssertNoThrow(try Lambda.test(myLambda, with: UUID().uuidString.lowercased()))
         XCTAssertTrue(executed)
     }
 
     func testConfigValues() {
         let timeout: TimeInterval = 4
         let config = Lambda.TestConfig(
-            requestID: UUID().uuidString,
-            traceID: UUID().uuidString,
-            invokedFunctionARN: "arn:\(UUID().uuidString)",
-            timeout: .seconds(4)
+            requestID: UUID().uuidString.lowercased(),
+            memoryLimit: 512,
+            timeLimit: .seconds(4)
         )
 
         let myLambda = { (ctx: Lambda.Context, _: String, callback: @escaping (Result<Void, Error>) -> Void) in
             XCTAssertEqual(ctx.requestID, config.requestID)
-            XCTAssertEqual(ctx.traceID, config.traceID)
-            XCTAssertEqual(ctx.invokedFunctionARN, config.invokedFunctionARN)
+            XCTAssertEqual(ctx.memoryLimit, config.memoryLimit)
+            XCTAssertEqual(ctx.timeLimit, config.timeLimit)
 
             let secondsSinceEpoch = Double(Int64(bitPattern: ctx.deadline.rawValue)) / -1_000_000_000
             XCTAssertEqual(Date(timeIntervalSince1970: secondsSinceEpoch).timeIntervalSinceNow, timeout, accuracy: 0.1)
@@ -155,6 +154,6 @@ class LambdaTestingTests: XCTestCase {
             callback(.success(()))
         }
 
-        XCTAssertNoThrow(try Lambda.test(myLambda, with: UUID().uuidString, using: config))
+        XCTAssertNoThrow(try Lambda.test(myLambda, with: UUID().uuidString.lowercased(), using: config))
     }
 }

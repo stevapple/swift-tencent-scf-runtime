@@ -31,24 +31,23 @@ import XCTest
 class LambdaRunnerTest: XCTestCase {
     func testSuccess() {
         struct Behavior: LambdaServerBehavior {
-            let requestId = UUID().uuidString
+            let requestId = UUID().uuidString.lowercased()
             let event = "hello"
             func getInvocation() -> GetInvocationResult {
                 .success((self.requestId, self.event))
             }
 
-            func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError> {
-                XCTAssertEqual(self.requestId, requestId, "expecting requestId to match")
+            func process(response: String?) -> Result<Void, ProcessResponseError> {
                 XCTAssertEqual(self.event, response, "expecting response to match")
                 return .success(())
             }
 
-            func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report error")
                 return .failure(.internalServerError)
             }
 
-            func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report init error")
                 return .failure(.internalServerError)
             }
@@ -59,23 +58,22 @@ class LambdaRunnerTest: XCTestCase {
     func testFailure() {
         struct Behavior: LambdaServerBehavior {
             static let error = "boom"
-            let requestId = UUID().uuidString
+            let requestId = UUID().uuidString.lowercased()
             func getInvocation() -> GetInvocationResult {
                 .success((requestId: self.requestId, event: "hello"))
             }
 
-            func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError> {
+            func process(response: String?) -> Result<Void, ProcessResponseError> {
                 XCTFail("should report error")
                 return .failure(.internalServerError)
             }
 
-            func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTAssertEqual(self.requestId, requestId, "expecting requestId to match")
+            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
                 XCTAssertEqual(Behavior.error, error.errorMessage, "expecting error to match")
                 return .success(())
             }
 
-            func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report init error")
                 return .failure(.internalServerError)
             }

@@ -52,7 +52,7 @@ struct ContentView: View {
     }
 
     func register() {
-        guard let url = URL(string: "http://localhost:7000/invoke") else {
+        guard let url = URL(string: "http://localhost:9001/invoke") else {
             fatalError("invalid url")
         }
         var request = URLRequest(url: url)

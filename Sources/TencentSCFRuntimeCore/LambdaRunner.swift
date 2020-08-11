@@ -60,6 +60,10 @@ extension Lambda {
                 // This can happen if the factory uses a library (let's say a database client) that manages its own threads/loops
                 // for whatever reason and returns a future that originated from that foreign EventLoop.
                 .hop(to: self.eventLoop)
+                .flatMap { handler in
+                    self.runtimeClient.reportInitializationReady(logger: logger)
+                        .mapResult { _ in handler }
+                }
                 .peekError { error in
                     self.runtimeClient.reportInitializationError(logger: logger, error: error).peekError { reportingError in
                         // We're going to bail out because the init failed, so there's not a lot we can do other than log
@@ -116,11 +120,8 @@ extension Lambda {
 private extension Lambda.Context {
     convenience init(logger: Logger, eventLoop: EventLoop, allocator: ByteBufferAllocator, invocation: Lambda.Invocation) {
         self.init(requestID: invocation.requestID,
-                  traceID: invocation.traceID,
-                  invokedFunctionARN: invocation.invokedFunctionARN,
-                  deadline: DispatchWallTime(millisSinceEpoch: invocation.deadlineInMillisSinceEpoch),
-                  cognitoIdentity: invocation.cognitoIdentity,
-                  clientContext: invocation.clientContext,
+                  memoryLimit: invocation.memoryLimit,
+                  timeLimit: .milliseconds(Int(invocation.timeLimit)),
                   logger: logger,
                   eventLoop: eventLoop,
                   allocator: allocator)

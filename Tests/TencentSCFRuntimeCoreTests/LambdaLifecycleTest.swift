@@ -138,17 +138,17 @@ struct BadBehavior: LambdaServerBehavior {
         .failure(.internalServerError)
     }
 
-    func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError> {
+    func process(response: String?) -> Result<Void, ProcessResponseError> {
         XCTFail("should not report a response")
         return .failure(.internalServerError)
     }
 
-    func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+    func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
         XCTFail("should not report an error")
         return .failure(.internalServerError)
     }
 
-    func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+    func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
         XCTFail("should not report an error")
         return .failure(.internalServerError)
     }

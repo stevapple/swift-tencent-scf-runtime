@@ -42,7 +42,7 @@ internal final class MockLambdaServer {
     private var channel: Channel?
     private var shutdown = false
 
-    public init(behavior: LambdaServerBehavior, host: String = "127.0.0.1", port: Int = 7000, keepAlive: Bool = true) {
+    public init(behavior: LambdaServerBehavior, host: String = "127.0.0.1", port: Int = 9001, keepAlive: Bool = true) {
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.behavior = behavior
         self.host = host
@@ -133,17 +133,17 @@ internal final class HTTPHandler: ChannelInboundHandler {
         var responseHeaders: [(String, String)]?
 
         // Handle post-init-error first to avoid matching the less specific post-error suffix.
-        if request.head.uri.hasSuffix(Consts.postInitErrorURL) {
+        if request.head.uri == Consts.postInitErrorURL {
             guard let json = requestBody, let error = ErrorResponse.fromJson(json) else {
                 return self.writeResponse(context: context, status: .badRequest)
             }
-            switch self.behavior.processInitError(error: error) {
+            switch self.behavior.process(initError: error) {
             case .success:
-                responseStatus = .accepted
+                responseStatus = .ok
             case .failure(let error):
                 responseStatus = .init(statusCode: error.rawValue)
             }
-        } else if request.head.uri.hasSuffix(Consts.getNextInvocationURLSuffix) {
+        } else if request.head.uri == Consts.getNextInvocationURL {
             switch self.behavior.getInvocation() {
             case .success(let (requestId, result)):
                 if requestId == "timeout" {
@@ -153,36 +153,30 @@ internal final class HTTPHandler: ChannelInboundHandler {
                 }
                 responseStatus = .ok
                 responseBody = result
-                let deadline = Date(timeIntervalSinceNow: 60).millisSinceEpoch
                 responseHeaders = [
-                    (AmazonHeaders.requestID, requestId),
-                    (AmazonHeaders.invokedFunctionARN, "arn:aws:lambda:us-east-1:123456789012:function:custom-runtime"),
-                    (AmazonHeaders.traceID, "Root=\(AmazonHeaders.generateXRayTraceID());Sampled=1"),
-                    (AmazonHeaders.deadline, String(deadline)),
+                    (SCFHeaders.requestID, requestId),
+                    (SCFHeaders.timeLimit, "3000"),
+                    (SCFHeaders.memoryLimit, "128"),
                 ]
             case .failure(let error):
                 responseStatus = .init(statusCode: error.rawValue)
             }
-        } else if request.head.uri.hasSuffix(Consts.postResponseURLSuffix) {
-            guard let requestId = request.head.uri.split(separator: "/").dropFirst(3).first else {
-                return self.writeResponse(context: context, status: .badRequest)
-            }
-            switch self.behavior.processResponse(requestId: String(requestId), response: requestBody) {
+        } else if request.head.uri == Consts.postResponseURL {
+            switch self.behavior.process(response: requestBody) {
             case .success:
-                responseStatus = .accepted
+                responseStatus = .ok
             case .failure(let error):
                 responseStatus = .init(statusCode: error.rawValue)
             }
-        } else if request.head.uri.hasSuffix(Consts.postErrorURLSuffix) {
-            guard let requestId = request.head.uri.split(separator: "/").dropFirst(3).first,
-                let json = requestBody,
+        } else if request.head.uri == Consts.postErrorURL {
+            guard let json = requestBody,
                 let error = ErrorResponse.fromJson(json)
             else {
                 return self.writeResponse(context: context, status: .badRequest)
             }
-            switch self.behavior.processError(requestId: String(requestId), error: error) {
+            switch self.behavior.process(error: error) {
             case .success():
-                responseStatus = .accepted
+                responseStatus = .ok
             case .failure(let error):
                 responseStatus = .init(statusCode: error.rawValue)
             }
@@ -227,9 +221,9 @@ internal final class HTTPHandler: ChannelInboundHandler {
 
 internal protocol LambdaServerBehavior {
     func getInvocation() -> GetInvocationResult
-    func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError>
-    func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError>
-    func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError>
+    func process(response: String?) -> Result<Void, ProcessResponseError>
+    func process(error: ErrorResponse) -> Result<Void, ProcessErrorError>
+    func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError>
 }
 
 internal typealias GetInvocationResult = Result<(String, String), GetWorkError>

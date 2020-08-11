@@ -45,7 +45,7 @@ class CodableLambdaTest: XCTestCase {
     }
 
     func testCodableVoidClosureWrapper() {
-        let request = Request(requestId: UUID().uuidString)
+        let request = Request(requestId: UUID().uuidString.lowercased())
         var inputBuffer: ByteBuffer?
         var outputBuffer: ByteBuffer?
 
@@ -60,7 +60,7 @@ class CodableLambdaTest: XCTestCase {
     }
 
     func testCodableClosureWrapper() {
-        let request = Request(requestId: UUID().uuidString)
+        let request = Request(requestId: UUID().uuidString.lowercased())
         var inputBuffer: ByteBuffer?
         var outputBuffer: ByteBuffer?
         var response: Response?
@@ -78,12 +78,9 @@ class CodableLambdaTest: XCTestCase {
 
     // convencience method
     func newContext() -> Lambda.Context {
-        Lambda.Context(requestID: UUID().uuidString,
-                       traceID: "abc123",
-                       invokedFunctionARN: "aws:arn:",
-                       deadline: .now() + .seconds(3),
-                       cognitoIdentity: nil,
-                       clientContext: nil,
+        Lambda.Context(requestID: UUID().uuidString.lowercased(),
+                       memoryLimit: 128,
+                       timeLimit: .seconds(3),
                        logger: Logger(label: "test"),
                        eventLoop: self.eventLoopGroup.next(),
                        allocator: ByteBufferAllocator())

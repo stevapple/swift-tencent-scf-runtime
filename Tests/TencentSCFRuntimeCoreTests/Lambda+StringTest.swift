@@ -217,7 +217,7 @@ private struct Behavior: LambdaServerBehavior {
     let event: String
     let result: Result<String?, TestError>
 
-    init(requestId: String = UUID().uuidString, event: String = "hello", result: Result<String?, TestError> = .success("hello")) {
+    init(requestId: String = UUID().uuidString.lowercased(), event: String = "hello", result: Result<String?, TestError> = .success("hello")) {
         self.requestId = requestId
         self.event = event
         self.result = result
@@ -227,8 +227,8 @@ private struct Behavior: LambdaServerBehavior {
         .success((requestId: self.requestId, event: self.event))
     }
 
-    func processResponse(requestId: String, response: String?) -> Result<Void, ProcessResponseError> {
-        XCTAssertEqual(self.requestId, requestId, "expecting requestId to match")
+    func process(response: String?) -> Result<Void, ProcessResponseError> {
+        XCTAssertEqual(self.requestId, self.requestId, "expecting requestId to match")
         switch self.result {
         case .success(let expected):
             XCTAssertEqual(expected, response, "expecting response to match")
@@ -239,8 +239,8 @@ private struct Behavior: LambdaServerBehavior {
         }
     }
 
-    func processError(requestId: String, error: ErrorResponse) -> Result<Void, ProcessErrorError> {
-        XCTAssertEqual(self.requestId, requestId, "expecting requestId to match")
+    func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+        XCTAssertEqual(self.requestId, self.requestId, "expecting requestId to match")
         switch self.result {
         case .success:
             XCTFail("unexpected to succeed, but failed with: \(error)")
@@ -251,7 +251,7 @@ private struct Behavior: LambdaServerBehavior {
         }
     }
 
-    func processInitError(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+    func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
         XCTFail("should not report init error")
         return .failure(.internalServerError)
     }
