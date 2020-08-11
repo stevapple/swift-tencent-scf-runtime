@@ -7,11 +7,12 @@ needs to be listed here.
 
 ## COPYRIGHT HOLDERS
 
-- YR Chen (stevapple@hotmail.com)
+- Apple Inc.
+- YR Chen (stevapple@icloud.com)
 
 ### Contributors
 
-- YR Chen (stevapple@hotmail.com)
+- YR Chen <stevapple@icloud.com>
 
 **Updating this list**
 
