@@ -30,7 +30,7 @@ set -eu
 
 executable=MyCloudFunction
 function_name=swift-sample
-scf_region=na-toronto
+scf_region=ap-beijing
 cos_bucket=swift-scf-test-appid
 cos_region=ap-beijing
 

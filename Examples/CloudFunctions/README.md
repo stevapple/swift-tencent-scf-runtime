@@ -79,7 +79,7 @@ lastVersion:  $LATEST
 traffic:      1
 triggers:
   apigw:
-    - http://service-jyl9i6mc-1258834142.gz.apigw.tencentcs.com/release/api
+    - http://service-jyl9i6mc-1258834142.bj.apigw.tencentcs.com/release/api
 
 Full details: https://serverless.cloud.tencent.com/apps/SwiftAPIGatewayDemo/SwiftAPIGatewayDemo/dev
 
@@ -89,7 +89,7 @@ Full details: https://serverless.cloud.tencent.com/apps/SwiftAPIGatewayDemo/Swif
 For example:
 
 ```
-curl http://service-jyl9i6mc-1258834142.gz.apigw.tencentcs.com/release/api
+curl http://service-jyl9i6mc-1258834142.bj.apigw.tencentcs.com/release/api
 ```
 
 ***Warning:*** This Serverless template is only intended as a sample and creates a publicly accessible HTTP endpoint.

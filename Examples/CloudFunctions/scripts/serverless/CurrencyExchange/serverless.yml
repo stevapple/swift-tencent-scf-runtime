@@ -7,7 +7,7 @@ inputs:
     exclude:
       - cloud-function.zip
   runtime: CustomRuntime
-  region: na-toronto
+  region: ap-beijing
   description: Swift SCF demo (currency exchange)
   handler: swift.main
   memorySize: 64
