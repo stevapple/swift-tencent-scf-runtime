@@ -71,7 +71,11 @@ public enum COS {
 
     public struct Object: Equatable {
         public let url: URL
-        public let key: String
+        public let fullKey: String
+        public var key: String {
+            fullKey.split(separator: "/").dropFirst(2).joined(separator: "/")
+        }
+
         public let vid: String
         public let size: UInt64
 

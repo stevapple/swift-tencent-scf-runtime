@@ -39,7 +39,7 @@ extension COS.Object: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         url = try container.decode(URL.self, forKey: .url)
-        key = try container.decode(String.self, forKey: .key)
+        fullKey = try container.decode(String.self, forKey: .key)
         vid = try container.decode(String.self, forKey: .vid)
         size = try container.decode(UInt64.self, forKey: .size)
 
@@ -57,7 +57,7 @@ extension COS.Object: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(url, forKey: .url)
-        try container.encode(key, forKey: .key)
+        try container.encode(fullKey, forKey: .key)
         try container.encode(vid, forKey: .vid)
         try container.encode(size, forKey: .size)
         try container.encode(customMeta.mapKeys { "x-cos-meta-" + $0 }, forKey: .meta)

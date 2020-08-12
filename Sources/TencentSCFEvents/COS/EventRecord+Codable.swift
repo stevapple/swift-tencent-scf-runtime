@@ -33,7 +33,6 @@ extension COS.Event.Record: Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
         cos = try container.decode(COS.Entity.self, forKey: .cos)
 
         let eventContainer = try container.nestedContainer(keyedBy: EventCodingKeys.self, forKey: .event)

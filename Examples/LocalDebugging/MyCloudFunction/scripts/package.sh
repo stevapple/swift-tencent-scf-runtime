@@ -31,7 +31,7 @@ set -eu
 executable=$1
 
 target=".build/scf/$executable"
-rm -rf "$target" "$target.zip"
+rm -rf "$target"
 mkdir -p "$target"
 
 cp ".build/release/$executable" "$target/"

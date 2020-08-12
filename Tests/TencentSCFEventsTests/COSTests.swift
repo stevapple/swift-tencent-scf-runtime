@@ -54,7 +54,7 @@ class COSTests: XCTestCase {
                 "cosNotificationId": "unknown"
             },
             "event": {
-                "eventName": "cos:ObjectCreated:*",
+                "eventName": "cos:ObjectCreated:CompleteMultipartUpload",
                 "eventVersion": "1.0",
                 "eventTime": 1545205770,
                 "eventSource": "qcs::cos",
@@ -87,7 +87,8 @@ class COSTests: XCTestCase {
         XCTAssertEqual(record.cos.bucket.region, "cd")
         XCTAssertEqual(record.cos.bucket.name, "testpic")
         XCTAssertEqual(record.cos.bucket.appid, "1253970026")
-        XCTAssertEqual(record.cos.object.key, "/1253970026/testpic/testfile")
+        XCTAssertEqual(record.cos.object.fullKey, "/1253970026/testpic/testfile")
+        XCTAssertEqual(record.cos.object.key, "testfile")
         XCTAssertEqual(record.cos.object.size, 1029)
         XCTAssertEqual(record.cos.object.vid, "")
         XCTAssertEqual(record.cos.object.contentType, "")
@@ -97,7 +98,7 @@ class COSTests: XCTestCase {
         XCTAssertEqual(record.cos.object.expireTime?.description, "2012-04-05 21:47:37 +0000")
         XCTAssertEqual(record.cos.object.customMeta, ["mykey": "myvalue"])
 
-        XCTAssertEqual(record.eventName, "cos:ObjectCreated:*")
+        XCTAssertEqual(record.eventName, "cos:ObjectCreated:CompleteMultipartUpload")
         XCTAssertEqual(record.eventVersion, "1.0")
         XCTAssertEqual(record.eventSource, "qcs::cos")
         XCTAssertEqual(record.eventTime, Date(timeIntervalSince1970: 1_545_205_770))
