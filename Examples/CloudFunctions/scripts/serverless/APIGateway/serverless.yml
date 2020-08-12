@@ -15,12 +15,12 @@ inputs:
   initTimeout: 3
   events:
     - apigw:
-        name: apigateway-swift-apigw
+        name: swift-scf-apigw
         parameters:
           protocols:
             - http
             - https
-          serviceName:
+          serviceName: SwiftAPIGatewayDemo
           description: Swift SCF demo for APIGateway
           environment: release
           endpoints:

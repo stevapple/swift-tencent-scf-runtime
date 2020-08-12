@@ -13,12 +13,13 @@ cd swift-tencent-scf-runtime/Examples/CloudFunctions
 
 Note: The example scripts assume you have [jq](https://stedolan.github.io/jq/download/) command line tool installed.
 
-## Deployment instructions using TCCLI
+## Deployment instructions using TCCLI and COSCMD
 
-Steps to deploy this sample to Tencent SCF Platform using TCCLI:
+Steps to deploy this sample to Tencent SCF Platform using TCCLI and COSCMD:
 
-1. Login to SCF Console and create a cloud function
-2. Build, package and deploy the function
+1. Prepare a COS bucket for keeping SCF packages
+2. Login to SCF Console and create a cloud function
+3. Build, package and deploy the function
 
 ```
 ./scripts/deploy.sh
@@ -26,6 +27,7 @@ Steps to deploy this sample to Tencent SCF Platform using TCCLI:
 
 Notes: 
 - This script assumes you have TCCLI installed and user configured (See https://cloud.tencent.com/document/product/440/34012).
+- This script also assumes you have COSCMD installed and user configured with the same main account as the one in TCCLI (See https://cloud.tencent.com/document/product/436/10976).
 - You'll be prompted to provide the COS bucket ID and region, and the SCF function name and region.
 - Both the cloud function and COS bucket must exist before deploying for the first time.
 
