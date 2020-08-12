@@ -1,3 +1,1 @@
-FROM swift:5.2-amazonlinux2
-
-RUN yum -y install zip
+FROM stevapple/swift-scf:5.2.5

@@ -29,38 +29,40 @@
 set -eu
 
 executable=MyCloudFunction
-lambda_name=SwiftSample
-s3_bucket=swift-scf-test
+function_name=swift-sample
+scf_region=na-toronto
+cos_bucket=swift-scf-test-appid
+cos_region=ap-beijing
 
 echo -e "\ndeploying $executable"
 
 echo "-------------------------------------------------------------------------"
-echo "preparing docker build image"
+echo "Preparing docker build image"
 echo "-------------------------------------------------------------------------"
 docker build . -t builder
 echo "done"
 
 echo "-------------------------------------------------------------------------"
-echo "building \"$executable\" lambda"
+echo "Building \"$executable\" SCF"
 echo "-------------------------------------------------------------------------"
 docker run --rm -v `pwd`/../../..:/workspace -w /workspace/Examples/LocalDebugging/MyCloudFunction builder \
        bash -cl "swift build --product $executable -c release"
 echo "done"
 
 echo "-------------------------------------------------------------------------"
-echo "packaging \"$executable\" lambda"
+echo "Packaging \"$executable\" SCF"
 echo "-------------------------------------------------------------------------"
 docker run --rm -v `pwd`:/workspace -w /workspace builder \
        bash -cl "./scripts/package.sh $executable"
 echo "done"
 
 echo "-------------------------------------------------------------------------"
-echo "uploading \"$executable\" lambda to s3"
+echo "Uploading \"$executable\" function to COS"
 echo "-------------------------------------------------------------------------"
+coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable/cloud-function.zip" "$executable.zip"
 
-aws s3 cp .build/lambda/$executable/lambda.zip s3://$s3_bucket/
-
 echo "-------------------------------------------------------------------------"
-echo "updating \"$lambda_name\" to latest \"$executable\""
+echo "Updating \"$function_name\" to the latest \"$executable\""
 echo "-------------------------------------------------------------------------"
-aws lambda update-function-code --function $lambda_name --s3-bucket $s3_bucket --s3-key lambda.zip
+tccli scf UpdateFunctionConfiguration --region "$scf_region" --FunctionName "$function_name" --Runtime "CustomRuntime" --InitTimeout 3
+tccli scf UpdateFunctionCode --region "$scf_region" --FunctionName "$function_name" --Handler "swift.main" --CodeSource "Cos" --CosBucketName "$cos_bucket" --CosBucketRegion "$cos_region" --CosObjectName $executable.zip

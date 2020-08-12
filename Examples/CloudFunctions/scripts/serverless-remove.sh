@@ -31,10 +31,11 @@ set -eu
 DIR="$(cd "$(dirname "$0")" && pwd)"
 source $DIR/config.sh
 
-echo -e "\nremoving $executable"
+echo -e "\nRemoving $executable"
 
 echo "-------------------------------------------------------------------------"
-echo "removing using Serverless"
+echo "Removing using Serverless CLI"
 echo "-------------------------------------------------------------------------"
 
-serverless remove --config "./scripts/serverless/$executable-template.yml" --stage dev -v
+cd $DIR
+serverless remove --target="./serverless/$executable"

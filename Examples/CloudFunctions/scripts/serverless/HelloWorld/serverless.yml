@@ -1,0 +1,15 @@
+component: scf
+name: SwiftHelloWorldDemo
+inputs:
+  name: helloworld-swift-scf
+  src:
+    src: ../../../.build/scf/HelloWorld
+    exclude:
+      - cloud-function.zip
+  runtime: CustomRuntime
+  region: na-toronto
+  description: Swift SCF demo (hello world)
+  handler: swift.main
+  memorySize: 64
+  timeout: 3
+  initTimeout: 3

@@ -30,21 +30,21 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 executables=( $(swift package dump-package | sed -e 's|: null|: ""|g' | jq '.products[] | (select(.type.executable)) | .name' | sed -e 's|"||g') )
 
 if [[ ${#executables[@]} = 0 ]]; then
-    echo "no executables found"
+    echo "No executables found"
     exit 1
 elif [[ ${#executables[@]} = 1 ]]; then
     executable=${executables[0]}
 elif [[ ${#executables[@]} > 1 ]]; then
-    echo "multiple executables found:"
+    echo "Multiple executables found:"
     for executable in ${executables[@]}; do
       echo "  * $executable"
     done
     echo ""
-    read -p "select which executables to deploy: " executable
+    read -p "Select which executable to deploy: " executable
 fi
 
 echo "-------------------------------------------------------------------------"
-echo "configuration"
+echo "Configuration"
 echo "-------------------------------------------------------------------------"
 echo "current dir: $DIR"
 echo "executable: $executable"

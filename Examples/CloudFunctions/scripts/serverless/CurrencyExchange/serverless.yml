@@ -1,0 +1,15 @@
+component: scf
+name: SwiftCurrencyExchangeDemo
+inputs:
+  name: currency-swift-scf
+  src:
+    src: ../../../.build/scf/CurrencyExchange
+    exclude:
+      - cloud-function.zip
+  runtime: CustomRuntime
+  region: na-toronto
+  description: Swift SCF demo (currency exchange)
+  handler: swift.main
+  memorySize: 64
+  timeout: 3
+  initTimeout: 3

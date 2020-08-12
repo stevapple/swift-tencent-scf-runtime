@@ -31,12 +31,14 @@ set -eu
 DIR="$(cd "$(dirname "$0")" && pwd)"
 source $DIR/config.sh
 
-echo -e "\ndeploying $executable"
+echo -e "\nDeploying $executable"
 
 $DIR/build-and-package.sh "$executable"
 
 echo "-------------------------------------------------------------------------"
-echo "deploying using Serverless"
+echo "Deploying using Serverless CLI"
 echo "-------------------------------------------------------------------------"
 
-serverless deploy --config "./scripts/serverless/$executable-template.yml" --stage dev -v
+export SERVERLESS_PLATFORM_VENDOR=tencent
+cd $DIR
+serverless deploy --target="./serverless/$executable"

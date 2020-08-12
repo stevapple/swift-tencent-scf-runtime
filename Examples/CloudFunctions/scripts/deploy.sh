@@ -33,24 +33,31 @@ source $DIR/config.sh
 
 workspace="$DIR/../.."
 
-echo -e "\ndeploying $executable"
+echo -e "\nDeploying $executable"
 
 $DIR/build-and-package.sh "$executable"
 
 echo "-------------------------------------------------------------------------"
-echo "uploading \"$executable\" lambda to AWS S3"
+echo "Uploading \"$executable\" function to COS"
 echo "-------------------------------------------------------------------------"
 
-read -p "S3 bucket name to upload zip file (must exist in AWS S3): " s3_bucket
-s3_bucket=${s3_bucket:-swift-lambda-test} # default for easy testing
+read -p "COS bucket to upload (name-appid, eg: examplebucket-1250000000): " cos_bucket
+cos_bucket=${cos_bucket:-swift-scf-test} # default for easy testing
 
-aws s3 cp ".build/lambda/$executable/lambda.zip" "s3://$s3_bucket/"
+read -p "COS bucket region (eg: ap-beijing): " cos_region
+cos_region=${cos_region:-ap-beijing} # default for easy testing
+
+coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable/cloud-function.zip" "$executable.zip"
 
 echo "-------------------------------------------------------------------------"
-echo "updating AWS Lambda to use \"$executable\""
+echo "Updating SCF function to use \"$executable\""
 echo "-------------------------------------------------------------------------"
 
-read -p "Lambda Function name (must exist in AWS Lambda): " lambda_name
-lambda_name=${lambda_name:-SwiftSample} # default for easy testing
+read -p "Cloud Function name (must exist in SCF): " function_name
+function_name=${function_name:-SwiftSample} # default for easy testing
 
-aws lambda update-function-code --function "$lambda_name" --s3-bucket "$s3_bucket" --s3-key lambda.zip
+read -p "Cloud Function region (eg: na-toronto): " scf_region
+scf_region=${scf_region:-na-toronto} # default for easy testing
+
+tccli scf UpdateFunctionConfiguration --region "$scf_region" --FunctionName "$function_name" --Runtime "CustomRuntime" --InitTimeout 3
+tccli scf UpdateFunctionCode --region "$scf_region" --FunctionName "$function_name" --Handler "swift.main" --CodeSource "Cos" --CosBucketName "$cos_bucket" --CosBucketRegion "$cos_region" --CosObjectName $executable.zip

@@ -1,0 +1,28 @@
+component: scf
+name: SwiftAPIGatewayDemo
+inputs:
+  name: apigateway-swift-scf
+  src:
+    src: ../../../.build/scf/APIGateway
+    exclude:
+      - cloud-function.zip
+  runtime: CustomRuntime
+  region: na-toronto
+  description: Swift SCF demo for APIGateway
+  handler: swift.main
+  memorySize: 64
+  timeout: 3
+  initTimeout: 3
+  events:
+    - apigw:
+        name: apigateway-swift-apigw
+        parameters:
+          protocols:
+            - http
+            - https
+          serviceName:
+          description: Swift SCF demo for APIGateway
+          environment: release
+          endpoints:
+            - path: /api
+              method: GET

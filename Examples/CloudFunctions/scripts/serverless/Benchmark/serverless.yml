@@ -1,0 +1,15 @@
+component: scf
+name: SwiftBenchmarkDemo
+inputs:
+  name: benchmark-swift-scf
+  src:
+    src: ../../../.build/scf/Benchmark
+    exclude:
+      - cloud-function.zip
+  runtime: CustomRuntime
+  region: na-toronto
+  description: Swift SCF demo for benchmark
+  handler: swift.main
+  memorySize: 128
+  timeout: 20
+  initTimeout: 3
