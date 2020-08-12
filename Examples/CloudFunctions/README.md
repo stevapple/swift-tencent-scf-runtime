@@ -2,7 +2,7 @@
 
 This sample project is a collection of cloud functions that demonstrates
 how to write a simple SCF function in Swift, and how to package and deploy it
-to the Tencent SCF platform.
+to the Tencent SCF Platform.
 
 The scripts are prepared to work from the `CloudFunctions` folder.
 

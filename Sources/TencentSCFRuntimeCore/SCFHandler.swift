@@ -115,7 +115,7 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
     ///     - event: Event of type `In` representing the event or request.
     ///
     /// - Returns: An `EventLoopFuture` to report the result of the SCF function back to the runtime engine.
-    ///            The `EventLoopFuture` should be completed with either a response of type `Out` or an `Error`
+    ///            The `EventLoopFuture` should be completed with either a response of type `Out` or an `Error`.
     func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out>
 
     /// Encode a response of type `Out` to `ByteBuffer`.
