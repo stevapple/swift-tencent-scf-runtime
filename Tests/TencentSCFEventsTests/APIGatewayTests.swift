@@ -70,13 +70,42 @@ class APIGatewayTests: XCTestCase {
     }
     """#
 
-    func testRequestDecodinRequest() {
+    static let simpleEventBody = #"""
+    {
+      "requestContext": {
+        "serviceId": "service-f94sy04v",
+        "path": "/test",
+        "httpMethod": "GET",
+        "identity": {},
+        "sourceIp": "10.0.2.14",
+        "stage": "debug"
+      },
+      "headers": {
+        "accept-language": "en-US,en,cn",
+        "accept": "text/html,application/xml,application/json",
+        "host": "service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com",
+        "user-agent": "User Agent String",
+      },
+      "pathParameters": {},
+      "queryStringParameters": {},
+      "headerParameters":{},
+      "path": "/test",
+      "queryString": {},
+      "httpMethod": "GET"
+    }
+    """#
+
+    struct Body: Codable, Equatable {
+        let test: String
+    }
+
+    func testRequestDecodingRequest() {
         let data = Self.eventBody.data(using: .utf8)!
-        var req: APIGateway.Request?
-        XCTAssertNoThrow(req = try JSONDecoder().decode(APIGateway.Request.self, from: data))
+        var req: APIGateway.Request<Body>?
+        XCTAssertNoThrow(req = try JSONDecoder().decode(APIGateway.Request<Body>.self, from: data))
 
         XCTAssertEqual(req?.path, "/test/value")
-        XCTAssertEqual(req?.body, #"{"test":"body"}"#)
+        XCTAssertEqual(req?.body, Body(test: "body"))
         XCTAssertEqual(req?.headers, ["accept-language": "en-US,en,cn",
                                       "accept": "text/html,application/xml,application/json",
                                       "host": "service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com",
@@ -99,6 +128,40 @@ class APIGatewayTests: XCTestCase {
         XCTAssertEqual(req?.context.httpMethod, .POST)
         XCTAssertEqual(req?.context.stage, .debug)
         XCTAssertEqual(req?.context.identity, ["secretId": "abdcdxxxxxxxsdfs"])
+    }
+
+    func testRequestDecodingSimpleRequest() {
+        let data = Self.simpleEventBody.data(using: .utf8)!
+        var req: APIGateway.Request<String>?
+        XCTAssertNoThrow(req = try JSONDecoder().decode(APIGateway.Request<String>.self, from: data))
+
+        XCTAssertEqual(req?.path, "/test")
+        XCTAssertNil(req?.body)
+        XCTAssertEqual(req?.headers, ["accept-language": "en-US,en,cn",
+                                      "accept": "text/html,application/xml,application/json",
+                                      "host": "service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com",
+                                      "user-agent": "User Agent String"])
+        XCTAssertEqual(req?.query, [:])
+        XCTAssertEqual(req?.httpMethod, .GET)
+
+        XCTAssertEqual(req?.pathParameters, [:])
+        XCTAssertEqual(req?.queryStringParameters, [:])
+        XCTAssertEqual(req?.headerParameters, [:])
+
+        XCTAssertEqual(req?.context.sourceIp, "10.0.2.14")
+        XCTAssertEqual(req?.context.serviceId, "service-f94sy04v")
+        XCTAssertEqual(req?.context.path, "/test")
+        XCTAssertEqual(req?.context.httpMethod, .GET)
+        XCTAssertEqual(req?.context.stage, .debug)
+        XCTAssertEqual(req?.context.identity, [:])
+    }
+
+    func testRequestDecodingWrongBody() {
+        struct WrongBody: Codable {
+            let body: String
+        }
+        let data = Self.eventBody.data(using: .utf8)!
+        XCTAssertThrowsError(_ = try JSONDecoder().decode(APIGateway.Request<WrongBody>.self, from: data))
     }
 
     func testResponseEncodingWithText() {

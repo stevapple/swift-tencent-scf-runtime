@@ -37,10 +37,10 @@ SCF.run(APIGatewayProxySCF())
 
 // FIXME: Use proper Event abstractions once added to TencentSCFRuntime
 struct APIGatewayProxySCF: EventLoopSCFHandler {
-    public typealias In = APIGateway.Request
+    public typealias In = APIGateway.Request<String>
     public typealias Out = APIGateway.Response
 
-    public func handle(context: SCF.Context, event: APIGateway.Request) -> EventLoopFuture<APIGateway.Response> {
+    public func handle(context: SCF.Context, event: APIGateway.Request<String>) -> EventLoopFuture<APIGateway.Response> {
         context.logger.debug("hello, api gateway!")
         return context.eventLoop.makeSucceededFuture(APIGateway.Response(statusCode: .ok, body: "Hello, world!"))
     }
