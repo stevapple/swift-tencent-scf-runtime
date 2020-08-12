@@ -8,20 +8,20 @@ let package = Package(
         .macOS(.v10_13),
     ],
     products: [
-        // introductory example
+        // Introductory example.
         .executable(name: "HelloWorld", targets: ["HelloWorld"]),
-        // good for benchmarking
+        // Good for benchmarking.
         .executable(name: "Benchmark", targets: ["Benchmark"]),
-        // demonstrate different types of error handling
+        // Demonstrate different types of error handling.
         .executable(name: "ErrorHandling", targets: ["ErrorHandling"]),
-        // demostrate how to integrate with AWS API Gateway
+        // Demostrate how to integrate with API Gateway.
         .executable(name: "APIGateway", targets: ["APIGateway"]),
-        // fully featured example with domain specific business logic
+        // Fully featured example with domain specific business logic.
         .executable(name: "CurrencyExchange", targets: ["CurrencyExchange"]),
     ],
     dependencies: [
-        // this is the dependency on the swift-tencent-scf-runtime library
-        // in real-world projects this would say
+        // This is the dependency on the swift-tencent-scf-runtime library.
+        // In real-world projects, this would say:
         // .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "1.0.0")
         .package(name: "swift-tencent-scf-runtime", path: "../.."),
     ],

@@ -8,13 +8,13 @@ let package = Package(
         .macOS(.v10_13),
     ],
     products: [
-        // this library exports `TencentSCFRuntimeCore` and adds Foundation convenience methods
+        // This library exports `TencentSCFRuntimeCore` and adds Foundation convenience methods.
         .library(name: "TencentSCFRuntime", targets: ["TencentSCFRuntime"]),
-        // this has all the main functionality for lambda and it does not link Foundation
+        // This has all the main functionality for SCF and it does not link Foundation.
         .library(name: "TencentSCFRuntimeCore", targets: ["TencentSCFRuntimeCore"]),
-        // common SCF events
+        // Common SCF events and Tencent Cloud helpers.
         .library(name: "TencentSCFEvents", targets: ["TencentSCFEvents"]),
-        // for testing only
+        // Testing helpers and utilities.
         .library(name: "TencentSCFTesting", targets: ["TencentSCFTesting"]),
     ],
     dependencies: [
