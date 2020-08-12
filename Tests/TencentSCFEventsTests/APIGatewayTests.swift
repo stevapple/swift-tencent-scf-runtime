@@ -35,18 +35,21 @@ class APIGatewayTests: XCTestCase {
         "serviceId": "service-f94sy04v",
         "path": "/test/{path}",
         "httpMethod": "POST",
-        "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
         "identity": {
           "secretId": "abdcdxxxxxxxsdfs"
         },
         "sourceIp": "10.0.2.14",
-        "stage": "release"
+        "stage": "debug"
       },
       "headers": {
-        "Accept-Language": "en-US,en,cn",
-        "Accept": "text/html,application/xml,application/json",
-        "Host": "service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com",
-        "User-Agent": "User Agent String"
+        "accept-language": "en-US,en,cn",
+        "accept": "text/html,application/xml,application/json",
+        "host": "service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com",
+        "user-agent": "User Agent String",
+        "x-anonymous-consumer":  "true",
+        "x-api-requestid": "24281851d905b02add27dad71656f29b",
+        "x-b3-traceid": "24281851d905b02add27dad71656f29b",
+        "x-qualifier": "$DEFAULT"
       },
       "body": "{\"test\":\"body\"}",
       "pathParameters": {
@@ -57,9 +60,6 @@ class APIGatewayTests: XCTestCase {
       },
       "headerParameters":{
         "Refer": "10.0.2.14"
-      },
-      "stageVariables": {
-        "stage": "release"
       },
       "path": "/test/value",
       "queryString": {
@@ -77,10 +77,14 @@ class APIGatewayTests: XCTestCase {
 
         XCTAssertEqual(req?.path, "/test/value")
         XCTAssertEqual(req?.body, #"{"test":"body"}"#)
-        XCTAssertEqual(req?.headers, ["Accept-Language": "en-US,en,cn",
-                                      "Accept": "text/html,application/xml,application/json",
-                                      "Host": "service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com",
-                                      "User-Agent": "User Agent String"])
+        XCTAssertEqual(req?.headers, ["accept-language": "en-US,en,cn",
+                                      "accept": "text/html,application/xml,application/json",
+                                      "host": "service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com",
+                                      "user-agent": "User Agent String",
+                                      "x-anonymous-consumer":  "true",
+                                      "x-api-requestid": "24281851d905b02add27dad71656f29b",
+                                      "x-b3-traceid": "24281851d905b02add27dad71656f29b",
+                                      "x-qualifier": "$DEFAULT"])
         XCTAssertEqual(req?.query, ["foo": "bar",
                                     "bob": "alice"])
         XCTAssertEqual(req?.httpMethod, .POST)
@@ -88,18 +92,16 @@ class APIGatewayTests: XCTestCase {
         XCTAssertEqual(req?.pathParameters, ["path": "value"])
         XCTAssertEqual(req?.queryStringParameters, ["foo": "bar"])
         XCTAssertEqual(req?.headerParameters, ["Refer": "10.0.2.14"])
-        XCTAssertEqual(req?.stageVariables, ["stage": "release"])
 
         XCTAssertEqual(req?.context.sourceIp, "10.0.2.14")
-        XCTAssertEqual(req?.context.requestId, "c6af9ac6-7b61-11e6-9a41-93e8deadbeef")
         XCTAssertEqual(req?.context.serviceId, "service-f94sy04v")
         XCTAssertEqual(req?.context.path, "/test/{path}")
         XCTAssertEqual(req?.context.httpMethod, .POST)
-        XCTAssertEqual(req?.context.stage, .release)
+        XCTAssertEqual(req?.context.stage, .debug)
         XCTAssertEqual(req?.context.identity, ["secretId": "abdcdxxxxxxxsdfs"])
     }
 
-    func testResponseEncodingWithString() {
+    func testResponseEncodingWithText() {
         let resp = APIGateway.Response(
             statusCode: .ok,
             headers: ["Content-Type": "text/plain"],
@@ -113,8 +115,8 @@ class APIGatewayTests: XCTestCase {
 
         XCTAssertEqual(json?.statusCode, resp.statusCode)
         XCTAssertEqual(json?.body, resp.body)
-        XCTAssertEqual(json?.isBase64Encoded, resp.isBase64Encoded)
-        XCTAssertEqual(json?.headers?["Content-Type"], "text/plain")
+        XCTAssertEqual(json?.isBase64Encoded, false)
+        XCTAssertEqual(json?.headers["Content-Type"], "text/plain")
     }
 
     func testResponseEncodingWithData() {
@@ -122,7 +124,7 @@ class APIGatewayTests: XCTestCase {
         let resp = APIGateway.Response(
             statusCode: .ok,
             headers: ["Content-Type": "application/json"],
-            body: body.data(using: .utf8)
+            body: body.data(using: .utf8)!
         )
 
         var data: Data?
@@ -137,7 +139,7 @@ class APIGatewayTests: XCTestCase {
 
         XCTAssertEqual(newResp.statusCode, resp.statusCode)
         XCTAssertEqual(newResp.isBase64Encoded, true)
-        XCTAssertEqual(newResp.headers?["Content-Type"], "application/json")
-        XCTAssertEqual(Data(base64Encoded: newResp.body!), body.data(using: .utf8))
+        XCTAssertEqual(newResp.headers["Content-Type"], "application/json")
+        XCTAssertEqual(Data(base64Encoded: newResp.body), body.data(using: .utf8))
     }
 }

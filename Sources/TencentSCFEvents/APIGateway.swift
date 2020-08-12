@@ -22,7 +22,6 @@ public enum APIGateway {
         public struct Context: Codable {
             public let identity: [String: String]
             public let serviceId: String
-            public let requestId: String
             public let path: String
             public let sourceIp: String
             public let stage: Stage
@@ -37,10 +36,9 @@ public enum APIGateway {
         public let pathParameters: [String: String]
         public let queryStringParameters: [String: String]
         public let headerParameters: [String: String]
-        public let stageVariables: [String: String]
 
         public let context: Context
-        public let body: String
+        public let body: String?
 
         enum CodingKeys: String, CodingKey {
             case context = "requestContext"
@@ -53,42 +51,42 @@ public enum APIGateway {
             case pathParameters
             case queryStringParameters
             case headerParameters
-            case stageVariables
         }
     }
 
     public enum Stage: String, Codable {
         case test
+        case debug
         case prepub
         case release
     }
 
     public struct Response: Codable {
         public let statusCode: HTTPResponseStatus
-        public let headers: HTTPHeaders?
-        public let body: String?
+        public let headers: HTTPHeaders
+        public let body: String
         public let isBase64Encoded: Bool
 
         public init(
             statusCode: HTTPResponseStatus,
-            headers: HTTPHeaders? = nil,
+            headers: HTTPHeaders = [:],
             body: String? = nil,
             isBase64Encoded: Bool = false
         ) {
             self.statusCode = statusCode
             self.headers = headers
-            self.body = body
+            self.body = body ?? ""
             self.isBase64Encoded = isBase64Encoded
         }
 
         public init(
             statusCode: HTTPResponseStatus,
-            headers: HTTPHeaders? = nil,
-            body: Data? = nil
+            headers: HTTPHeaders = [:],
+            body: Data
         ) {
             self.statusCode = statusCode
             self.headers = headers
-            self.body = body?.base64EncodedString()
+            self.body = body.base64EncodedString()
             self.isBase64Encoded = true
         }
     }

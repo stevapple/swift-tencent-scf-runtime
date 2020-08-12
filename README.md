@@ -21,6 +21,8 @@ There are several areas which need additional attention, including but not limit
 * Additional documentation and best practices
 * Additional examples
 
+By August 2020, SCF Custom Runtime is also at an early stage. You may encounter some problems triggered by the SCF Runtime Engine itself, or the API changes and deprecations. You are welcome to open issues actively on those problems.
+
 ## Getting started
 
 If you have used [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime), you may find most of the APIs familiar. If you have never used Tencent SCF, AWS Lambda or Docker before, check out this [getting started guide](https://fabianfett.de/getting-started-with-swift-aws-lambda-runtime) which helps you with every step from zero to a running cloud function.

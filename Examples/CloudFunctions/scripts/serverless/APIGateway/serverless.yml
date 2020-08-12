@@ -26,3 +26,5 @@ inputs:
           endpoints:
             - path: /api
               method: GET
+              function:
+                isIntegratedResponse: TRUE
