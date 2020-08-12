@@ -81,7 +81,7 @@ class APIGatewayTests: XCTestCase {
                                       "accept": "text/html,application/xml,application/json",
                                       "host": "service-3ei3tii4-251000691.ap-guangzhou.apigateway.myqloud.com",
                                       "user-agent": "User Agent String",
-                                      "x-anonymous-consumer":  "true",
+                                      "x-anonymous-consumer": "true",
                                       "x-api-requestid": "24281851d905b02add27dad71656f29b",
                                       "x-b3-traceid": "24281851d905b02add27dad71656f29b",
                                       "x-qualifier": "$DEFAULT"])
@@ -104,7 +104,7 @@ class APIGatewayTests: XCTestCase {
     func testResponseEncodingWithText() {
         let resp = APIGateway.Response(
             statusCode: .ok,
-            headers: ["Content-Type": "text/plain"],
+            type: .text,
             body: "abc123"
         )
 
@@ -123,7 +123,6 @@ class APIGatewayTests: XCTestCase {
         let body = #"{"hello":"swift"}"#
         let resp = APIGateway.Response(
             statusCode: .ok,
-            headers: ["Content-Type": "application/json"],
             body: body.data(using: .utf8)!
         )
 
@@ -139,7 +138,66 @@ class APIGatewayTests: XCTestCase {
 
         XCTAssertEqual(newResp.statusCode, resp.statusCode)
         XCTAssertEqual(newResp.isBase64Encoded, true)
-        XCTAssertEqual(newResp.headers["Content-Type"], "application/json")
+        XCTAssertEqual(newResp.headers["Content-Type"], "application/octet-stream")
         XCTAssertEqual(Data(base64Encoded: newResp.body), body.data(using: .utf8))
+    }
+
+    func testResponseEncodingWithCodable() {
+        struct Point: Codable, Equatable {
+            let x, y: Double
+        }
+        let point = Point(x: 1.0, y: -0.01)
+        let resp = APIGateway.Response(
+            statusCode: .ok,
+            codableBody: point
+        )
+
+        var data: Data?
+        XCTAssertNoThrow(data = try JSONEncoder().encode(resp))
+        var json: APIGateway.Response?
+        XCTAssertNoThrow(json = try JSONDecoder().decode(APIGateway.Response.self, from: XCTUnwrap(data)))
+
+        guard let newResp = json else {
+            XCTFail("Expected to have value")
+            return
+        }
+
+        XCTAssertEqual(newResp.statusCode, resp.statusCode)
+        XCTAssertEqual(newResp.isBase64Encoded, false)
+        XCTAssertEqual(newResp.headers["Content-Type"], "application/json")
+        XCTAssertEqual(try JSONDecoder().decode(Point.self, from: (newResp.body.data(using: .utf8))!), point)
+    }
+
+    func testResponseEncodingWithNil() {
+        let resp = APIGateway.Response(statusCode: .ok)
+
+        var data: Data?
+        XCTAssertNoThrow(data = try JSONEncoder().encode(resp))
+        var json: APIGateway.Response?
+        XCTAssertNoThrow(json = try JSONDecoder().decode(APIGateway.Response.self, from: XCTUnwrap(data)))
+
+        XCTAssertEqual(json?.statusCode, resp.statusCode)
+        XCTAssertEqual(json?.headers["Content-Type"], "text/plain")
+        XCTAssertEqual(json?.isBase64Encoded, false)
+        XCTAssertEqual(json?.body, "")
+    }
+
+    func testResponseEncodingWithCustomMIME() {
+        let mime = "application/x-javascript"
+        let resp = APIGateway.Response(
+            statusCode: .ok,
+            type: .init(rawValue: mime),
+            body: "console.log(\"Hello world!\");"
+        )
+
+        var data: Data?
+        XCTAssertNoThrow(data = try JSONEncoder().encode(resp))
+        var json: APIGateway.Response?
+        XCTAssertNoThrow(json = try JSONDecoder().decode(APIGateway.Response.self, from: XCTUnwrap(data)))
+
+        XCTAssertEqual(json?.statusCode, resp.statusCode)
+        XCTAssertEqual(json?.body, resp.body)
+        XCTAssertEqual(json?.isBase64Encoded, false)
+        XCTAssertEqual(json?.headers["Content-Type"], mime)
     }
 }

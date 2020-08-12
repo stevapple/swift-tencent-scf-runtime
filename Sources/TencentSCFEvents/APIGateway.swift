@@ -13,6 +13,7 @@
 //===------------------------------------------------------------------------------------===//
 
 import struct Foundation.Data
+import class Foundation.JSONEncoder
 
 // https://cloud.tencent.com/document/product/583/12513
 
@@ -67,24 +68,58 @@ public enum APIGateway {
         public let body: String
         public let isBase64Encoded: Bool
 
-        public init(
+        public init<T: Encodable>(
             statusCode: HTTPResponseStatus,
             headers: HTTPHeaders = [:],
-            body: String? = nil,
-            isBase64Encoded: Bool = false
+            codableBody: T?
         ) {
-            self.statusCode = statusCode
+            var headers = headers
+            headers["Content-Type"] = MIME.json.rawValue
             self.headers = headers
-            self.body = body ?? ""
-            self.isBase64Encoded = isBase64Encoded
+            do {
+                self.body = String(
+                    data: try JSONEncoder().encode(codableBody),
+                    encoding: .utf8
+                ) ?? ""
+                self.statusCode = statusCode
+            } catch let err {
+                self.body = #"{"errorType":"FunctionError","errorMsg":"\#(err.localizedDescription)"}"#
+                self.statusCode = .internalServerError
+            }
+            self.isBase64Encoded = false
         }
 
         public init(
             statusCode: HTTPResponseStatus,
             headers: HTTPHeaders = [:],
+            type: MIME? = nil,
+            body: String? = nil
+        ) {
+            self.statusCode = statusCode
+            var headers = headers
+            if let type = type?.rawValue {
+                headers["Content-Type"] = type
+            } else {
+                headers["Content-Type"] = MIME.text.rawValue
+            }
+            self.headers = headers
+            self.body = body ?? ""
+            self.isBase64Encoded = false
+        }
+
+        public init(
+            statusCode: HTTPResponseStatus,
+            headers: HTTPHeaders = [:],
+            type: MIME? = nil,
             body: Data
         ) {
             self.statusCode = statusCode
+            var headers = headers
+            if let type = type?.rawValue {
+                headers["Content-Type"] = type
+            } else {
+                headers["Content-Type"] = MIME.octet.rawValue
+            }
             self.headers = headers
             self.body = body.base64EncodedString()
             self.isBase64Encoded = true
