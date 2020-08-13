@@ -30,10 +30,10 @@ import NIO
 import NIOHTTP1
 
 /// An HTTP based client for SCF Runtime Engine. This encapsulates the RESTful methods exposed by the runtime engine:
-/// - POST /runtime/init/ready
-/// - GET /runtime/invocation/next
-/// - POST /runtime/invocation/response
-/// - POST /runtime/invocation/error
+/// * POST  /runtime/init/ready
+/// * GET   /runtime/invocation/next
+/// * POST  /runtime/invocation/response
+/// * POST  /runtime/invocation/error
 extension SCF {
     internal struct RuntimeClient {
         private let eventLoop: EventLoop

@@ -13,7 +13,7 @@ let package = Package(
     dependencies: [
         // This is the dependency on the swift-tencent-scf-runtime library.
         // In real-world projects this would say:
-        // .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "0.0.3")
+        // .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "0.1.0")
         .package(name: "swift-tencent-scf-runtime", path: "../../.."),
         .package(name: "Shared", path: "../Shared"),
     ],
