@@ -239,20 +239,15 @@ private struct Behavior: SCFServerBehavior {
         }
     }
 
-    func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+    func process(error: String) -> Result<Void, ProcessErrorError> {
         XCTAssertEqual(self.requestId, self.requestId, "expecting requestId to match")
         switch self.result {
         case .success:
             XCTFail("unexpected to succeed, but failed with: \(error)")
             return .failure(.internalServerError)
         case .failure(let expected):
-            XCTAssertEqual(expected.description, error.errorMessage, "expecting error to match")
+            XCTAssertEqual(expected.description, error, "expecting error to match")
             return .success(())
         }
-    }
-
-    func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-        XCTFail("should not report init error")
-        return .failure(.internalServerError)
     }
 }

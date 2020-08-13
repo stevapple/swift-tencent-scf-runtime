@@ -132,18 +132,7 @@ internal final class HTTPHandler: ChannelInboundHandler {
         var responseBody: String?
         var responseHeaders: [(String, String)]?
 
-        // Handle post-init-error first to avoid matching the less specific post-error suffix.
-        if request.head.uri == Consts.postInitErrorURL {
-            guard let json = requestBody, let error = ErrorResponse.fromJson(json) else {
-                return self.writeResponse(context: context, status: .badRequest)
-            }
-            switch self.behavior.process(initError: error) {
-            case .success:
-                responseStatus = .ok
-            case .failure(let error):
-                responseStatus = .init(statusCode: error.rawValue)
-            }
-        } else if request.head.uri == Consts.getNextInvocationURL {
+        if request.head.uri == Endpoint.getNextInvocation {
             switch self.behavior.getInvocation() {
             case .success(let (requestId, result)):
                 if requestId == "timeout" {
@@ -161,17 +150,15 @@ internal final class HTTPHandler: ChannelInboundHandler {
             case .failure(let error):
                 responseStatus = .init(statusCode: error.rawValue)
             }
-        } else if request.head.uri == Consts.postResponseURL {
+        } else if request.head.uri == Endpoint.postResponse {
             switch self.behavior.process(response: requestBody) {
             case .success:
                 responseStatus = .ok
             case .failure(let error):
                 responseStatus = .init(statusCode: error.rawValue)
             }
-        } else if request.head.uri == Consts.postErrorURL {
-            guard let json = requestBody,
-                let error = ErrorResponse.fromJson(json)
-            else {
+        } else if request.head.uri == Endpoint.postError {
+            guard let error = requestBody else {
                 return self.writeResponse(context: context, status: .badRequest)
             }
             switch self.behavior.process(error: error) {
@@ -222,8 +209,7 @@ internal final class HTTPHandler: ChannelInboundHandler {
 internal protocol SCFServerBehavior {
     func getInvocation() -> GetInvocationResult
     func process(response: String?) -> Result<Void, ProcessResponseError>
-    func process(error: ErrorResponse) -> Result<Void, ProcessErrorError>
-    func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError>
+    func process(error: String) -> Result<Void, ProcessErrorError>
 }
 
 internal typealias GetInvocationResult = Result<(String, String), GetWorkError>
@@ -250,19 +236,4 @@ internal enum ProcessErrorError: Int, Error {
 internal enum ServerError: Error {
     case notReady
     case cantBind
-}
-
-private extension ErrorResponse {
-    static func fromJson(_ s: String) -> ErrorResponse? {
-        let decoder = JSONDecoder()
-        do {
-            if let data = s.data(using: .utf8) {
-                return try decoder.decode(ErrorResponse.self, from: data)
-            } else {
-                return nil
-            }
-        } catch {
-            return nil
-        }
-    }
 }

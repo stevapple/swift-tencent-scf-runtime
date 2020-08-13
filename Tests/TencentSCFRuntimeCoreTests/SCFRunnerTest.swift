@@ -42,13 +42,8 @@ class SCFRunnerTest: XCTestCase {
                 return .success(())
             }
 
-            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: String) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report error")
-                return .failure(.internalServerError)
-            }
-
-            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTFail("should not report init error")
                 return .failure(.internalServerError)
             }
         }
@@ -68,14 +63,9 @@ class SCFRunnerTest: XCTestCase {
                 return .failure(.internalServerError)
             }
 
-            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTAssertEqual(Behavior.error, error.errorMessage, "expecting error to match")
+            func process(error: String) -> Result<Void, ProcessErrorError> {
+                XCTAssertEqual(Behavior.error, error, "expecting error to match")
                 return .success(())
-            }
-
-            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTFail("should not report init error")
-                return .failure(.internalServerError)
             }
         }
         XCTAssertNoThrow(try runSCF(behavior: Behavior(), handler: FailedHandler(Behavior.error)))

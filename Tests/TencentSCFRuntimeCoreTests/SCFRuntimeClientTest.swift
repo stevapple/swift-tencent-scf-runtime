@@ -37,13 +37,13 @@ class SCFRuntimeClientTest: XCTestCase {
     func testSuccess() {
         let behavior = Behavior()
         XCTAssertNoThrow(try runSCF(behavior: behavior, handler: EchoHandler()))
-        XCTAssertEqual(behavior.state, 6)
+        XCTAssertEqual(behavior.state, 3)
     }
 
     func testFailure() {
         let behavior = Behavior()
         XCTAssertNoThrow(try runSCF(behavior: behavior, handler: FailedHandler("boom")))
-        XCTAssertEqual(behavior.state, 10)
+        XCTAssertEqual(behavior.state, 5)
     }
 
     func testBootstrapFailure() {
@@ -51,7 +51,7 @@ class SCFRuntimeClientTest: XCTestCase {
         XCTAssertThrowsError(try runSCF(behavior: behavior, factory: { $0.eventLoop.makeFailedFuture(TestError("boom")) })) { error in
             XCTAssertEqual(error as? TestError, TestError("boom"))
         }
-        XCTAssertEqual(behavior.state, 1)
+        XCTAssertEqual(behavior.state, 0)
     }
 
     func testGetInvocationServerInternalError() {
@@ -65,13 +65,8 @@ class SCFRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
 
-            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: String) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report error")
-                return .failure(.internalServerError)
-            }
-
-            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTFail("should not report init error")
                 return .failure(.internalServerError)
             }
         }
@@ -91,13 +86,8 @@ class SCFRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
 
-            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: String) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report error")
-                return .failure(.internalServerError)
-            }
-
-            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTFail("should not report init error")
                 return .failure(.internalServerError)
             }
         }
@@ -118,13 +108,8 @@ class SCFRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
 
-            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: String) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report error")
-                return .failure(.internalServerError)
-            }
-
-            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTFail("should not report init error")
                 return .failure(.internalServerError)
             }
         }
@@ -143,13 +128,8 @@ class SCFRuntimeClientTest: XCTestCase {
                 .failure(.internalServerError)
             }
 
-            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: String) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report error")
-                return .failure(.internalServerError)
-            }
-
-            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTFail("should not report init error")
                 return .failure(.internalServerError)
             }
         }
@@ -169,13 +149,8 @@ class SCFRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
 
-            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: String) -> Result<Void, ProcessErrorError> {
                 .failure(.internalServerError)
-            }
-
-            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                XCTFail("should not report init error")
-                return .failure(.internalServerError)
             }
         }
         XCTAssertThrowsError(try runSCF(behavior: Behavior(), handler: FailedHandler("boom"))) { error in
@@ -195,64 +170,14 @@ class SCFRuntimeClientTest: XCTestCase {
                 return .failure(.internalServerError)
             }
 
-            func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
+            func process(error: String) -> Result<Void, ProcessErrorError> {
                 XCTFail("should not report error")
                 return .failure(.internalServerError)
-            }
-
-            func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-                .failure(.internalServerError)
             }
         }
         XCTAssertThrowsError(try runSCF(behavior: Behavior(), factory: { $0.eventLoop.makeFailedFuture(TestError("boom")) })) { error in
             XCTAssertEqual(error as? TestError, TestError("boom"))
         }
-    }
-
-    func testErrorResponseToJSON() {
-        // we want to check if quotes and back slashes are correctly escaped
-        let windowsError = ErrorResponse(
-            errorType: "error",
-            errorMessage: #"underlyingError: "An error with a windows path C:\Windows\""#
-        )
-        let windowsBytes = windowsError.toJSONBytes()
-        XCTAssertEqual(#"{"errorType":"error","errorMessage":"underlyingError: \"An error with a windows path C:\\Windows\\\""}"#, String(decoding: windowsBytes, as: Unicode.UTF8.self))
-
-        // we want to check if unicode sequences work
-        let emojiError = ErrorResponse(
-            errorType: "error",
-            errorMessage: #"🥑👨‍👩‍👧‍👧👩‍👩‍👧‍👧👨‍👨‍👧"#
-        )
-        let emojiBytes = emojiError.toJSONBytes()
-        XCTAssertEqual(#"{"errorType":"error","errorMessage":"🥑👨‍👩‍👧‍👧👩‍👩‍👧‍👧👨‍👨‍👧"}"#, String(decoding: emojiBytes, as: Unicode.UTF8.self))
-    }
-
-    func testInitializationErrorReport() {
-        let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { XCTAssertNoThrow(try eventLoopGroup.syncShutdownGracefully()) }
-
-        let server = NIOHTTP1TestServer(group: eventLoopGroup)
-        defer { XCTAssertNoThrow(try server.stop()) }
-
-        let logger = Logger(label: "TestLogger")
-        let client = SCF.RuntimeClient(eventLoop: eventLoopGroup.next(), configuration: .init(address: "127.0.0.1:\(server.serverPort)"))
-        let result = client.reportInitializationError(logger: logger, error: TestError("boom"))
-
-        var inboundHeader: HTTPServerRequestPart?
-        XCTAssertNoThrow(inboundHeader = try server.readInbound())
-        guard case .head(let head) = try? XCTUnwrap(inboundHeader) else { XCTFail("Expected to get a head first"); return }
-        XCTAssertEqual(head.headers["user-agent"], ["Swift-SCF/Unknown"])
-
-        var inboundBody: HTTPServerRequestPart?
-        XCTAssertNoThrow(inboundBody = try server.readInbound())
-        guard case .body(let body) = try? XCTUnwrap(inboundBody) else { XCTFail("Expected body after head"); return }
-        XCTAssertEqual(try JSONDecoder().decode(ErrorResponse.self, from: body).errorMessage, "boom")
-
-        XCTAssertEqual(try server.readInbound(), .end(nil))
-
-        XCTAssertNoThrow(try server.writeOutbound(.head(.init(version: .init(major: 1, minor: 1), status: .ok))))
-        XCTAssertNoThrow(try server.writeOutbound(.end(nil)))
-        XCTAssertNoThrow(try result.wait())
     }
 
     func testInvocationErrorReport() {
@@ -284,7 +209,7 @@ class SCFRuntimeClientTest: XCTestCase {
         var inboundBody: HTTPServerRequestPart?
         XCTAssertNoThrow(inboundBody = try server.readInbound())
         guard case .body(let body) = try? XCTUnwrap(inboundBody) else { XCTFail("Expected body after head"); return }
-        XCTAssertEqual(try JSONDecoder().decode(ErrorResponse.self, from: body).errorMessage, "boom")
+        XCTAssertEqual(String(buffer: body), "boom")
 
         XCTAssertEqual(try server.readInbound(), .end(nil))
 
@@ -329,23 +254,18 @@ class SCFRuntimeClientTest: XCTestCase {
     class Behavior: SCFServerBehavior {
         var state = 0
 
-        func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
-            self.state += 1
-            return .success(())
-        }
-
         func getInvocation() -> GetInvocationResult {
-            self.state += 2
+            self.state += 1
             return .success(("1", "hello"))
         }
 
         func process(response: String?) -> Result<Void, ProcessResponseError> {
-            self.state += 4
+            self.state += 2
             return .success(())
         }
 
-        func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
-            self.state += 8
+        func process(error: String) -> Result<Void, ProcessErrorError> {
+            self.state += 4
             return .success(())
         }
     }

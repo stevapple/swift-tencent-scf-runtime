@@ -165,7 +165,7 @@ private enum LocalFunction {
                 }
 
             // `/next` endpoint is called by the SCF instance polling for work.
-            case (.GET, let url) where url == Consts.getNextInvocationURL:
+            case (.GET, let url) where url == Endpoint.getNextInvocation:
                 // Check if our server is in the correct state.
                 guard case .waitingForSCFRequest = Self.invocationState else {
                     self.logger.error("invalid invocation state \(Self.invocationState)")
@@ -197,7 +197,7 @@ private enum LocalFunction {
                 }
 
             // `/response` endpoint is called by the cloud function posting the response.
-            case (.POST, let url) where url == Consts.postResponseURL:
+            case (.POST, let url) where url == Endpoint.postResponse:
                 guard case .waitingForSCFResponse(let invocation) = Self.invocationState else {
                     // A response was sent, but we did not expect to receive one.
                     self.logger.error("invalid invocation state \(Self.invocationState)")
@@ -209,7 +209,7 @@ private enum LocalFunction {
                 Self.invocationState = .waitingForSCFRequest
 
             // `/error` endpoint is called by the cloud function posting an error response.
-            case (.POST, let url) where url == Consts.postErrorURL:
+            case (.POST, let url) where url == Endpoint.postError:
                 guard case .waitingForSCFResponse(let invocation) = Self.invocationState else {
                     // A response was sent, but we did not expect to receive one.
                     self.logger.error("invalid invocation state \(Self.invocationState)")

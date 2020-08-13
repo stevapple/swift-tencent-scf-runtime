@@ -65,12 +65,10 @@ extension SCF {
                     self.runtimeClient.reportInitializationReady(logger: logger)
                         .mapResult { _ in handler }
                 }
-                .peekError { error in
-                    self.runtimeClient.reportInitializationError(logger: logger, error: error).peekError { reportingError in
-                        // We're going to bail out because the init failed, so there's not a lot we
-                        // can do other than log that we couldn't report this error back to the runtime.
-                        logger.error("failed reporting initialization error to scf runtime engine: \(reportingError)")
-                    }
+                .peekError { error -> Void in
+                    // We're going to terminate because the init failed, so there's not a lot we
+                    // can do other than log the error back to the runtime.
+                    logger.error("initialization fail with error: \(error)")
                 }
         }
 

@@ -143,12 +143,7 @@ struct BadBehavior: SCFServerBehavior {
         return .failure(.internalServerError)
     }
 
-    func process(error: ErrorResponse) -> Result<Void, ProcessErrorError> {
-        XCTFail("should not report an error")
-        return .failure(.internalServerError)
-    }
-
-    func process(initError: ErrorResponse) -> Result<Void, ProcessErrorError> {
+    func process(error: String) -> Result<Void, ProcessErrorError> {
         XCTFail("should not report an error")
         return .failure(.internalServerError)
     }

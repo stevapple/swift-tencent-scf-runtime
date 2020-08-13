@@ -28,14 +28,11 @@
 import Dispatch
 import NIO
 
-internal enum Consts {
-    static let getNextInvocationURL = "/runtime/invocation/next"
-    static let postResponseURL = "/runtime/invocation/response"
-    static let postErrorURL = "/runtime/invocation/error"
-    static let postInitErrorURL = "/runtime/init/error"
-    static let postInitReadyURL = "/runtime/init/ready"
-    static let functionError = "FunctionError"
-    static let initializationError = "InitializationError"
+internal enum Endpoint {
+    static let getNextInvocation = "/runtime/invocation/next"
+    static let postResponse = "/runtime/invocation/response"
+    static let postError = "/runtime/invocation/error"
+    static let postInitReady = "/runtime/init/ready"
 }
 
 /// Tencent SCF HTTP Headers, used to populate the `SCF.Context` object.

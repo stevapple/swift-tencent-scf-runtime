@@ -30,11 +30,10 @@ import NIO
 import NIOHTTP1
 
 /// An HTTP based client for SCF Runtime Engine. This encapsulates the RESTful methods exposed by the runtime engine:
-/// * /runtime/invocation/next
-/// * /runtime/invocation/response
-/// * /runtime/invocation/error
-/// * /runtime/init/ready
-/// * /runtime/init/error
+/// - POST /runtime/init/ready
+/// - GET /runtime/invocation/next
+/// - POST /runtime/invocation/response
+/// - POST /runtime/invocation/error
 extension SCF {
     internal struct RuntimeClient {
         private let eventLoop: EventLoop
@@ -48,7 +47,7 @@ extension SCF {
 
         /// Requests invocation from the API server.
         func getNextInvocation(logger: Logger) -> EventLoopFuture<(Invocation, ByteBuffer)> {
-            let url = Consts.getNextInvocationURL
+            let url = Endpoint.getNextInvocation
             logger.debug("requesting work from scf runtime engine using \(url)")
             return self.httpClient.get(url: url, headers: RuntimeClient.defaultHeaders).flatMapThrowing { response in
                 guard response.status == .ok else {
@@ -79,15 +78,12 @@ extension SCF {
 
             switch result {
             case .success(let buffer):
-                url = Consts.postResponseURL
+                url = Endpoint.postResponse
                 body = buffer
                 headers = RuntimeClient.defaultHeaders
             case .failure(let error):
-                url = Consts.postErrorURL
-                let errorResponse = ErrorResponse(errorType: Consts.functionError, errorMessage: "\(error)")
-                let bytes = errorResponse.toJSONBytes()
-                body = self.allocator.buffer(capacity: bytes.count)
-                body!.writeBytes(bytes)
+                url = Endpoint.postError
+                body = self.allocator.buffer(string: "\(error)")
                 headers = RuntimeClient.errorHeaders
             }
             logger.debug("reporting results to scf runtime engine using \(url)")
@@ -110,34 +106,9 @@ extension SCF {
 
         /// Reports initialization ready to the runtime engine.
         func reportInitializationReady(logger: Logger) -> EventLoopFuture<Void> {
-            let url = Consts.postInitReadyURL
+            let url = Endpoint.postInitReady
             logger.info("reporting initialization ready to scf runtime engine using \(url)")
             return self.httpClient.post(url: url, headers: RuntimeClient.defaultHeaders, body: .init(string: " ")).flatMapThrowing { response in
-                guard response.status == .ok else {
-                    throw RuntimeError.badStatusCode(response.status)
-                }
-                return ()
-            }.flatMapErrorThrowing { error in
-                switch error {
-                case HTTPClient.Errors.timeout:
-                    throw RuntimeError.upstreamError("timeout")
-                case HTTPClient.Errors.connectionResetByPeer:
-                    throw RuntimeError.upstreamError("connectionResetByPeer")
-                default:
-                    throw error
-                }
-            }
-        }
-
-        /// Reports an initialization error to the runtime engine.
-        func reportInitializationError(logger: Logger, error: Error) -> EventLoopFuture<Void> {
-            let url = Consts.postInitErrorURL
-            let errorResponse = ErrorResponse(errorType: Consts.initializationError, errorMessage: "\(error)")
-            let bytes = errorResponse.toJSONBytes()
-            var body = self.allocator.buffer(capacity: bytes.count)
-            body.writeBytes(bytes)
-            logger.warning("reporting initialization error to scf runtime engine using \(url)")
-            return self.httpClient.post(url: url, headers: RuntimeClient.errorHeaders, body: body).flatMapThrowing { response in
                 guard response.status == .ok else {
                     throw RuntimeError.badStatusCode(response.status)
                 }
@@ -169,24 +140,6 @@ internal extension SCF {
         case noBody
         case json(Error)
         case shutdownError(shutdownError: Error, runnerResult: Result<Int, Error>)
-    }
-}
-
-internal struct ErrorResponse: Codable {
-    var errorType: String
-    var errorMessage: String
-}
-
-internal extension ErrorResponse {
-    func toJSONBytes() -> [UInt8] {
-        var bytes = [UInt8]()
-        bytes.append(UInt8(ascii: "{"))
-        bytes.append(contentsOf: #""errorType":"# .utf8)
-        self.errorType.encodeAsJSONString(into: &bytes)
-        bytes.append(contentsOf: #","errorMessage":"# .utf8)
-        self.errorMessage.encodeAsJSONString(into: &bytes)
-        bytes.append(UInt8(ascii: "}"))
-        return bytes
     }
 }
 
