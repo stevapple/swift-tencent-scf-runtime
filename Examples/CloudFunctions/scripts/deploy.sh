@@ -59,5 +59,4 @@ function_name=${function_name:-SwiftSample} # default for easy testing
 read -p "Cloud Function region (eg: ap-beijing): " scf_region
 scf_region=${scf_region:-ap-beijing} # default for easy testing
 
-tccli scf UpdateFunctionConfiguration --region "$scf_region" --FunctionName "$function_name" --Runtime "CustomRuntime" --InitTimeout 3
 tccli scf UpdateFunctionCode --region "$scf_region" --FunctionName "$function_name" --Handler "swift.main" --CodeSource "Cos" --CosBucketName "$cos_bucket" --CosBucketRegion "$cos_region" --CosObjectName $executable.zip

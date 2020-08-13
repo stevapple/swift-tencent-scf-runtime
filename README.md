@@ -40,7 +40,7 @@ let package = Package(
         .executable(name: "MyCloudFunction", targets: ["MyCloudFunction"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "0.0.1"),
+        .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "0.0.3"),
     ],
     targets: [
         .target(name: "MyCloudFunction", dependencies: [

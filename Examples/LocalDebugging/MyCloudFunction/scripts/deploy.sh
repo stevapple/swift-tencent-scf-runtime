@@ -64,5 +64,5 @@ coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable/cloud-fu
 echo "-------------------------------------------------------------------------"
 echo "Updating \"$function_name\" to the latest \"$executable\""
 echo "-------------------------------------------------------------------------"
-tccli scf UpdateFunctionConfiguration --region "$scf_region" --FunctionName "$function_name" --Runtime "CustomRuntime" --InitTimeout 3
 tccli scf UpdateFunctionCode --region "$scf_region" --FunctionName "$function_name" --Handler "swift.main" --CodeSource "Cos" --CosBucketName "$cos_bucket" --CosBucketRegion "$cos_region" --CosObjectName $executable.zip
+echo "done"
