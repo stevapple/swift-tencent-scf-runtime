@@ -8,7 +8,7 @@ When using serverless functions, attention must be given to resource utilization
 
 Combine this with Swift's developer friendliness, expressiveness, and emphasis on safety, and we have a solution that is great for developers at all skill levels, scalable, and cost effective.
 
-Swift Tencent SCF Runtime is a forked version form [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime), designed to make building cloud functions in Swift simple and safe. The library is an implementation of the [Tencent SCF Custom Runtime API]() and uses an embedded asynchronous HTTP Client based on [SwiftNIO](http://github.com/apple/swift-nio) that is fine-tuned for performance in the SCF Custom Runtime context. The library provides a multi-tier API that allows building a range of cloud functions: From quick and simple Closures to complex, performance-sensitive event handlers.
+Swift Tencent SCF Runtime is a forked version form [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime), designed to make building cloud functions in Swift simple and safe. The library is an implementation of the [Tencent SCF Custom Runtime API](https://cloud.tencent.com/document/product/583/47274#custom-runtime-.E8.BF.90.E8.A1.8C.E6.97.B6-api) and uses an embedded asynchronous HTTP Client based on [SwiftNIO](http://github.com/apple/swift-nio) that is fine-tuned for performance in the SCF Custom Runtime context. The library provides a multi-tier API that allows building a range of cloud functions: From quick and simple Closures to complex, performance-sensitive event handlers.
 
 ## Project status
 
@@ -21,7 +21,7 @@ There are several areas which need additional attention, including but not limit
 * Additional documentation and best practices
 * Additional examples
 
-By August 2020, SCF Custom Runtime is also at an early stage. You may encounter some problems triggered by the SCF Runtime Engine itself, or the API changes and deprecations. You are welcome to open issues actively on those problems.
+By August 2020, [SCF Custom Runtime](https://cloud.tencent.com/document/product/583/47274) is also at an early stage. You may encounter some problems triggered by the SCF Runtime Engine itself, or the API changes and deprecations. You are welcome to open issues actively on those problems.
 
 ## Getting started
 
@@ -325,7 +325,7 @@ The library’s behavior can be fine tuned using environment variables based con
 
 ### SCF Runtime Engine Integration
 
-The library is designed to integrate with SCF Runtime Engine via the [SCF Custom Runtime API]() which was introduced as part of [SCF Custom Runtime]() in 2020. The latter is an HTTP server that exposes three main RESTful endpoint:
+The library is designed to integrate with SCF Runtime Engine via the [SCF Custom Runtime API](https://cloud.tencent.com/document/product/583/47274#custom-runtime-.E8.BF.90.E8.A1.8C.E6.97.B6-api) which was introduced as part of [SCF Custom Runtime](https://cloud.tencent.com/document/product/583/47274) in 2020. The latter is an HTTP server that exposes three main RESTful endpoint:
 
 * `/runtime/invocation/next`
 * `/runtime/invocation/response`
@@ -363,7 +363,7 @@ Serverless Cloud Functions can be invoked directly from the SCF console, SCF API
 * [CMQ Topic Messages](https://cloud.tencent.com/document/product/583/11517)
 * [CKafka Messages](https://cloud.tencent.com/document/product/583/17530)
 
-**Note**: Each one of the integration points mentioned above includes a set of `Codable` structs that transform Tencent Cloud's data model for these APIs.
+**Note**: Each one of the integration points mentioned above includes a set of `Decodable` structs that transform Tencent Cloud's data model for these APIs. APIGateway response is wrapped into an `Encodable` struct with three different initializers to help you build any valid response.
 
 ## Performance
 
