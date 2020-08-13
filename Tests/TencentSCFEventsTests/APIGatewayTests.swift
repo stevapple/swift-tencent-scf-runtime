@@ -95,17 +95,10 @@ class APIGatewayTests: XCTestCase {
     }
     """#
 
-    static let sortedEncoder = { () -> JSONEncoder in
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .sortedKeys
-        return encoder
-    }()
-
-    struct Body: Decodable, Equatable {
-        let test: String
-    }
-
     func testRequestDecodingRequest() {
+        struct Body: Decodable, Equatable {
+            let test: String
+        }
         let data = Self.eventBody.data(using: .utf8)!
         var req: APIGateway.Request<Body>?
         XCTAssertNoThrow(req = try JSONDecoder().decode(APIGateway.Request<Body>.self, from: data))
@@ -171,6 +164,9 @@ class APIGatewayTests: XCTestCase {
     }
 
     func testResponseEncodingWithText() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+
         let resp = APIGateway.Response(
             statusCode: .ok,
             type: .text,
@@ -179,7 +175,7 @@ class APIGatewayTests: XCTestCase {
         let expectedJson = #"{"body":"abc123","headers":{"Content-Type":"text\/plain"},"isBase64Encoded":false,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
             let json = String(data: data, encoding: .utf8)
         {
@@ -190,6 +186,9 @@ class APIGatewayTests: XCTestCase {
     }
 
     func testResponseEncodingWithData() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+
         let body = #"{"hello":"swift"}"#
         let resp = APIGateway.Response(
             statusCode: .ok,
@@ -198,7 +197,7 @@ class APIGatewayTests: XCTestCase {
         let expectedJson = #"{"body":"\#(body.data(using: .utf8)!.base64EncodedString())","headers":{"Content-Type":"application\/octet-stream"},"isBase64Encoded":true,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
             let json = String(data: data, encoding: .utf8)
         {
@@ -209,6 +208,9 @@ class APIGatewayTests: XCTestCase {
     }
 
     func testResponseEncodingWithCodable() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+
         struct Point: Encodable, Equatable {
             let x, y: Double
         }
@@ -223,7 +225,7 @@ class APIGatewayTests: XCTestCase {
         ]
 
         var data: Data?
-        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
             let json = String(data: data, encoding: .utf8)
         {
@@ -234,11 +236,14 @@ class APIGatewayTests: XCTestCase {
     }
 
     func testResponseEncodingWithNil() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+
         let resp = APIGateway.Response(statusCode: .ok)
         let expectedJson = #"{"body":"","headers":{"Content-Type":"text\/plain"},"isBase64Encoded":false,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
             let json = String(data: data, encoding: .utf8)
         {
@@ -249,6 +254,9 @@ class APIGatewayTests: XCTestCase {
     }
 
     func testResponseEncodingWithCustomMIME() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+
         let mime = "application/x-javascript"
         let resp = APIGateway.Response(
             statusCode: .ok,
@@ -258,7 +266,7 @@ class APIGatewayTests: XCTestCase {
         let expectedJson = #"{"body":"console.log(\"Hello world!\");","headers":{"Content-Type":"application\/x-javascript"},"isBase64Encoded":false,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
             let json = String(data: data, encoding: .utf8)
         {

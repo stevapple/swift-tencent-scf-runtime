@@ -76,10 +76,10 @@ class Base64Tests: XCTestCase {
         }
     }
 
-    func testNSStringToDecode() {
+    func testStringToDecode() {
         let test = "1234567"
-        let nsstring = test.data(using: .utf8)!.base64EncodedString()
+        let string = test.data(using: .utf8)!.base64EncodedString()
 
-        XCTAssertNoThrow(try nsstring.base64decoded())
+        XCTAssertNoThrow(try string.base64decoded())
     }
 }

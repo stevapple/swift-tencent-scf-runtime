@@ -27,29 +27,28 @@ class TencentCloudTests: XCTestCase {
     }
 
     func testRegionCodable() throws {
-        let encoder = JSONEncoder()
-        let decoder = JSONDecoder()
         for region in Self.allRegions {
             let wrapped = Wrapped(value: region)
             let json = #"{"value":"\#(region.rawValue)"}"#
-            let encoded = try encoder.encode(wrapped)
-            let decoded = try decoder.decode(Wrapped<TencentCloud.Region>.self, from: json.data(using: .utf8)!)
+
+            let encoded = try JSONEncoder().encode(wrapped)
+            let decoded = try JSONDecoder().decode(Wrapped<TencentCloud.Region>.self, from: json.data(using: .utf8)!)
             XCTAssertEqual(String(data: encoded, encoding: .utf8), json)
             XCTAssertEqual(region, decoded.value)
         }
     }
 
     func testZoneWithRawAndCodable() throws {
-        let encoder = JSONEncoder()
-        let decoder = JSONDecoder()
         for region in Self.allRegions {
             let number = UInt8.random(in: UInt8.min ... UInt8.max)
             let zone = TencentCloud.Zone(rawValue: "\(region)-\(number)")
             XCTAssertNotNil(zone)
+
             let wrapped = Wrapped(value: zone!)
             let json = #"{"value":"\#(zone!.rawValue)"}"#
-            let encoded = try encoder.encode(wrapped)
-            let decoded = try decoder.decode(Wrapped<TencentCloud.Zone>.self, from: json.data(using: .utf8)!)
+
+            let encoded = try JSONEncoder().encode(wrapped)
+            let decoded = try JSONDecoder().decode(Wrapped<TencentCloud.Zone>.self, from: json.data(using: .utf8)!)
             XCTAssertEqual(String(data: encoded, encoding: .utf8), json)
             XCTAssertEqual(zone, decoded.value)
         }
