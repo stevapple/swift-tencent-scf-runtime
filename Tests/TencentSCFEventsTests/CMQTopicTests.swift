@@ -55,16 +55,4 @@ class CMQTopicTests: XCTestCase {
         XCTAssertEqual(record.message.tags, ["tag1", "tag2"])
         XCTAssertEqual(record.message.publishTime.description, "1970-01-01 00:00:00 +0000")
     }
-
-    func testEventDecodeAndEncode() {
-        let data = Self.eventBody.data(using: .utf8)!
-        let decoder = JSONDecoder()
-        var event: CMQ.Topic.Event?
-        XCTAssertNoThrow(event = try decoder.decode(CMQ.Topic.Event.self, from: data))
-
-        var newEvent: CMQ.Topic.Event?
-        XCTAssertNoThrow(newEvent = try decoder.decode(CMQ.Topic.Event.self, from: try JSONEncoder().encode(event)))
-
-        XCTAssertEqual(event, newEvent)
-    }
 }

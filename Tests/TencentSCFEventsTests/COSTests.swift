@@ -107,16 +107,4 @@ class COSTests: XCTestCase {
         XCTAssertEqual(record.requestId, 179_398_952)
         XCTAssertEqual(record.reservedInfo, "")
     }
-
-    func testEventDecodeAndEncode() {
-        let data = Self.eventBody.data(using: .utf8)!
-        let decoder = JSONDecoder()
-        var event: COS.Event?
-        XCTAssertNoThrow(event = try decoder.decode(COS.Event.self, from: data))
-
-        var newEvent: COS.Event?
-        XCTAssertNoThrow(newEvent = try decoder.decode(COS.Event.self, from: try JSONEncoder().encode(event)))
-
-        XCTAssertEqual(event, newEvent)
-    }
 }

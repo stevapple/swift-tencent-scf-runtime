@@ -18,7 +18,7 @@ import struct Foundation.Date
 
 public enum CMQ {
     public enum Topic {
-        public struct Event: Codable, Equatable {
+        public struct Event: Decodable, Equatable {
             public let records: [Record]
 
             public enum CodingKeys: String, CodingKey {
@@ -26,7 +26,7 @@ public enum CMQ {
             }
         }
 
-        public struct Record: Codable, Equatable {
+        public struct Record: Decodable, Equatable {
             internal static let type: String = "topic"
 
             public let topicOwner: UInt64
@@ -58,19 +58,9 @@ public enum CMQ {
                 topicName = try container.decode(String.self, forKey: .topicName)
                 subscriptionName = try container.decode(String.self, forKey: .subscriptionName)
             }
-
-            public func encode(to encoder: Encoder) throws {
-                var wrapperContainer = encoder.container(keyedBy: WrappingCodingKeys.self)
-                try wrapperContainer.encode(message, forKey: .cmq)
-                var container = wrapperContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .cmq)
-                try container.encode(Self.type, forKey: .type)
-                try container.encode(topicOwner, forKey: .topicOwner)
-                try container.encode(topicName, forKey: .topicName)
-                try container.encode(subscriptionName, forKey: .subscriptionName)
-            }
         }
 
-        public struct Message: Codable, Equatable {
+        public struct Message: Decodable, Equatable {
             internal static let separator: Character = ","
 
             public let id: String
@@ -99,15 +89,6 @@ public enum CMQ {
 
                 requestId = try container.decode(String.self, forKey: .requestId)
                 publishTime = try container.decode(Date.self, forKey: .publishTime, using: DateCoding.ISO8601WithFractionalSeconds.self)
-            }
-
-            public func encode(to encoder: Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self)
-                try container.encode(id, forKey: .messageId)
-                try container.encode(body, forKey: .messageBody)
-                try container.encode(tags.joined(separator: .init(Self.separator)), forKey: .messageTags)
-                try container.encode(publishTime, forKey: .publishTime, using: DateCoding.ISO8601WithFractionalSeconds.self)
-                try container.encode(requestId, forKey: .requestId)
             }
         }
     }

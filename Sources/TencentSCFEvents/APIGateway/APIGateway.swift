@@ -20,7 +20,7 @@ import class Foundation.JSONEncoder
 public enum APIGateway {
     /// `APIGateway.Request` contains data coming from the API Gateway.
     public struct Request<T: Decodable> {
-        public struct Context: Codable {
+        public struct Context: Decodable {
             public let identity: [String: String]
             public let serviceId: String
             public let path: String
@@ -42,7 +42,7 @@ public enum APIGateway {
         public let body: T?
     }
 
-    public enum Stage: String, Codable {
+    public enum Stage: String, Decodable {
         case test
         case debug
         case prepub
@@ -50,7 +50,7 @@ public enum APIGateway {
     }
 
     /// `APIGateway.Response` stores response ready for sending to the API Gateway.
-    public struct Response: Codable {
+    public struct Response: Encodable {
         public let statusCode: HTTPResponseStatus
         public let headers: HTTPHeaders
         public let body: String

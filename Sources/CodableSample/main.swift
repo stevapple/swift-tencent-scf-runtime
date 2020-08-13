@@ -28,11 +28,11 @@
 import NIO
 import TencentSCFRuntime
 
-struct Request: Codable {
+struct Request: Decodable {
     let body: String
 }
 
-struct Response: Codable {
+struct Response: Encodable {
     let body: String
 }
 

@@ -72,13 +72,13 @@ More commonly, the event would be a JSON, which is modeled using `Codable`, for 
 // Import the module.
 import TencentSCFRuntime
 
-// Request, uses Codable for transparent JSON encoding.
-private struct Request: Codable {
+// Request, uses Decodable for transparent JSON decoding.
+private struct Request: Decodable {
     let name: String
 }
 
-// Response, uses Codable for transparent JSON encoding.
-private struct Response: Codable {
+// Response, uses Encodable for transparent JSON encoding.
+private struct Response: Encodable {
     let message: String
 }
 

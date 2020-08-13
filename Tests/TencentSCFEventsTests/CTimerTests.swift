@@ -57,16 +57,4 @@ class CTimerTests: XCTestCase {
             XCTAssertNil(context.underlyingError)
         }
     }
-
-    func testEventDecodeAndEncode() {
-        let data = Self.eventBody.data(using: .utf8)!
-        let decoder = JSONDecoder()
-        var event: CTimer.Event?
-        XCTAssertNoThrow(event = try decoder.decode(CTimer.Event.self, from: data))
-
-        var newEvent: CTimer.Event?
-        XCTAssertNoThrow(newEvent = try decoder.decode(CTimer.Event.self, from: try JSONEncoder().encode(event)))
-
-        XCTAssertEqual(event, newEvent)
-    }
 }

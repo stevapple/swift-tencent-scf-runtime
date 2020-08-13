@@ -95,7 +95,13 @@ class APIGatewayTests: XCTestCase {
     }
     """#
 
-    struct Body: Codable, Equatable {
+    static let sortedEncoder = { () -> JSONEncoder in
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        return encoder
+    }()
+
+    struct Body: Decodable, Equatable {
         let test: String
     }
 
@@ -157,7 +163,7 @@ class APIGatewayTests: XCTestCase {
     }
 
     func testRequestDecodingWrongBody() {
-        struct WrongBody: Codable {
+        struct WrongBody: Decodable {
             let body: String
         }
         let data = Self.eventBody.data(using: .utf8)!
@@ -170,16 +176,17 @@ class APIGatewayTests: XCTestCase {
             type: .text,
             body: "abc123"
         )
+        let expectedJson = #"{"body":"abc123","headers":{"Content-Type":"text\/plain"},"isBase64Encoded":false,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try JSONEncoder().encode(resp))
-        var json: APIGateway.Response?
-        XCTAssertNoThrow(json = try JSONDecoder().decode(APIGateway.Response.self, from: XCTUnwrap(data)))
-
-        XCTAssertEqual(json?.statusCode, resp.statusCode)
-        XCTAssertEqual(json?.body, resp.body)
-        XCTAssertEqual(json?.isBase64Encoded, false)
-        XCTAssertEqual(json?.headers["Content-Type"], "text/plain")
+        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        if let data = data,
+            let json = String(data: data, encoding: .utf8)
+        {
+            XCTAssertEqual(json, expectedJson)
+        } else {
+            XCTFail("Expect output JSON")
+        }
     }
 
     func testResponseEncodingWithData() {
@@ -188,61 +195,54 @@ class APIGatewayTests: XCTestCase {
             statusCode: .ok,
             body: body.data(using: .utf8)!
         )
+        let expectedJson = #"{"body":"\#(body.data(using: .utf8)!.base64EncodedString())","headers":{"Content-Type":"application\/octet-stream"},"isBase64Encoded":true,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try JSONEncoder().encode(resp))
-        var json: APIGateway.Response?
-        XCTAssertNoThrow(json = try JSONDecoder().decode(APIGateway.Response.self, from: XCTUnwrap(data)))
-
-        guard let newResp = json else {
-            XCTFail("Expected to have value")
-            return
+        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        if let data = data,
+            let json = String(data: data, encoding: .utf8)
+        {
+            XCTAssertEqual(json, expectedJson)
+        } else {
+            XCTFail("Expect output JSON")
         }
-
-        XCTAssertEqual(newResp.statusCode, resp.statusCode)
-        XCTAssertEqual(newResp.isBase64Encoded, true)
-        XCTAssertEqual(newResp.headers["Content-Type"], "application/octet-stream")
-        XCTAssertEqual(Data(base64Encoded: newResp.body), body.data(using: .utf8))
     }
 
     func testResponseEncodingWithCodable() {
-        struct Point: Codable, Equatable {
+        struct Point: Encodable, Equatable {
             let x, y: Double
         }
-        let point = Point(x: 1.0, y: -0.01)
+        let point = Point(x: 1.01, y: -0.01)
         let resp = APIGateway.Response(
             statusCode: .ok,
             codableBody: point
         )
+        let expectedJson = #"{"body":"{\"x\":1.01,\"y\":-0.01}","headers":{"Content-Type":"application\/json"},"isBase64Encoded":false,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try JSONEncoder().encode(resp))
-        var json: APIGateway.Response?
-        XCTAssertNoThrow(json = try JSONDecoder().decode(APIGateway.Response.self, from: XCTUnwrap(data)))
-
-        guard let newResp = json else {
-            XCTFail("Expected to have value")
-            return
+        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        if let data = data,
+            let json = String(data: data, encoding: .utf8)
+        {
+            XCTAssertEqual(json, expectedJson)
+        } else {
+            XCTFail("Expect output JSON")
         }
-
-        XCTAssertEqual(newResp.statusCode, resp.statusCode)
-        XCTAssertEqual(newResp.isBase64Encoded, false)
-        XCTAssertEqual(newResp.headers["Content-Type"], "application/json")
-        XCTAssertEqual(try JSONDecoder().decode(Point.self, from: (newResp.body.data(using: .utf8))!), point)
     }
 
     func testResponseEncodingWithNil() {
         let resp = APIGateway.Response(statusCode: .ok)
+        let expectedJson = #"{"body":"","headers":{"Content-Type":"text\/plain"},"isBase64Encoded":false,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try JSONEncoder().encode(resp))
-        var json: APIGateway.Response?
-        XCTAssertNoThrow(json = try JSONDecoder().decode(APIGateway.Response.self, from: XCTUnwrap(data)))
-
-        XCTAssertEqual(json?.statusCode, resp.statusCode)
-        XCTAssertEqual(json?.headers["Content-Type"], "text/plain")
-        XCTAssertEqual(json?.isBase64Encoded, false)
-        XCTAssertEqual(json?.body, "")
+        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        if let data = data,
+            let json = String(data: data, encoding: .utf8)
+        {
+            XCTAssertEqual(json, expectedJson)
+        } else {
+            XCTFail("Expect output JSON")
+        }
     }
 
     func testResponseEncodingWithCustomMIME() {
@@ -252,15 +252,16 @@ class APIGatewayTests: XCTestCase {
             type: .init(rawValue: mime),
             body: "console.log(\"Hello world!\");"
         )
+        let expectedJson = #"{"body":"console.log(\"Hello world!\");","headers":{"Content-Type":"application\/x-javascript"},"isBase64Encoded":false,"statusCode":200}"#
 
         var data: Data?
-        XCTAssertNoThrow(data = try JSONEncoder().encode(resp))
-        var json: APIGateway.Response?
-        XCTAssertNoThrow(json = try JSONDecoder().decode(APIGateway.Response.self, from: XCTUnwrap(data)))
-
-        XCTAssertEqual(json?.statusCode, resp.statusCode)
-        XCTAssertEqual(json?.body, resp.body)
-        XCTAssertEqual(json?.isBase64Encoded, false)
-        XCTAssertEqual(json?.headers["Content-Type"], mime)
+        XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
+        if let data = data,
+            let json = String(data: data, encoding: .utf8)
+        {
+            XCTAssertEqual(json, expectedJson)
+        } else {
+            XCTFail("Expect output JSON")
+        }
     }
 }

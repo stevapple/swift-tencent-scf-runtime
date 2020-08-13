@@ -49,7 +49,7 @@ SCF.run { (context: SCF.Context, request: Request, callback: (Result<Response, E
 
 // MARK: - Request and Response
 
-struct Request: Codable {
+struct Request: Decodable {
     let requestID: String
     let error: Error
 
@@ -58,7 +58,7 @@ struct Request: Codable {
         self.error = error ?? .none
     }
 
-    public enum Error: Codable, RawRepresentable {
+    public enum Error: Decodable, RawRepresentable {
         case none
         case managed
         case unmanaged(String)
@@ -92,7 +92,7 @@ struct Request: Codable {
     }
 }
 
-struct Response: Codable {
+struct Response: Encodable {
     let scfRequestID: String
     let requestID: String
     let status: Status
@@ -103,7 +103,7 @@ struct Response: Codable {
         self.status = status
     }
 
-    public enum Status: Int, Codable {
+    public enum Status: Int, Encodable {
         case ok
         case error
     }

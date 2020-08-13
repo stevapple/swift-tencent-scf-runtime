@@ -18,7 +18,7 @@ import struct Foundation.URL
 // https://cloud.tencent.com/document/product/583/9707
 
 public enum COS {
-    public struct Event: Codable, Equatable {
+    public struct Event: Decodable, Equatable {
         public struct Record: Equatable {
             public let cos: Entity
 
@@ -39,7 +39,7 @@ public enum COS {
         }
     }
 
-    public struct RequestParameters: Codable, Equatable {
+    public struct RequestParameters: Decodable, Equatable {
         public let sourceIP: String
         public let headers: [String: String]
 
@@ -49,7 +49,7 @@ public enum COS {
         }
     }
 
-    public struct Entity: Codable, Equatable {
+    public struct Entity: Decodable, Equatable {
         public let notificationId: String
         public let schemaVersion: String
         public let bucket: Bucket
@@ -63,7 +63,7 @@ public enum COS {
         }
     }
 
-    public struct Bucket: Codable, Equatable {
+    public struct Bucket: Decodable, Equatable {
         public let region: String
         public let name: String
         public let appid: String

@@ -73,16 +73,4 @@ class CKafkaTests: XCTestCase {
             return
         }
     }
-
-    func testEventDecodeAndEncode() {
-        let data = Self.eventBody.data(using: .utf8)!
-        let decoder = JSONDecoder()
-        var event: CKafka.Event?
-        XCTAssertNoThrow(event = try decoder.decode(CKafka.Event.self, from: data))
-
-        var newEvent: CKafka.Event?
-        XCTAssertNoThrow(newEvent = try decoder.decode(CKafka.Event.self, from: try JSONEncoder().encode(event)))
-
-        XCTAssertEqual(event, newEvent)
-    }
 }

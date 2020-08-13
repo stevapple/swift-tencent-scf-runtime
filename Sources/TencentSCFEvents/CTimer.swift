@@ -17,9 +17,8 @@ import struct Foundation.Date
 // https://cloud.tencent.com/document/product/583/9708
 
 public enum CTimer {
-    public struct Event: Codable, Equatable {
-        internal static let type: String = "Timer"
-
+    public struct Event: Decodable, Equatable {
+        private static let type: String = "Timer"
         public let trigger: String
         public var time: Date
         public let message: String
@@ -40,14 +39,6 @@ public enum CTimer {
             trigger = try container.decode(String.self, forKey: .trigger)
             time = try container.decode(Date.self, forKey: .time, using: DateCoding.ISO8601.self)
             message = try container.decode(String.self, forKey: .message)
-        }
-
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(Self.type, forKey: .type)
-            try container.encode(trigger, forKey: .trigger)
-            try container.encode(time, forKey: .time, using: DateCoding.ISO8601.self)
-            try container.encode(message, forKey: .message)
         }
     }
 }

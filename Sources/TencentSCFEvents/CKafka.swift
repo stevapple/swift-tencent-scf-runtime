@@ -15,7 +15,7 @@
 // https://cloud.tencent.com/document/product/583/17530
 
 public enum CKafka {
-    public struct Event: Codable, Equatable {
+    public struct Event: Decodable, Equatable {
         public typealias Record = Message
         public let records: [Record]
 
@@ -24,7 +24,7 @@ public enum CKafka {
         }
     }
 
-    public struct Message: Codable, Equatable {
+    public struct Message: Decodable, Equatable {
         public let topic: String
         public let partition: UInt64
         public let offset: UInt64
@@ -51,16 +51,6 @@ public enum CKafka {
             self.offset = try container.decode(UInt64.self, forKey: .offset)
             self.key = try container.decode(String.self, forKey: .key)
             self.body = try container.decode(String.self, forKey: .body)
-        }
-
-        public func encode(to encoder: Encoder) throws {
-            var wrapperContainer = encoder.container(keyedBy: WrappingCodingKeys.self)
-            var container = wrapperContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .ckafka)
-            try container.encode(self.topic, forKey: .topic)
-            try container.encode(self.partition, forKey: .partition)
-            try container.encode(self.offset, forKey: .offset)
-            try container.encode(self.key, forKey: .key)
-            try container.encode(self.body, forKey: .body)
         }
     }
 }

@@ -17,7 +17,7 @@ import struct Foundation.URL
 
 // https://cloud.tencent.com/document/product/583/9707
 
-extension COS.Object: Codable {
+extension COS.Object: Decodable {
     enum CodingKeys: String, CodingKey {
         case url
         case key
@@ -52,22 +52,5 @@ extension COS.Object: Codable {
         expireTime = try metaContainer.decodeIfPresent(Date.self, forKey: .expireTime, using: DateCoding.RFC5322.self)
         customMeta = try container.decode([String: String].self, forKey: .meta)
             .compactMapKeys { $0.starts(with: "x-cos-meta-") ? String($0.dropFirst(11)) : nil }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(url, forKey: .url)
-        try container.encode(fullKey, forKey: .key)
-        try container.encode(vid, forKey: .vid)
-        try container.encode(size, forKey: .size)
-        try container.encode(customMeta.mapKeys { "x-cos-meta-" + $0 }, forKey: .meta)
-
-        var metaContainer = container.nestedContainer(keyedBy: MetaCodingKeys.self, forKey: .meta)
-        try metaContainer.encodeIfPresent(contentType, forKey: .contentType)
-        try metaContainer.encodeIfPresent(cacheControl, forKey: .cacheControl)
-        try metaContainer.encodeIfPresent(contentDisposition, forKey: .contentDisposition)
-        try metaContainer.encodeIfPresent(contentEncoding, forKey: .contentEncoding)
-        try metaContainer.encodeIfPresent(requestId, forKey: .requestId)
-        try metaContainer.encodeIfPresent(expireTime, forKey: .expireTime, using: DateCoding.RFC5322.self)
     }
 }

@@ -32,11 +32,11 @@ import XCTest
 
 class SCFTestingTests: XCTestCase {
     func testCodableClosure() {
-        struct Request: Codable {
+        struct Request: Decodable {
             let name: String
         }
 
-        struct Response: Codable {
+        struct Response: Encodable {
             let message: String
         }
 
@@ -51,7 +51,7 @@ class SCFTestingTests: XCTestCase {
     }
 
     func testCodableVoidClosure() {
-        struct Request: Codable {
+        struct Request: Decodable {
             let name: String
         }
 
@@ -64,11 +64,11 @@ class SCFTestingTests: XCTestCase {
     }
 
     func testSCFHandler() {
-        struct Request: Codable {
+        struct Request: Decodable {
             let name: String
         }
 
-        struct Response: Codable {
+        struct Response: Encodable {
             let message: String
         }
 

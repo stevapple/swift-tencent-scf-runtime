@@ -14,7 +14,7 @@
 
 import struct Foundation.Date
 
-extension COS.Event.Record: Codable {
+extension COS.Event.Record: Decodable {
     enum CodingKeys: String, CodingKey {
         case event
         case cos
@@ -44,20 +44,5 @@ extension COS.Event.Record: Codable {
         requestId = try eventContainer.decode(UInt64.self, forKey: .requestId)
         requestParameters = try eventContainer.decode(COS.RequestParameters.self, forKey: .requestParameters)
         eventTime = try eventContainer.decode(Date.self, forKey: .eventTime, using: DateCoding.UnixTimestamp.self)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(cos, forKey: .cos)
-
-        var eventContainer = container.nestedContainer(keyedBy: EventCodingKeys.self, forKey: .event)
-        try eventContainer.encode(eventName, forKey: .eventName)
-        try eventContainer.encode(eventVersion, forKey: .eventVersion)
-        try eventContainer.encode(eventSource, forKey: .eventSource)
-        try eventContainer.encode(eventQueue, forKey: .eventQueue)
-        try eventContainer.encode(eventTime, forKey: .eventTime, using: DateCoding.UnixTimestamp.self)
-        try eventContainer.encode(requestParameters, forKey: .requestParameters)
-        try eventContainer.encode(requestId, forKey: .requestId)
-        try eventContainer.encode(reservedInfo, forKey: .reservedInfo)
     }
 }
