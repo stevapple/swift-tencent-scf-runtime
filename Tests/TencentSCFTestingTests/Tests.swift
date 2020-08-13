@@ -157,3 +157,7 @@ class SCFTestingTests: XCTestCase {
         XCTAssertNoThrow(try SCF.test(myFunction, with: UUID().uuidString.lowercased(), using: config))
     }
 }
+
+#if os(Linux)
+extension DispatchTimeInterval: Equatable {}
+#endif

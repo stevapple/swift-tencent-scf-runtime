@@ -29,7 +29,6 @@ jobs:
           - focal
           - amazonlinux2
           - centos8
-          - centos7
     container:
       image: swift:5.2.5-${{ matrix.os }}
     steps:

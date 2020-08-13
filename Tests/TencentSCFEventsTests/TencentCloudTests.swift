@@ -17,6 +17,9 @@ import XCTest
 
 class TencentCloudTests: XCTestCase {
     static let allRegions = Set(TencentCloud.Region.mainland + TencentCloud.Region.overseas)
+    struct Wrapped<T: Codable>: Codable {
+        let value: T
+    }
 
     func testRegionCountEqual() {
         XCTAssertEqual(TencentCloud.Region.mainland.count + TencentCloud.Region.overseas.count, TencentCloud.Region.regular.count + TencentCloud.Region.financial.count)
@@ -27,26 +30,28 @@ class TencentCloudTests: XCTestCase {
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
         for region in Self.allRegions {
-            let json = "\"\(region.rawValue)\""
-            let encoded = try encoder.encode(region)
-            let decoded = try decoder.decode(TencentCloud.Region.self, from: json.data(using: .utf8)!)
+            let wrapped = Wrapped(value: region)
+            let json = #"{"value":"\#(region.rawValue)"}"#
+            let encoded = try encoder.encode(wrapped)
+            let decoded = try decoder.decode(Wrapped<TencentCloud.Region>.self, from: json.data(using: .utf8)!)
             XCTAssertEqual(String(data: encoded, encoding: .utf8), json)
-            XCTAssertEqual(region, decoded)
+            XCTAssertEqual(region, decoded.value)
         }
     }
 
     func testZoneWithRawAndCodable() throws {
-        let number = 23
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
         for region in Self.allRegions {
+            let number = UInt8.random(in: UInt8.min ... UInt8.max)
             let zone = TencentCloud.Zone(rawValue: "\(region)-\(number)")
             XCTAssertNotNil(zone)
-            let json = "\"\(zone!)\""
-            let encoded = try encoder.encode(zone)
-            let decoded = try decoder.decode(TencentCloud.Zone.self, from: json.data(using: .utf8)!)
+            let wrapped = Wrapped(value: zone!)
+            let json = #"{"value":"\#(zone!.rawValue)"}"#
+            let encoded = try encoder.encode(wrapped)
+            let decoded = try decoder.decode(Wrapped<TencentCloud.Zone>.self, from: json.data(using: .utf8)!)
             XCTAssertEqual(String(data: encoded, encoding: .utf8), json)
-            XCTAssertEqual(zone, decoded)
+            XCTAssertEqual(zone, decoded.value)
         }
     }
 }

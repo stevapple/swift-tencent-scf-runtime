@@ -217,14 +217,17 @@ class APIGatewayTests: XCTestCase {
             statusCode: .ok,
             codableBody: point
         )
-        let expectedJson = #"{"body":"{\"x\":1.01,\"y\":-0.01}","headers":{"Content-Type":"application\/json"},"isBase64Encoded":false,"statusCode":200}"#
+        let expectedJson = [
+            #"{"body":"{\"x\":1.01,\"y\":-0.01}","headers":{"Content-Type":"application\/json"},"isBase64Encoded":false,"statusCode":200}"#,
+            #"{"body":"{\"y\":-0.01,\"x\":1.01}","headers":{"Content-Type":"application\/json"},"isBase64Encoded":false,"statusCode":200}"#,
+        ]
 
         var data: Data?
         XCTAssertNoThrow(data = try Self.sortedEncoder.encode(resp))
         if let data = data,
             let json = String(data: data, encoding: .utf8)
         {
-            XCTAssertEqual(json, expectedJson)
+            XCTAssertTrue(expectedJson.contains(json))
         } else {
             XCTFail("Expect output JSON")
         }
