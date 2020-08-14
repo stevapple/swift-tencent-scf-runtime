@@ -52,7 +52,7 @@ class CTimerTests: XCTestCase {
                 XCTFail("Unexpected error: \(error)"); return
             }
 
-            XCTAssertEqual(context.codingPath.compactMap { $0.stringValue }, ["Type"])
+            XCTAssertEqual(context.codingPath.map(\.stringValue), ["Type"])
             XCTAssertEqual(context.debugDescription, #"Expected type to be "Timer", but `\#(type)` does not match"#)
             XCTAssertNil(context.underlyingError)
         }
