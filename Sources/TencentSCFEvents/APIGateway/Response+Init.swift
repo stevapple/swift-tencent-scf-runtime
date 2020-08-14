@@ -31,8 +31,11 @@ extension APIGateway.Response {
                 encoding: .utf8
             ) ?? ""
             self.statusCode = statusCode
+        } catch let err as EncodingError {
+            self.body = #"{"error":"EncodingError","message":"\#("\(err)".jsonEncoded())"}"#
+            self.statusCode = .internalServerError
         } catch let err {
-            self.body = #"{"errorType":"FunctionError","errorMsg":"\#(err.localizedDescription)"}"#
+            self.body = #"{"error":"UnexpectedError","message":"\#("\(err)".jsonEncoded())"}"#
             self.statusCode = .internalServerError
         }
         self.isBase64Encoded = false

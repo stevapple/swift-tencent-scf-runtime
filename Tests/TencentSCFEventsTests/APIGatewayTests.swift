@@ -275,4 +275,33 @@ class APIGatewayTests: XCTestCase {
             XCTFail("Expect output JSON")
         }
     }
+
+    func testResponseEncodingWithEncodingError() {
+        struct NotReallyEncodable: Encodable {
+            let value: String = "NotReallyEncodable"
+
+            func encode(to encoder: Encoder) throws {
+                throw EncodingError.invalidValue(self.value, .init(codingPath: encoder.codingPath, debugDescription: "You're testing something not really Encodable! Good luck."))
+            }
+        }
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+
+        let resp = APIGateway.Response(
+            statusCode: .ok,
+            codableBody: NotReallyEncodable()
+        )
+        let expectedJson = #"{"body":"{\"error\":\"EncodingError\",\"message\":\"invalidValue(\\\"NotReallyEncodable\\\", Swift.EncodingError.Context(codingPath: [], debugDescription: \\\"You\\\\'re testing something not really Encodable! Good luck.\\\"\"}","headers":{"Content-Type":"application\/json"},"isBase64Encoded":false,"statusCode":500}"#
+
+        var data: Data?
+        XCTAssertNoThrow(data = try encoder.encode(resp))
+        if let data = data,
+            let json = String(data: data, encoding: .utf8)
+        {
+            XCTAssertEqual(json, expectedJson)
+        } else {
+            XCTFail("Expect output JSON")
+        }
+    }
 }
