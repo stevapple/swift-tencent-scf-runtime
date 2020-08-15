@@ -28,6 +28,7 @@
 import Dispatch
 import Logging
 import NIO
+import TencentCloudCore
 
 // MARK: - InitializationContext
 
@@ -82,7 +83,7 @@ extension SCF {
         public static let appid = SCF.env("TENCENTCLOUD_APPID") ?? ""
 
         /// The Tencent Cloud region that the cloud function is in.
-        public static let region = SCF.env("TENCENTCLOUD_REGION") ?? ""
+        public static let region = TencentCloud.Region(rawValue: SCF.env("TENCENTCLOUD_REGION") ?? "")!
 
         /// The name of the cloud function.
         public static let name = SCF.env("SCF_FUNCTIONNAME") ?? ""
