@@ -324,6 +324,41 @@ The library’s behavior can be fine tuned using environment variables based con
 * `STOP_SIGNAL`: Signal to capture for termination. Set to TERM by default.
 * `REQUEST_TIMEOUT`:  Max time to wait for responses to come back from the SCF runtime engine. Set to none by default.
 
+### Local Testing (DEBUG Mode Only)
+
+If you'd like to test the cloud function with HTTP requests, we provide a simple local emulator. To enable it, set the environment variable `LOCAL_SCF_SERVER_ENABLED` to `true`.
+
+By `swift run`, you'll see the logger output saying `LocalSCFServer started and listening on 127.0.0.1:9001, receiving events on /invoke` which means the local emulator is up. Then you can send HTTP `POST` requests to `http://127.0.0.1:9001/invoke` endpoint to invoke your cloud function.
+
+We also provide a way to inject environment variables without actually changing it. Since it only works in DEBUG mode, don't forget to wrap such codes with `#if DEBUG` and `#endif`.
+
+```swift
+// Import the module.
+import TencentSCFRuntime
+
+#if DEBUG
+// Start LocalServer by default.
+SCF.Env["LOCAL_SCF_SERVER_ENABLED"] = "true"
+
+// Simulate SCF environment.
+let variables = [
+    "TENCENTCLOUD_UIN": "100012345678",
+    "TENCENTCLOUD_APPID": "123456789",
+    "TENCENTCLOUD_REGION": "ap-shanghai"
+]
+SCF.Env.update(with: variables)
+#endif
+
+// Our SCF handler.
+SCF.run { (context, name: String, callback: @escaping (Result<String, Error>) -> Void) in
+    ...
+}
+```
+
+We simulate the SCF environment with some variables set by default. The value set by user code is of the highest priority, while the framework simulation has the lowest.
+
+You can read some contextual variables through `SCF.Context`. All the environment variables can be accessed through `SCF.Env`.
+
 ### SCF Runtime Engine Integration
 
 The library is designed to integrate with SCF Runtime Engine via the [SCF Custom Runtime API](https://cloud.tencent.com/document/product/583/47274#custom-runtime-.E8.BF.90.E8.A1.8C.E6.97.B6-api) which was introduced as part of [SCF Custom Runtime](https://cloud.tencent.com/document/product/583/47274) in 2020. The latter is an HTTP server that exposes three main RESTful endpoint:
