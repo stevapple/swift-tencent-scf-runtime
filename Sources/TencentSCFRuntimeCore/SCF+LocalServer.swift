@@ -44,11 +44,11 @@ import NIOHTTP1
 extension SCF {
     /// Execute code in the context of a mock SCF server.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - invocationEndpoint: The endpoint to post events to.
     ///     - body: Code to run within the context of the mock server. Typically this would be a `SCF.run` function call.
     ///
-    /// - note: This API is designed stricly for local testing and is behind a DEBUG flag.
+    /// - Note: This API is designed stricly for local testing and is behind a DEBUG flag.
     @discardableResult
     static func withLocalServer<Value>(invocationEndpoint: String? = nil, _ body: @escaping () -> Value) throws -> Value {
         let server = LocalFunction.Server(invocationEndpoint: invocationEndpoint)

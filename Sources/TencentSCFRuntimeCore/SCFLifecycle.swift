@@ -32,7 +32,7 @@ import NIOConcurrencyHelpers
 extension SCF {
     /// `Lifecycle` manages the SCF process lifecycle.
     ///
-    /// - note: It is intended to be used within a single `EventLoop`. For this reason this class is not thread safe.
+    /// - Note: It is intended to be used within a single `EventLoop`. For this reason this class is not thread safe.
     public final class Lifecycle {
         private let eventLoop: EventLoop
         private let shutdownPromise: EventLoopPromise<Int>
@@ -49,7 +49,7 @@ extension SCF {
 
         /// Create a new `Lifecycle`.
         ///
-        /// - parameters:
+        /// - Parameters:
         ///     - eventLoop: An `EventLoop` to run the cloud function on.
         ///     - logger: A `Logger` to log the SCF events.
         ///     - factory: A `SCFHandlerFactory` to create the concrete SCF handler.
@@ -82,7 +82,7 @@ extension SCF {
         ///
         /// - Returns: An `EventLoopFuture` that is fulfilled after the SCF hander has been created and initiliazed, and a first run has been scheduled.
         ///
-        /// - note: This method must be called  on the `EventLoop` the `Lifecycle` has been initialized with.
+        /// - Note: This method must be called  on the `EventLoop` the `Lifecycle` has been initialized with.
         public func start() -> EventLoopFuture<Void> {
             self.eventLoop.assertInEventLoop()
 

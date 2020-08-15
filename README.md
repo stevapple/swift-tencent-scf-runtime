@@ -158,7 +158,7 @@ public protocol ByteBufferSCFHandler {
     /// The SCF handling method.
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - context: Runtime `Context`.
     ///     - event: The event or input payload encoded as `ByteBuffer`.
     ///
@@ -191,7 +191,7 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
     /// The SCF handling method.
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - context: Runtime `Context`.
     ///     - event: Event of type `In` representing the event or request.
     ///
@@ -201,7 +201,8 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
 
     /// Encode a response of type `Out` to `ByteBuffer`.
     /// Concrete SCF handlers implement this method to provide coding functionality.
-    /// - parameters:
+    ///
+    /// - Parameters:
     ///     - allocator: A `ByteBufferAllocator` to help allocate the `ByteBuffer`.
     ///     - value: Response of type `Out`.
     ///
@@ -211,7 +212,7 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
     /// Decode a`ByteBuffer` to a request or event of type `In`
     /// Concrete SCF handlers implement this method to provide coding functionality.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - buffer: The `ByteBuffer` to decode.
     ///
     /// - Returns: A request or event of type `In`.
@@ -235,7 +236,7 @@ public protocol SCFHandler: EventLoopSCFHandler {
     /// The SCF handling method.
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - context: Runtime `Context`.
     ///     - event: Event of type `In` representing the event or request.
     ///     - callback: Completion handler to report the result of the SCF function back to the runtime engine.
@@ -298,13 +299,13 @@ public final class Context: CustomDebugStringConvertible {
 
     /// `Logger` to log with.
     ///
-    /// - note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
+    /// - Note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
     public let logger: Logger
 
     /// The `EventLoop` the SCF function is executed on. Use this to schedule work with.
     /// This is useful when implementing the `EventLoopSCFHandler` protocol.
     ///
-    /// - note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
+    /// - Note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
     ///         Most importantly the `EventLoop` must never be blocked.
     public let eventLoop: EventLoop
 

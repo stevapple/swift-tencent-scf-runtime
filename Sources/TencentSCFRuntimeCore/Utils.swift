@@ -28,6 +28,7 @@
 import Dispatch
 import NIO
 
+/// Tencent SCF Custom Runtime API endpoints.
 internal enum Endpoint {
     static let getNextInvocation = "/runtime/invocation/next"
     static let postResponse = "/runtime/invocation/response"

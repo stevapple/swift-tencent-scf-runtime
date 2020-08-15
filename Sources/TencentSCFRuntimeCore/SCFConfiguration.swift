@@ -49,7 +49,7 @@ extension SCF {
             let logLevel: Logger.Level
 
             init(logLevel: Logger.Level? = nil) {
-                self.logLevel = logLevel ?? env("LOG_LEVEL").flatMap(Logger.Level.init) ?? .info
+                self.logLevel = logLevel ?? Env["LOG_LEVEL"].flatMap(Logger.Level.init) ?? .info
             }
 
             var description: String {
@@ -64,8 +64,8 @@ extension SCF {
 
             init(id: String? = nil, maxTimes: Int? = nil, stopSignal: Signal? = nil) {
                 self.id = id ?? "\(DispatchTime.now().uptimeNanoseconds)"
-                self.maxTimes = maxTimes ?? env("MAX_REQUESTS").flatMap(Int.init) ?? 0
-                self.stopSignal = stopSignal ?? env("STOP_SIGNAL").flatMap(Int32.init).flatMap(Signal.init) ?? Signal.TERM
+                self.maxTimes = maxTimes ?? Env["MAX_REQUESTS"].flatMap(Int.init) ?? 0
+                self.stopSignal = stopSignal ?? Env["STOP_SIGNAL"].flatMap(Int32.init).flatMap(Signal.init) ?? Signal.TERM
                 precondition(self.maxTimes >= 0, "maxTimes must be equal or larger than 0")
             }
 
@@ -88,11 +88,11 @@ extension SCF {
                     self.ip = String(ipPort[0])
                     self.port = port
                 } else {
-                    self.ip = env("SCF_RUNTIME_API") ?? "127.0.0.1"
-                    self.port = env("SCF_RUNTIME_API_PORT").flatMap(Int.init) ?? 9001
+                    self.ip = Env["SCF_RUNTIME_API"] ?? "127.0.0.1"
+                    self.port = Env["SCF_RUNTIME_API_PORT"].flatMap(Int.init) ?? 9001
                 }
-                self.keepAlive = keepAlive ?? env("KEEP_ALIVE").flatMap(Bool.init) ?? true
-                self.requestTimeout = requestTimeout ?? env("REQUEST_TIMEOUT").flatMap(Int64.init).flatMap { .milliseconds($0) }
+                self.keepAlive = keepAlive ?? Env["KEEP_ALIVE"].flatMap(Bool.init) ?? true
+                self.requestTimeout = requestTimeout ?? Env["REQUEST_TIMEOUT"].flatMap(Int64.init).flatMap { .milliseconds($0) }
             }
 
             var description: String {

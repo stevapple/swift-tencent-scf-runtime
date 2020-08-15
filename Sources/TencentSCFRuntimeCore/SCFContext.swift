@@ -38,12 +38,12 @@ extension SCF {
     public final class InitializationContext {
         /// `Logger` to log with.
         ///
-        /// - note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
+        /// - Note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
         public let logger: Logger
 
         /// The `EventLoop` the SCF function is executed on. Use this to schedule work with.
         ///
-        /// - note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
+        /// - Note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
         ///         Most importantly the `EventLoop` must never be blocked.
         public let eventLoop: EventLoop
 
@@ -77,32 +77,44 @@ extension SCF {
         public let deadline: DispatchWallTime
 
         /// The UIN of cloud function actor.
-        public static let uin = SCF.env("TENCENTCLOUD_UIN") ?? ""
+        public var uin: String {
+            SCF.Env["TENCENTCLOUD_UIN"] ?? ""
+        }
 
         /// The APPID that the cloud function belongs to.
-        public static let appid = SCF.env("TENCENTCLOUD_APPID") ?? ""
+        public var appid: String {
+            SCF.Env["TENCENTCLOUD_APPID"] ?? ""
+        }
 
         /// The Tencent Cloud region that the cloud function is in.
-        public static let region = TencentCloud.Region(rawValue: SCF.env("TENCENTCLOUD_REGION") ?? "")!
+        public var region: TencentCloud.Region {
+            TencentCloud.Region(rawValue: SCF.Env["TENCENTCLOUD_REGION"] ?? "")!
+        }
 
         /// The name of the cloud function.
-        public static let name = SCF.env("SCF_FUNCTIONNAME") ?? ""
+        public var name: String {
+            SCF.Env["SCF_FUNCTIONNAME"] ?? ""
+        }
 
         /// The namespace of the cloud function.
-        public static let namespace = SCF.env("SCF_NAMESPACE") ?? ""
+        public var namespace: String {
+            SCF.Env["SCF_NAMESPACE"] ?? ""
+        }
 
         /// The version of the cloud function.
-        public static let version: Version = .init(stringLiteral: SCF.env("SCF_FUNCTIONVERSION") ?? "")
+        public var version: Version {
+            .init(stringLiteral: SCF.Env["SCF_FUNCTIONVERSION"] ?? "")
+        }
 
         /// `Logger` to log with.
         ///
-        /// - note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
+        /// - Note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
         public let logger: Logger
 
         /// The `EventLoop` the SCF function is executed on. Use this to schedule work with.
         /// This is useful when implementing the `EventLoopSCFHandler` protocol.
         ///
-        /// - note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
+        /// - Note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
         ///         Most importantly the `EventLoop` must never be blocked.
         public let eventLoop: EventLoop
 
@@ -185,12 +197,12 @@ extension SCF {
     public final class ShutdownContext {
         /// `Logger` to log with
         ///
-        /// - note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
+        /// - Note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
         public let logger: Logger
 
         /// The `EventLoop` the cloud function is executed on. Use this to schedule work with.
         ///
-        /// - note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
+        /// - Note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
         ///         Most importantly the `EventLoop` must never be blocked.
         public let eventLoop: EventLoop
 

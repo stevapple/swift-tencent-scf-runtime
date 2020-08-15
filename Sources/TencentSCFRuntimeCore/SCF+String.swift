@@ -34,10 +34,10 @@ extension SCF {
 
     /// Run a cloud function defined by implementing the `StringClosure` function.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - closure: `StringClosure` based SCF function.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
+    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run(_ closure: @escaping StringClosure) {
         self.run(closure: closure)
     }
@@ -47,10 +47,10 @@ extension SCF {
 
     /// Run a cloud function defined by implementing the `StringVoidClosure` function.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - closure: `StringVoidClosure` based SCF function.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
+    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run(_ closure: @escaping StringVoidClosure) {
         self.run(closure: closure)
     }

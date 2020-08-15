@@ -33,7 +33,7 @@ import NIO
 /// Strongly typed, callback based processing protocol for an SCF function that takes a user defined `In` and returns a user defined `Out` asynchronously.
 /// `SCFHandler` implements `EventLoopSCFHandler`, performing callback to `EventLoopFuture` mapping, over a `DispatchQueue` for safety.
 ///
-/// - note: To implement a cloud function, implement either `SCFHandler` or the `EventLoopSCFHandler` protocol.
+/// - Note: To implement a cloud function, implement either `SCFHandler` or the `EventLoopSCFHandler` protocol.
 ///         The `SCFHandler` will offload the SCF execution to a `DispatchQueue` making processing safer but slower.
 ///         The `EventLoopSCFHandler` will execute the cloud function on the same `EventLoop` as the core runtime engine, making the processing faster but requires more care from the implementation to never block the `EventLoop`.
 public protocol SCFHandler: EventLoopSCFHandler {
@@ -43,7 +43,7 @@ public protocol SCFHandler: EventLoopSCFHandler {
     /// The SCF handling method.
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - context: Runtime `Context`.
     ///     - event: Event of type `In` representing the event or request.
     ///     - callback: Completion handler to report the result of the SCF function back to the runtime engine.
@@ -100,7 +100,7 @@ public extension SCFHandler {
 /// Strongly typed, `EventLoopFuture` based processing protocol for an SCF function that takes a user defined `In` and returns a user defined `Out` asynchronously.
 /// `EventLoopSCFHandler` extends `ByteBufferSCFHandler`, performing `ByteBuffer` -> `In` decoding and `Out` -> `ByteBuffer` encoding.
 ///
-/// - note: To implement a cloud function, implement either `SCFHandler` or the `EventLoopSCFHandler` protocol.
+/// - Note: To implement a cloud function, implement either `SCFHandler` or the `EventLoopSCFHandler` protocol.
 ///         The `SCFHandler` will offload the SCF execution to a `DispatchQueue` making processing safer but slower
 ///         The `EventLoopSCFHandler` will execute the cloud function on the same `EventLoop` as the core runtime engine, making the processing faster but requires more care from the implementation to never block the `EventLoop`.
 public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
@@ -110,7 +110,7 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
     /// The SCF handling method.
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - context: Runtime `Context`.
     ///     - event: Event of type `In` representing the event or request.
     ///
@@ -120,7 +120,8 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
 
     /// Encode a response of type `Out` to `ByteBuffer`.
     /// Concrete SCF handlers implement this method to provide coding functionality.
-    /// - parameters:
+    ///
+    /// - Parameters:
     ///     - allocator: A `ByteBufferAllocator` to help allocate the `ByteBuffer`.
     ///     - value: Response of type `Out`.
     ///
@@ -130,7 +131,7 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
     /// Decode a`ByteBuffer` to a request or event of type `In`
     /// Concrete SCF handlers implement this method to provide coding functionality.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - buffer: The `ByteBuffer` to decode.
     ///
     /// - Returns: A request or event of type `In`.
@@ -183,13 +184,13 @@ public extension EventLoopSCFHandler where Out == Void {
 
 /// An `EventLoopFuture` based processing protocol for an SCF function that takes a `ByteBuffer` and returns a `ByteBuffer?` asynchronously.
 ///
-/// - note: This is a low level protocol designed to power the higher level `EventLoopSCFHandler` and `SCFHandler` based APIs.
+/// - Note: This is a low level protocol designed to power the higher level `EventLoopSCFHandler` and `SCFHandler` based APIs.
 ///         Most users are not expected to use this protocol.
 public protocol ByteBufferSCFHandler {
     /// The SCF handling method.
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - context: Runtime `Context`.
     ///     - event: The event or input payload encoded as `ByteBuffer`.
     ///

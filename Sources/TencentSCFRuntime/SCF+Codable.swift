@@ -38,10 +38,10 @@ extension SCF {
 
     /// Run a cloud function defined by implementing the `CodableClosure` function.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - closure: `CodableClosure` based SCF function.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
+    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run<In: Decodable, Out: Encodable>(_ closure: @escaping CodableClosure<In, Out>) {
         self.run(CodableClosureWrapper(closure))
     }
@@ -51,10 +51,10 @@ extension SCF {
 
     /// Run a cloud function defined by implementing the `CodableVoidClosure` function.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - closure: `CodableVoidClosure` based SCF function.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
+    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run<In: Decodable>(_ closure: @escaping CodableVoidClosure<In>) {
         self.run(CodableVoidClosureWrapper(closure))
     }

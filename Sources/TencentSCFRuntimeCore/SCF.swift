@@ -25,12 +25,6 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-#if os(Linux)
-import Glibc
-#else
-import Darwin.C
-#endif
-
 import Backtrace
 import Logging
 import NIO
@@ -44,10 +38,10 @@ public enum SCF {
 
     /// Run a cloud function defined by implementing the `SCFHandler` protocol.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - handler: `ByteBufferSCFHandler` based SCF function.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
+    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run(_ handler: Handler) {
         self.run(handler: handler)
     }
@@ -56,30 +50,22 @@ public enum SCF {
     /// Use this to initialize all your resources that you want to cache between invocations. This could be database connections and HTTP clients for example.
     /// It is encouraged to use the given `EventLoop`'s conformance to `EventLoopGroup` when initializing NIO dependencies. This will improve overall performance.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - factory: A `ByteBufferSCFHandler` factory.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
+    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run(_ factory: @escaping HandlerFactory) {
         self.run(factory: factory)
     }
 
     /// Run a cloud function defined by implementing the `SCFHandler` protocol provided via a factory, typically a constructor.
     ///
-    /// - parameters:
+    /// - Parameters:
     ///     - factory: A `ByteBufferSCFHandler` factory.
     ///
-    /// - note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
+    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
     public static func run(_ factory: @escaping (InitializationContext) throws -> Handler) {
         self.run(factory: factory)
-    }
-
-    /// Utility to access/read environment variables.
-    public static func env(_ name: String) -> String? {
-        guard let value = getenv(name) else {
-            return nil
-        }
-        return String(cString: value)
     }
 
     // for testing and internal use
@@ -145,7 +131,7 @@ public enum SCF {
 
         // Start local server for debugging in DEBUG mode only.
         #if DEBUG
-        if SCF.env("LOCAL_SCF_SERVER_ENABLED").flatMap(Bool.init) ?? false {
+        if SCF.Env["LOCAL_SCF_SERVER_ENABLED"].flatMap(Bool.init) ?? false {
             do {
                 return try SCF.withLocalServer {
                     _run(configuration, factory)
