@@ -106,6 +106,12 @@ extension SCF {
             .init(stringLiteral: SCF.Env["SCF_FUNCTIONVERSION"] ?? "")
         }
 
+        public var credential: TencentCloud.Credential {
+            .init(secretId: SCF.Env["TENCENTCLOUD_SECRETID"] ?? "",
+                  secretKey: SCF.Env["TENCENTCLOUD_SECRETKEY"] ?? "",
+                  sessionToken: SCF.Env["TENCENTCLOUD_SESSIONTOKEN"] ?? "")
+        }
+
         /// `Logger` to log with.
         ///
         /// - Note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.

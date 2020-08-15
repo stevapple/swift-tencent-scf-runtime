@@ -34,6 +34,9 @@ class SCFContextTest: XCTestCase {
         XCTAssertEqual(context.name, "my-swift-function")
         XCTAssertEqual(context.namespace, "default")
         XCTAssertEqual(context.version, .latest)
+        XCTAssertEqual(context.credential.secretId, "")
+        XCTAssertEqual(context.credential.secretKey, "")
+        XCTAssertEqual(context.credential.sessionToken, "")
     }
 
     func testEnvUpdateWithDict() {
@@ -44,6 +47,9 @@ class SCFContextTest: XCTestCase {
             "SCF_FUNCTIONNAME": "another-swift-function",
             "SCF_NAMESPACE": "custom",
             "SCF_FUNCTIONVERSION": "2",
+            "TENCENTCLOUD_SECRETID": "SECRET_ID",
+            "TENCENTCLOUD_SECRETKEY": "SECRET_KEY",
+            "TENCENTCLOUD_SESSIONTOKEN": "SESSION_TOKEN",
         ]
 
         SCF.Env.update(with: customEnvironment)
@@ -62,6 +68,9 @@ class SCFContextTest: XCTestCase {
         XCTAssertEqual(context.name, "another-swift-function")
         XCTAssertEqual(context.namespace, "custom")
         XCTAssertEqual(context.version, .version(2))
+        XCTAssertEqual(context.credential.secretId, "SECRET_ID")
+        XCTAssertEqual(context.credential.secretKey, "SECRET_KEY")
+        XCTAssertEqual(context.credential.sessionToken, "SESSION_TOKEN")
 
         SCF.Env.reset()
     }
@@ -74,6 +83,9 @@ class SCFContextTest: XCTestCase {
             "SCF_FUNCTIONNAME": "another-swift-function",
             "SCF_NAMESPACE": "custom",
             "SCF_FUNCTIONVERSION": "2",
+            "TENCENTCLOUD_SECRETID": "SECRET_ID",
+            "TENCENTCLOUD_SECRETKEY": "SECRET_KEY",
+            "TENCENTCLOUD_SESSIONTOKEN": "SESSION_TOKEN",
         ]
 
         for (key, value) in customEnvironment {
@@ -94,6 +106,9 @@ class SCFContextTest: XCTestCase {
         XCTAssertEqual(context.name, "another-swift-function")
         XCTAssertEqual(context.namespace, "custom")
         XCTAssertEqual(context.version, .version(2))
+        XCTAssertEqual(context.credential.secretId, "SECRET_ID")
+        XCTAssertEqual(context.credential.secretKey, "SECRET_KEY")
+        XCTAssertEqual(context.credential.sessionToken, "SESSION_TOKEN")
 
         SCF.Env.reset()
     }
