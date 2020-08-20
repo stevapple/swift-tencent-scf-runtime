@@ -34,9 +34,7 @@ class SCFContextTest: XCTestCase {
         XCTAssertEqual(context.name, "my-swift-function")
         XCTAssertEqual(context.namespace, "default")
         XCTAssertEqual(context.version, .latest)
-        XCTAssertEqual(context.credential.secretId, "")
-        XCTAssertEqual(context.credential.secretKey, "")
-        XCTAssertEqual(context.credential.sessionToken, "")
+        XCTAssertNil(context.credential)
     }
 
     func testEnvUpdateWithDict() {
@@ -68,14 +66,15 @@ class SCFContextTest: XCTestCase {
         XCTAssertEqual(context.name, "another-swift-function")
         XCTAssertEqual(context.namespace, "custom")
         XCTAssertEqual(context.version, .version(2))
-        XCTAssertEqual(context.credential.secretId, "SECRET_ID")
-        XCTAssertEqual(context.credential.secretKey, "SECRET_KEY")
-        XCTAssertEqual(context.credential.sessionToken, "SESSION_TOKEN")
+        XCTAssertNotNil(context.credential)
+        XCTAssertEqual(context.credential?.secretId, "SECRET_ID")
+        XCTAssertEqual(context.credential?.secretKey, "SECRET_KEY")
+        XCTAssertEqual(context.credential?.sessionToken, "SESSION_TOKEN")
 
         SCF.Env.reset()
     }
 
-    func testEnvSet() {
+    func testEnvSetDirectly() {
         let customEnvironment = [
             "TENCENTCLOUD_UIN": "100000000003",
             "TENCENTCLOUD_APPID": "1250000002",
@@ -106,9 +105,10 @@ class SCFContextTest: XCTestCase {
         XCTAssertEqual(context.name, "another-swift-function")
         XCTAssertEqual(context.namespace, "custom")
         XCTAssertEqual(context.version, .version(2))
-        XCTAssertEqual(context.credential.secretId, "SECRET_ID")
-        XCTAssertEqual(context.credential.secretKey, "SECRET_KEY")
-        XCTAssertEqual(context.credential.sessionToken, "SESSION_TOKEN")
+        XCTAssertNotNil(context.credential)
+        XCTAssertEqual(context.credential?.secretId, "SECRET_ID")
+        XCTAssertEqual(context.credential?.secretKey, "SECRET_KEY")
+        XCTAssertEqual(context.credential?.sessionToken, "SESSION_TOKEN")
 
         SCF.Env.reset()
     }
