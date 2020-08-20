@@ -280,22 +280,25 @@ public final class Context: CustomDebugStringConvertible {
     public let deadline: DispatchWallTime
 
     /// The UIN of cloud function actor.
-    public static let uin: String
+    public let uin: String
 
     /// The APPID that the cloud function belongs to.
-    public static let appid: String
+    public let appid: String
 
     /// The Tencent Cloud region that the cloud function is in.
-    public static let region: String
+    public let region: TencentCloud.Region?
 
     /// The name of the cloud function.
-    public static let name: String
+    public let name: String
 
     /// The namespace of the cloud function.
-    public static let namespace: String
+    public let namespace: String
 
     /// The version of the cloud function.
-    public static let version: Version
+    public let version: Version
+
+    /// The role credential from SCF environment.
+    public let credential: TencentCloud.Credential?
 
     /// `Logger` to log with.
     ///
