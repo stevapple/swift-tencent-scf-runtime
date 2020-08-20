@@ -112,6 +112,20 @@ class SCFContextTest: XCTestCase {
 
         SCF.Env.reset()
     }
+
+    func testInvalidRegion() {
+        SCF.Env["TENCENTCLOUD_REGION"] = "ap-ShangHai"
+
+        let context = SCF.Context(requestID: UUID().uuidString.lowercased(),
+                                  memoryLimit: 128,
+                                  timeLimit: .seconds(3),
+                                  logger: Logger(label: "test"),
+                                  eventLoop: MultiThreadedEventLoopGroup(numberOfThreads: 1).next(),
+                                  allocator: ByteBufferAllocator())
+        XCTAssertNil(context.region)
+
+        SCF.Env.reset()
+    }
 }
 
 #if os(Linux)

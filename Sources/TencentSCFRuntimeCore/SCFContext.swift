@@ -87,8 +87,8 @@ extension SCF {
         }
 
         /// The Tencent Cloud region that the cloud function is in.
-        public var region: TencentCloud.Region {
-            TencentCloud.Region(rawValue: SCF.Env["TENCENTCLOUD_REGION"] ?? "")!
+        public var region: TencentCloud.Region? {
+            TencentCloud.Region(rawValue: SCF.Env["TENCENTCLOUD_REGION"] ?? "")
         }
 
         /// The name of the cloud function.
