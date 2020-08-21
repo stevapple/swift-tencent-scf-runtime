@@ -9,8 +9,9 @@ jobs:
     strategy:
       matrix:
         version:
-          - nightly
           - 5.2.5
+          - nightly-5.3
+          - nightly
     container:
       image: stevapple/swift-scf:${{ matrix.version }}
     steps:
@@ -27,7 +28,7 @@ jobs:
           cd Examples/LocalDebugging/MyCloudFunction
           swift build
 
-  test-linux:
+  test-linux-release:
     name: Test on Linux
     runs-on: ubuntu-latest
     strategy:
@@ -37,8 +38,39 @@ jobs:
           - focal
           - amazonlinux2
           - centos8
+        version:
+          - 5.2.5
     container:
-      image: swift:5.2.5-${{ matrix.os }}
+      image: swift:${{ matrix.version }}-${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test --enable-test-discovery
+      - name: Test CloudFunctions example
+        run: |
+          cd Examples/CloudFunctions
+          swift build
+      - name: Test LocalDebugging example
+        run: |
+          cd Examples/LocalDebugging/MyCloudFunction
+          swift build
+
+  test-linux-nightly:
+    name: Test on Linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - bionic
+          - focal
+          - amazonlinux2
+          - centos8
+        version:
+          - nightly
+          - nightly-5.3
+    container:
+      image: swiftlang/swift:${{ matrix.version }}-${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
