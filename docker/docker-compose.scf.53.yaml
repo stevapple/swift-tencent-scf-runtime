@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+
+  runtime-setup:
+    image: swift-tencent-scf:scf-5.3
+    build:
+      args:
+        swift_version: "nightly-5.3"
+
+  test:
+    image: swift-tencent-scf:scf-5.3
+
+  test-samples:
+    image: swift-tencent-scf:scf-5.3
+
+  shell:
+    image: swift-tencent-scf:scf-5.3

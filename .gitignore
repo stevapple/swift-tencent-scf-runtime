@@ -8,5 +8,4 @@
 xcuserdata
 Package.resolved
 .serverless
-docker
 .env
