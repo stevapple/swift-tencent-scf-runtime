@@ -42,7 +42,6 @@ echo "Uploading \"$executable\" function to COS"
 echo "-------------------------------------------------------------------------"
 
 read -p "COS bucket to upload (name-appid, eg: examplebucket-1250000000): " cos_bucket
-cos_bucket=${cos_bucket:-swift-scf-test} # default for easy testing
 
 read -p "COS bucket region (eg: ap-beijing): " cos_region
 cos_region=${cos_region:-ap-beijing} # default for easy testing
@@ -52,6 +51,8 @@ coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable/cloud-fu
 echo "-------------------------------------------------------------------------"
 echo "Updating SCF function to use \"$executable\""
 echo "-------------------------------------------------------------------------"
+
+cos_bucket=${cos_bucket%-*}
 
 read -p "Cloud Function name (must exist in SCF): " function_name
 function_name=${function_name:-SwiftSample} # default for easy testing
