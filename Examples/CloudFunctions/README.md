@@ -20,14 +20,20 @@ Steps to deploy this sample to Tencent SCF Platform using TCCLI and COSCMD:
 3. Build, package and deploy the function
 
 ```
-./scripts/deploy.sh
+./scripts/deploy.sh [executable]
+```
+
+You can combine step 2 and 3 with:
+
+```
+./scripts/create-and-deploy.sh [executable]
 ```
 
 Notes: 
 - This script assumes you have TCCLI installed and user configured (See https://cloud.tencent.com/document/product/440/34012).
 - This script also assumes you have COSCMD installed and user configured with the same main account as the one in TCCLI (See https://cloud.tencent.com/document/product/436/10976).
 - You'll be prompted to provide the COS bucket ID and region, and the SCF function name and region.
-- Both the cloud function and COS bucket must exist before deploying for the first time.
+- The COS bucket must exist before deploying, as well as the SCF function if you use `deploy.sh`.
 
 ### Deployment instructions using Serverless Framework for Tencent (serverless.com/cn)
 
@@ -37,8 +43,8 @@ Notes:
 
 To use Serverless to deploy this sample to Tencent Cloud:
 
-1. Install Serverless by following the [instructions](https://www.serverless.com/framework/docs/getting-started/).
-If you already have installed, be sure you have the latest version.
+1. Install Serverless by following the [instructions](https://www.serverless.com/framework/docs/getting-started/). If you already have installed, be sure you have the latest version.
+
 The examples have been tested with the version 1.80.0.
 
 ```
@@ -52,19 +58,19 @@ Components: 2.34.9
 2. Build, package and deploy the cloud function
 
 ```
-./scripts/serverless-deploy.sh
+./scripts/serverless-deploy.sh [executable]
 ```
 
-The script will ask you which sample function you wish to deploy.
+The script will ask you which sample function you wish to deploy if you don't provide one in the parameter.
 
 3. Test
 
-For the APIGateway sample, the Serverless template provides an endpoint with API Gateway which you can use to test the cloud function. 
+For the APIGateway sample, the Serverless template provides an endpoint with API Gateway which you can use to test the cloud function.
 
 Output example:
 
 ```
-$ sls deploy
+$ ./scripts/serverless-deploy.sh APIGateway
 
 serverless ⚡ framework
 Action: "deploy" - Stage: "dev" - App: "SwiftAPIGatewayDemo" - Instance: "SwiftAPIGatewayDemo"
@@ -99,7 +105,7 @@ For extensive usage, you need to customize `serverless.yml` yourself.
 4. Remove
 
 ```
-./scripts/serverless-remove.sh
+./scripts/serverless-remove.sh [executable]
 ```
 
-The script will ask you which sample function you wish to remove from the previous deployment.
+The script will ask you which sample function you wish to remove from the previous deployment if you don't provide one in the parameter.

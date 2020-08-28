@@ -31,7 +31,7 @@ set -eu
 executable=MyCloudFunction
 function_name=swift-sample
 scf_region=ap-beijing
-cos_bucket=swift-scf-test-appid
+cos_bucket=swift-scf-test-<appid>
 cos_region=ap-beijing
 
 echo -e "\ndeploying $executable"
@@ -64,5 +64,7 @@ coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable/cloud-fu
 echo "-------------------------------------------------------------------------"
 echo "Updating \"$function_name\" to the latest \"$executable\""
 echo "-------------------------------------------------------------------------"
-tccli scf UpdateFunctionCode --region "$scf_region" --FunctionName "$function_name" --Handler "swift.main" --CodeSource "Cos" --CosBucketName "$cos_bucket" --CosBucketRegion "$cos_region" --CosObjectName $executable.zip
+tccli scf UpdateFunctionCode --region "$scf_region" \
+       --FunctionName "$function_name" --Handler "swift.main" \
+       --CodeSource "Cos" --CosBucketName "$cos_bucket" --CosBucketRegion "$cos_region" --CosObjectName "$executable.zip"
 echo "done"
