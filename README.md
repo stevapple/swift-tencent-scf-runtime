@@ -8,20 +8,16 @@ When using serverless functions, attention must be given to resource utilization
 
 Combine this with Swift's developer friendliness, expressiveness, and emphasis on safety, and we have a solution that is great for developers at all skill levels, scalable, and cost effective.
 
-Swift Tencent SCF Runtime is a forked version form [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime), designed to make building cloud functions in Swift simple and safe. The library is an implementation of the [Tencent SCF Custom Runtime API](https://cloud.tencent.com/document/product/583/47274#custom-runtime-.E8.BF.90.E8.A1.8C.E6.97.B6-api) and uses an embedded asynchronous HTTP Client based on [SwiftNIO](http://github.com/apple/swift-nio) that is fine-tuned for performance in the SCF Custom Runtime context. The library provides a multi-tier API that allows building a range of cloud functions: From quick and simple Closures to complex, performance-sensitive event handlers.
+Swift Tencent SCF Runtime is a forked version from [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime), designed to make building cloud functions in Swift simple and safe. The library is an implementation of the [Tencent SCF Custom Runtime API](https://cloud.tencent.com/document/product/583/47274#custom-runtime-.E8.BF.90.E8.A1.8C.E6.97.B6-api) and uses an embedded asynchronous HTTP Client based on [SwiftNIO](http://github.com/apple/swift-nio) that is fine-tuned for performance in the SCF Custom Runtime context. The library provides a multi-tier API that allows building a range of cloud functions: From quick and simple Closures to complex, performance-sensitive event handlers.
 
 ## Project status
 
-This is the beginning of an open-source project actively seeking contributions.
-While the core API is considered stable, the API may still evolve as we get closer to a `1.0` version.
-There are several areas which need additional attention, including but not limited to:
+This is the beginning of an open-source project actively seeking contributions. While the core API is considered stable, the API may still evolve as we get closer to a `1.0` version. There are several areas which need additional attention, including but not limited to:
 
 * Further performance tuning
 * Additional trigger events
 * Additional documentation and best practices
 * Additional examples
-
-By August 2020, [SCF Custom Runtime](https://cloud.tencent.com/document/product/583/47274) is also at an early stage. You may encounter some problems triggered by the SCF Runtime Engine itself, or the API changes and deprecations. You are welcome to open issues actively on those problems.
 
 ## Getting started
 
@@ -36,6 +32,9 @@ import PackageDescription
 
 let package = Package(
     name: "my-cloud-function",
+    platforms: [
+        .macOS(.v10_13),
+    ],
     products: [
         .executable(name: "MyCloudFunction", targets: ["MyCloudFunction"]),
     ],
@@ -358,7 +357,7 @@ SCF.run { (context, name: String, callback: @escaping (Result<String, Error>) ->
 }
 ```
 
-We simulate the SCF environment with some variables set by default. The value set by user code is of the highest priority, while the framework simulation has the lowest.
+We simulate the [SCF environment](https://cloud.tencent.com/document/product/583/30228) with some variables set by default. The value set by user code is of the highest priority, while the framework's default has the lowest.
 
 You can read some contextual variables through `SCF.Context`. All the environment variables can be accessed through `SCF.Env`.
 

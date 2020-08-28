@@ -1,8 +1,6 @@
 # Serverless Cloud Functions Examples
 
-This sample project is a collection of cloud functions that demonstrates
-how to write a simple SCF function in Swift, and how to package and deploy it
-to the Tencent SCF Platform.
+This sample project is a collection of cloud functions that demonstrates how to write a simple SCF function in Swift, and how to package and deploy it to the Tencent SCF Platform.
 
 The scripts are prepared to work from the `CloudFunctions` folder.
 
@@ -11,7 +9,7 @@ git clone https://github.com/stevapple/swift-tencent-scf-runtime.git
 cd swift-tencent-scf-runtime/Examples/CloudFunctions
 ```
 
-Note: The example scripts assume you have [jq](https://stedolan.github.io/jq/download/) command line tool installed.
+Note: The example scripts assume you have [jq](https://stedolan.github.io/jq/download/) command line tool installed. You're recommended to deploy with Serverless Framework in your own project.
 
 ## Deployment instructions using TCCLI and COSCMD
 
@@ -41,14 +39,14 @@ To use Serverless to deploy this sample to Tencent Cloud:
 
 1. Install Serverless by following the [instructions](https://www.serverless.com/framework/docs/getting-started/).
 If you already have installed, be sure you have the latest version.
-The examples have been tested with the version 1.78.1.
+The examples have been tested with the version 1.80.0.
 
 ```
 $ serverless --version
-Framework Core: 1.78.1
-Plugin: 3.7.0
+Framework Core: 1.80.0
+Plugin: 3.8.0
 SDK: 2.3.1
-Components: 2.34.1
+Components: 2.34.9
 ```
 
 2. Build, package and deploy the cloud function
@@ -63,7 +61,7 @@ The script will ask you which sample function you wish to deploy.
 
 For the APIGateway sample, the Serverless template provides an endpoint with API Gateway which you can use to test the cloud function. 
 
-Outuput example:
+Output example:
 
 ```
 $ sls deploy
@@ -85,10 +83,10 @@ triggers:
 
 Full details: https://serverless.cloud.tencent.com/apps/SwiftAPIGatewayDemo/SwiftAPIGatewayDemo/dev
 
-31s › SwiftAPIGatewayDemo › Success
+7s › SwiftAPIGatewayDemo › Success
 ```
 
-For example:
+Test command example:
 
 ```
 curl http://service-jyl9i6mc-1258834142.bj.apigw.tencentcs.com/release/api
