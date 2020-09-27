@@ -8,7 +8,7 @@ When using serverless functions, attention must be given to resource utilization
 
 Combine this with Swift's developer friendliness, expressiveness, and emphasis on safety, and we have a solution that is great for developers at all skill levels, scalable, and cost effective.
 
-Swift Tencent SCF Runtime is a forked version from [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime), designed to make building cloud functions in Swift simple and safe. The library is an implementation of the [Tencent SCF Custom Runtime API](https://cloud.tencent.com/document/product/583/47274#custom-runtime-.E8.BF.90.E8.A1.8C.E6.97.B6-api) and uses an embedded asynchronous HTTP Client based on [SwiftNIO](http://github.com/apple/swift-nio) that is fine-tuned for performance in the SCF Custom Runtime context. The library provides a multi-tier API that allows building a range of cloud functions: From quick and simple Closures to complex, performance-sensitive event handlers.
+Swift Tencent SCF Runtime is a forked version from [Swift AWS Lambda Runtime](https://github.com/swift-server/swift-aws-lambda-runtime), designed to make building cloud functions in Swift simple and safe. The library is an implementation of the [Tencent SCF Custom Runtime API](https://intl.cloud.tencent.com/document/product/583/38129#custom-runtime-api) and uses an embedded asynchronous HTTP Client based on [SwiftNIO](http://github.com/apple/swift-nio) that is fine-tuned for performance in the SCF Custom Runtime context. The library provides a multi-tier API that allows building a range of cloud functions: From quick and simple Closures to complex, performance-sensitive event handlers.
 
 ## Project status
 
@@ -136,11 +136,11 @@ Beyond the small cognitive complexity of using the `EventLoopFuture` based APIs,
 
 To deploy SCF functions to Tencent SCF Platform, you need to compile the code for CentOS 7.6 which is the OS used on SCF microVMs, package it as a Zip file, and upload to Tencent Cloud.
 
-Tencent Cloud offers several tools to interact and deploy cloud functions to SCF including [TCCLI](https://cloud.tencent.com/product/cli) and [Serverless Framework](https://serverless.com/cn/). The [Examples Directory](/Examples) includes complete sample build and deployment scripts that utilize these tools.
+Tencent Cloud offers several tools to interact and deploy cloud functions to SCF including [TCCLI](https://intl.cloud.tencent.com/product/cli) and [Serverless Framework](https://serverless.com/cn/). The [Examples Directory](/Examples) includes complete sample build and deployment scripts that utilize these tools.
 
 Note the examples mentioned above use dynamic linking, therefore bundle the required Swift libraries in the Zip package along side the executable. You may choose to link the SCF function statically (using `-static-stdlib`) which could improve performance but requires additional linker flags.
 
-To build the SCF function for CentOS 7.6, use the Docker image published on [Swift toolchains for SCF](https://hub.docker.com/r/stevapple/swift-scf), as demonstrated in the examples.
+To build the SCF function for CentOS 7.6, use the Docker image published as [Swift toolchains for SCF](https://hub.docker.com/r/stevapple/swift-scf), as demonstrated in the examples.
 
 ## Architecture
 
@@ -357,13 +357,13 @@ SCF.run { (context, name: String, callback: @escaping (Result<String, Error>) ->
 }
 ```
 
-We simulate the [SCF environment](https://cloud.tencent.com/document/product/583/30228) with some variables set by default. The value set by user code is of the highest priority, while the framework's default has the lowest.
+We simulate the [SCF environment](https://intl.cloud.tencent.com/document/product/583/32748) with some variables set by default. The value set by user code is of the highest priority, while the framework's default has the lowest.
 
 You can read some contextual variables through `SCF.Context`. All the environment variables can be accessed through `SCF.Env`.
 
 ### SCF Runtime Engine Integration
 
-The library is designed to integrate with SCF Runtime Engine via the [SCF Custom Runtime API](https://cloud.tencent.com/document/product/583/47274#custom-runtime-.E8.BF.90.E8.A1.8C.E6.97.B6-api) which was introduced as part of [SCF Custom Runtime](https://cloud.tencent.com/document/product/583/47274) in 2020. The latter is an HTTP server that exposes three main RESTful endpoint:
+The library is designed to integrate with SCF Runtime Engine via the [SCF Custom Runtime API](https://intl.cloud.tencent.com/document/product/583/38129#custom-runtime-api) which was introduced as part of [SCF Custom Runtime](https://intl.cloud.tencent.com/document/product/583/38129) in 2020. The latter is an HTTP server that exposes three main RESTful endpoint:
 
 * `/runtime/invocation/next`
 * `/runtime/invocation/response`
@@ -395,11 +395,11 @@ By default, the library also registers a Signal handler that traps `INT` and `TE
 
 Serverless Cloud Functions can be invoked directly from the SCF console, SCF API, TCCLI and Tencent Cloud toolkit. More commonly, they are invoked as a reaction to an events coming from the Tencent Cloud platform. To make it easier to integrate with Tencent Cloud platform events, the library includes an `TencentSCFEvents` target which provides abstractions for many commonly used events. Additional events can be easily modeled when needed following the same patterns set by `TencentSCFEvents`. Integration points with the Tencent Cloud platform include:
 
-* [APIGateway Requests](https://cloud.tencent.com/document/product/583/12513)
-* [COS Events](https://cloud.tencent.com/document/product/583/9707)
-* [Timer Events](https://cloud.tencent.com/document/product/583/9708)
-* [CMQ Topic Messages](https://cloud.tencent.com/document/product/583/11517)
-* [CKafka Messages](https://cloud.tencent.com/document/product/583/17530)
+* [APIGateway Requests](https://intl.cloud.tencent.com/document/product/583/12513)
+* [COS Events](https://intl.cloud.tencent.com/document/product/583/9707)
+* [Timer Events](https://intl.cloud.tencent.com/document/product/583/9708)
+* [CMQ Topic Messages](https://intl.cloud.tencent.com/document/product/583/11517)
+* [CKafka Messages](https://intl.cloud.tencent.com/document/product/583/17530)
 
 **Note**: Each one of the integration points mentioned above includes a set of `Decodable` structs that transform Tencent Cloud's data model for these APIs. APIGateway response is wrapped into an `Encodable` struct with three different initializers to help you build any valid response.
 
