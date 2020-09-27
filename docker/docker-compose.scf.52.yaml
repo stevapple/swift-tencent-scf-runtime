@@ -5,9 +5,7 @@ services:
   runtime-setup:
     image: swift-tencent-scf:scf-5.2.5
     build:
-      dockerfile: Dockerfile.ubuntu
       args:
-        ubuntu_version: "bionic"
         swift_version: "5.2.5"
 
   test:

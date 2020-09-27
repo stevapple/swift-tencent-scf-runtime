@@ -10,6 +10,7 @@ jobs:
       matrix:
         version:
           - 5.2.5
+          - 5.3
           - nightly-5.3
           - nightly
     container:
@@ -40,6 +41,7 @@ jobs:
           - centos8
         version:
           - 5.2.5
+          - 5.3
     container:
       image: swift:${{ matrix.version }}-${{ matrix.os }}
     steps:
