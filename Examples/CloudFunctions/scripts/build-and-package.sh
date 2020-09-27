@@ -19,7 +19,7 @@
 ## Licensed under Apache License v2.0
 ##
 ## See LICENSE.txt for license information
-## See http://github.com/swift-server/swift-aws-lambda-runtime/blob/master/CONTRIBUTORS.txt
+## See http://github.com/swift-server/swift-aws-lambda-runtime/blob/main/CONTRIBUTORS.txt
 ## for the list of SwiftAWSLambdaRuntime project authors
 ##
 ## SPDX-License-Identifier: Apache-2.0
