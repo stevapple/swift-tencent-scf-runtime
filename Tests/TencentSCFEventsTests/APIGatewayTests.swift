@@ -169,8 +169,7 @@ class APIGatewayTests: XCTestCase {
 
         let resp = APIGateway.Response(
             statusCode: .ok,
-            type: .text,
-            body: "abc123"
+            body: .string("abc123")
         )
         let expectedJson = #"{"body":"abc123","headers":{"Content-Type":"text\/plain"},"isBase64Encoded":false,"statusCode":200}"#
 
@@ -192,7 +191,7 @@ class APIGatewayTests: XCTestCase {
         let body = #"{"hello":"swift"}"#
         let resp = APIGateway.Response(
             statusCode: .ok,
-            body: body.data(using: .utf8)!
+            body: .data(body.data(using: .utf8)!)
         )
         let expectedJson = #"{"body":"\#(body.data(using: .utf8)!.base64EncodedString())","headers":{"Content-Type":"application\/octet-stream"},"isBase64Encoded":true,"statusCode":200}"#
 
@@ -217,7 +216,7 @@ class APIGatewayTests: XCTestCase {
         let point = Point(x: 1.01, y: -0.01)
         let resp = APIGateway.Response(
             statusCode: .ok,
-            codableBody: point
+            body: try .codable(point)
         )
         let expectedJson = [
             #"{"body":"{\"x\":1.01,\"y\":-0.01}","headers":{"Content-Type":"application\/json"},"isBase64Encoded":false,"statusCode":200}"#,
@@ -240,7 +239,7 @@ class APIGatewayTests: XCTestCase {
         encoder.outputFormatting = .sortedKeys
 
         let resp = APIGateway.Response(statusCode: .ok)
-        let expectedJson = #"{"body":"","headers":{"Content-Type":"text\/plain"},"isBase64Encoded":false,"statusCode":200}"#
+        let expectedJson = #"{"body":"","headers":{"Content-Type":"text\/plain"},"isBase64Encoded":true,"statusCode":200}"#
 
         var data: Data?
         XCTAssertNoThrow(data = try encoder.encode(resp))
@@ -260,8 +259,8 @@ class APIGatewayTests: XCTestCase {
         let mime = "application/x-javascript"
         let resp = APIGateway.Response(
             statusCode: .ok,
-            type: .init(rawValue: mime),
-            body: "console.log(\"Hello world!\");"
+            headers: ["Content-Type": mime],
+            body: .string("console.log(\"Hello world!\");")
         )
         let expectedJson = #"{"body":"console.log(\"Hello world!\");","headers":{"Content-Type":"application\/x-javascript"},"isBase64Encoded":false,"statusCode":200}"#
 
@@ -290,7 +289,7 @@ class APIGatewayTests: XCTestCase {
 
         let resp = APIGateway.Response(
             statusCode: .ok,
-            codableBody: NotReallyEncodable()
+            body: try .codable(NotReallyEncodable())
         )
         let expectedJson = #"{"body":"{\"error\":\"EncodingError\",\"message\":\"invalidValue(\\\"NotReallyEncodable\\\", Swift.EncodingError.Context(codingPath: [], debugDescription: \\\"You\\\\'re testing something not really Encodable! Good luck.\\\"\"}","headers":{"Content-Type":"application\/json"},"isBase64Encoded":false,"statusCode":500}"#
 

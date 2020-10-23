@@ -17,63 +17,59 @@ import struct Foundation.Data
 // https://cloud.tencent.com/document/product/583/12513
 
 extension APIGateway.Response {
-    public init<T: Encodable>(
+    public init(
         statusCode: HTTPResponseStatus,
         headers: HTTPHeaders = [:],
-        codableBody: T?
+        body: @autoclosure () throws -> Body = .null
     ) {
-        var headers = headers
-        headers["Content-Type"] = MIME.json.rawValue
-        self.headers = headers
+        let rawBody: Body
         do {
-            self.body = String(
-                data: try APIGateway.defaultJSONEncoder.encode(codableBody),
-                encoding: .utf8
-            ) ?? ""
-            self.statusCode = statusCode
-        } catch let err as EncodingError {
-            self.body = #"{"error":"EncodingError","message":"\#("\(err)".jsonEncoded())"}"#
-            self.statusCode = .internalServerError
+            rawBody = try body()
         } catch let err {
-            self.body = #"{"error":"UnexpectedError","message":"\#("\(err)".jsonEncoded())"}"#
+            self.headers = headers.merging(["Content-Type": "application/json"]) { (_, default) in `default` }
             self.statusCode = .internalServerError
+            self.isBase64Encoded = false
+            if let err = err as? EncodingError {
+                self.body = #"{"error":"EncodingError","message":"\#("\(err)".jsonEncoded())"}"#
+            } else {
+                self.body = #"{"error":"UnexpectedError","message":"\#("\(err)".jsonEncoded())"}"#
+            }
+            return
         }
-        self.isBase64Encoded = false
+
+        self.statusCode = statusCode
+        self.headers = headers.merging(["Content-Type": rawBody.defaultMIME]) { (custom, _) in custom }
+
+        switch rawBody {
+        case .data(let dataBody):
+            self.body = dataBody.base64EncodedString()
+            self.isBase64Encoded = true
+        case .json(let stringBody), .string(let stringBody):
+            self.body = stringBody
+            self.isBase64Encoded = false
+        case .null:
+            self.body = ""
+            self.isBase64Encoded = true
+        }
     }
 
-    public init(
-        statusCode: HTTPResponseStatus,
-        headers: HTTPHeaders = [:],
-        type: MIME? = nil,
-        body: String? = nil
-    ) {
-        self.statusCode = statusCode
-        var headers = headers
-        if let type = type?.rawValue {
-            headers["Content-Type"] = type
-        } else {
-            headers["Content-Type"] = MIME.text.rawValue
-        }
-        self.headers = headers
-        self.body = body ?? ""
-        self.isBase64Encoded = false
-    }
+    public enum Body {
+        case json(String)
+        case data(Data)
+        case string(String)
+        case null
 
-    public init(
-        statusCode: HTTPResponseStatus,
-        headers: HTTPHeaders = [:],
-        type: MIME? = nil,
-        body: Data
-    ) {
-        self.statusCode = statusCode
-        var headers = headers
-        if let type = type?.rawValue {
-            headers["Content-Type"] = type
-        } else {
-            headers["Content-Type"] = MIME.octet.rawValue
+        public static func codable<T: Encodable>(_ body: T) throws -> Self {
+            return .json(String(data: try APIGateway.defaultJSONEncoder.encode(body), encoding: .utf8) ?? "")
         }
-        self.headers = headers
-        self.body = body.base64EncodedString()
-        self.isBase64Encoded = true
+
+        var defaultMIME: String {
+            switch self {
+            case .json: return "application/json"
+            case .data: return "application/octet-stream"
+            case .string: return "text/plain"
+            case .null: return "text/plain"
+            }
+        }
     }
 }
