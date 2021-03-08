@@ -33,13 +33,13 @@ import PackageDescription
 let package = Package(
     name: "my-cloud-function",
     platforms: [
-        .macOS(.v10_13),
+        .macOS(.v10_15),
     ],
     products: [
         .executable(name: "MyCloudFunction", targets: ["MyCloudFunction"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime.git", from: "0.1.0"),
+        .package(url: "https://github.com/stevapple/swift-tencent-scf-runtime", from: "0.2.0"),
     ],
     targets: [
         .target(name: "MyCloudFunction", dependencies: [
