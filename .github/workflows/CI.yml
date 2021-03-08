@@ -10,8 +10,8 @@ jobs:
       matrix:
         version:
           - 5.2.5
-          - 5.3
-          - nightly-5.3
+          - 5.3.3
+          - nightly-5.4
           - nightly
     container:
       image: stevapple/swift-scf:${{ matrix.version }}
@@ -41,7 +41,7 @@ jobs:
           - centos8
         version:
           - 5.2.5
-          - 5.3
+          - 5.3.3
     container:
       image: swift:${{ matrix.version }}-${{ matrix.os }}
     steps:
@@ -70,7 +70,7 @@ jobs:
           - centos8
         version:
           - nightly
-          - nightly-5.3
+          - nightly-5.4
     container:
       image: swiftlang/swift:${{ matrix.version }}-${{ matrix.os }}
     steps:
