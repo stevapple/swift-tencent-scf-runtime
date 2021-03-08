@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "swift-tencent-scf-runtime",
     platforms: [
-        .macOS(.v10_13),
+        .macOS(.v10_15),
     ],
     products: [
         // This library exports `TencentSCFRuntimeCore` and adds Foundation convenience methods.
@@ -21,7 +21,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio.git", .upToNextMajor(from: "2.17.0")),
         .package(url: "https://github.com/apple/swift-log.git", .upToNextMajor(from: "1.0.0")),
         .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.1.0")),
-        .package(url: "https://github.com/stevapple/tencent-cloud-core.git", .upToNextMinor(from: "0.0.1"))
+        .package(url: "https://github.com/stevapple/tencent-cloud-core.git", .upToNextMajor(from: "0.2.0"))
     ],
     targets: [
         .target(name: "TencentSCFRuntime", dependencies: [
