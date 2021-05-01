@@ -14,7 +14,7 @@
 
 import struct Foundation.Date
 
-// https://cloud.tencent.com/document/product/583/11517
+// https://intl.cloud.tencent.com/document/product/583/11517
 
 public enum CMQ {
     public enum Topic {

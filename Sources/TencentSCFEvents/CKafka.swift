@@ -12,7 +12,7 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-// https://cloud.tencent.com/document/product/583/17530
+// https://intl.cloud.tencent.com/document/product/583/17530
 
 public enum CKafka {
     public struct Event: Decodable, Equatable {

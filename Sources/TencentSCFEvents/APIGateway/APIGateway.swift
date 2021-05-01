@@ -15,7 +15,7 @@
 import class Foundation.JSONDecoder
 import class Foundation.JSONEncoder
 
-// https://cloud.tencent.com/document/product/583/12513
+// https://intl.cloud.tencent.com/document/product/583/12513
 
 public enum APIGateway {
     /// `APIGateway.Request` contains data coming from the API Gateway.
@@ -50,12 +50,7 @@ public enum APIGateway {
     }
 
     /// `APIGateway.Response` stores response ready for sending to the API Gateway.
-    public struct Response: Encodable {
-        public let statusCode: HTTPResponseStatus
-        public let headers: HTTPHeaders
-        public let body: String
-        public let isBase64Encoded: Bool
-    }
+    public typealias Response = APIResponse
 }
 
 internal extension APIGateway {

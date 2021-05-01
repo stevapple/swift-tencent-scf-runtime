@@ -12,7 +12,7 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-// https://cloud.tencent.com/document/product/583/12513
+// https://intl.cloud.tencent.com/document/product/583/12513
 
 extension APIGateway.Request: Decodable {
     enum CodingKeys: String, CodingKey {

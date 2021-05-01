@@ -15,7 +15,7 @@
 import struct Foundation.Date
 import struct Foundation.URL
 
-// https://cloud.tencent.com/document/product/583/9707
+// https://intl.cloud.tencent.com/document/product/583/9707
 
 public enum COS {
     public struct Event: Decodable, Equatable {

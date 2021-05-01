@@ -14,7 +14,7 @@
 
 import struct Foundation.Date
 
-// https://cloud.tencent.com/document/product/583/9708
+// https://intl.cloud.tencent.com/document/product/583/9708
 
 public enum CTimer {
     public struct Event: Decodable, Equatable {
