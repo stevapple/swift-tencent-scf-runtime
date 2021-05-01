@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2020-2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -19,7 +19,7 @@ import class Foundation.JSONEncoder
 
 public enum APIGateway {
     /// `APIGateway.Request` contains data coming from the API Gateway.
-    public struct Request<T: Decodable> {
+    public struct Request<T: Decodable>: Decodable {
         public struct Context: Decodable {
             public let identity: [String: String]
             public let serviceId: String
@@ -40,6 +40,43 @@ public enum APIGateway {
 
         public let context: Context
         public let body: T?
+
+        enum CodingKeys: String, CodingKey {
+            case context = "requestContext"
+            case body
+            case headers
+            case query = "queryString"
+            case path
+            case httpMethod
+
+            case pathParameters
+            case queryStringParameters
+            case headerParameters
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+
+            context = try container.decode(Context.self, forKey: .context)
+            headers = try container.decode(HTTPHeaders.self, forKey: .headers)
+            path = try container.decode(String.self, forKey: .path)
+            httpMethod = try container.decode(HTTPMethod.self, forKey: .httpMethod)
+            query = try container.decode([String: String].self, forKey: .query)
+            pathParameters = try container.decode([String: String].self, forKey: .pathParameters)
+            queryStringParameters = try container.decode([String: String].self, forKey: .queryStringParameters)
+            headerParameters = try container.decode([String: String].self, forKey: .headerParameters)
+
+            do {
+                body = try container.decodeIfPresent(T.self, forKey: .body)
+            } catch {
+                let bodyJson = try container.decodeIfPresent(String.self, forKey: .body)
+                if let data = bodyJson?.data(using: .utf8) {
+                    body = try APIGateway.defaultJSONDecoder.decode(T.self, from: data)
+                } else {
+                    body = nil
+                }
+            }
+        }
     }
 
     public enum Stage: String, Decodable {

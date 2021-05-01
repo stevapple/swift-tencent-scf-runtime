@@ -21,9 +21,7 @@ public struct APIResponse: Encodable {
     public let headers: HTTPHeaders
     public let body: String
     public let isBase64Encoded: Bool
-}
 
-extension APIResponse {
     public init(
         statusCode: HTTPResponseStatus,
         headers: HTTPHeaders = [:],
