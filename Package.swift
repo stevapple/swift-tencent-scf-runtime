@@ -18,10 +18,11 @@ let package = Package(
         .library(name: "TencentSCFTesting", targets: ["TencentSCFTesting"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", .upToNextMajor(from: "2.17.0")),
-        .package(url: "https://github.com/apple/swift-log.git", .upToNextMajor(from: "1.0.0")),
-        .package(url: "https://github.com/swift-server/swift-backtrace.git", .upToNextMajor(from: "1.1.0")),
-        .package(url: "https://github.com/stevapple/tencent-cloud-core.git", .upToNextMajor(from: "0.2.0"))
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.17.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://github.com/swift-server/swift-backtrace.git", from: "1.1.0"),
+        .package(url: "https://github.com/stevapple/tencent-cloud-core.git", .upToNextMinor(from: "0.2.0")),
+        .package(name: "Gzip", url: "https://github.com/1024jp/GzipSwift.git", from: "5.1.0")
     ],
     targets: [
         .target(name: "TencentSCFRuntime", dependencies: [
@@ -44,7 +45,9 @@ let package = Package(
             .product(name: "NIOTestUtils", package: "swift-nio"),
             .product(name: "NIOFoundationCompat", package: "swift-nio"),
         ]),
-        .target(name: "TencentSCFEvents", dependencies: []),
+        .target(name: "TencentSCFEvents", dependencies: [
+            .byName(name: "Gzip")
+        ]),
         .testTarget(name: "TencentSCFEventsTests", dependencies: ["TencentSCFEvents"]),
         // testing helper
         .target(name: "TencentSCFTesting", dependencies: [

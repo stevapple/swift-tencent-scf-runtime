@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2020-2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information

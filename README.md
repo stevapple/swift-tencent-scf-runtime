@@ -400,6 +400,7 @@ Serverless Cloud Functions can be invoked directly from the SCF console, SCF API
 * [Timer Events](https://intl.cloud.tencent.com/document/product/583/9708)
 * [CMQ Topic Messages](https://intl.cloud.tencent.com/document/product/583/11517)
 * [CKafka Messages](https://intl.cloud.tencent.com/document/product/583/17530)
+* [CLS Logs](https://intl.cloud.tencent.com/document/product/583/38845)
 
 **Note**: Each one of the integration points mentioned above includes a set of `Decodable` structs that transform Tencent Cloud's data model for these APIs. APIGateway response is wrapped into an `Encodable` struct with three different initializers to help you build any valid response.
 
