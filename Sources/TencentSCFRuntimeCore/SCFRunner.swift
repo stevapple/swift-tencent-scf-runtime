@@ -117,8 +117,8 @@ extension SCF {
     }
 }
 
-private extension SCF.Context {
-    convenience init(logger: Logger, eventLoop: EventLoop, allocator: ByteBufferAllocator, invocation: SCF.Invocation) {
+extension SCF.Context {
+    fileprivate convenience init(logger: Logger, eventLoop: EventLoop, allocator: ByteBufferAllocator, invocation: SCF.Invocation) {
         self.init(requestID: invocation.requestID,
                   memoryLimit: invocation.memoryLimit,
                   timeLimit: .milliseconds(Int(invocation.timeLimit)),
@@ -158,8 +158,8 @@ extension EventLoopFuture {
     }
 }
 
-private extension Result {
-    var successful: Bool {
+extension Result {
+    private var successful: Bool {
         switch self {
         case .success:
             return true

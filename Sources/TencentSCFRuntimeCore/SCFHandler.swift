@@ -51,20 +51,20 @@ public protocol SCFHandler: EventLoopSCFHandler {
     func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void)
 }
 
-internal extension SCF {
-    static let defaultOffloadQueue = DispatchQueue(label: "SCFHandler.offload")
+extension SCF {
+    internal static let defaultOffloadQueue = DispatchQueue(label: "SCFHandler.offload")
 }
 
-public extension SCFHandler {
+extension SCFHandler {
     /// The queue on which `handle` is invoked on.
-    var offloadQueue: DispatchQueue {
+    public var offloadQueue: DispatchQueue {
         SCF.defaultOffloadQueue
     }
 
     /// `SCFHandler` is offloading the processing to a `DispatchQueue`.
     /// This is slower but safer, in case the implementation blocks the `EventLoop`.
     /// Performance sensitive cloud functions should be based on `EventLoopSCFHandler` which does not offload.
-    func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out> {
+    public func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out> {
         let promise = context.eventLoop.makePromise(of: Out.self)
         // FIXME: reusable DispatchQueue
         self.offloadQueue.async {
@@ -74,8 +74,8 @@ public extension SCFHandler {
     }
 }
 
-public extension SCFHandler {
-    func shutdown(context: SCF.ShutdownContext) -> EventLoopFuture<Void> {
+extension SCFHandler {
+    public func shutdown(context: SCF.ShutdownContext) -> EventLoopFuture<Void> {
         let promise = context.eventLoop.makePromise(of: Void.self)
         self.offloadQueue.async {
             do {
@@ -90,7 +90,7 @@ public extension SCFHandler {
 
     /// Clean up the SCF resources synchronously.
     /// Concrete SCF handlers implement this method to shutdown resources like `HTTPClient`s and database connections.
-    func syncShutdown(context: SCF.ShutdownContext) throws {
+    public func syncShutdown(context: SCF.ShutdownContext) throws {
         // noop
     }
 }
@@ -138,9 +138,9 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
     func decode(buffer: ByteBuffer) throws -> In
 }
 
-public extension EventLoopSCFHandler {
+extension EventLoopSCFHandler {
     /// Driver for `ByteBuffer` -> `In` decoding and `Out` -> `ByteBuffer` encoding
-    func handle(context: SCF.Context, event: ByteBuffer) -> EventLoopFuture<ByteBuffer?> {
+    public func handle(context: SCF.Context, event: ByteBuffer) -> EventLoopFuture<ByteBuffer?> {
         switch self.decodeIn(buffer: event) {
         case .failure(let error):
             return context.eventLoop.makeFailedFuture(CodecError.requestDecoding(error))
@@ -174,8 +174,8 @@ public extension EventLoopSCFHandler {
 }
 
 /// Implementation of  `ByteBuffer` to `Void` decoding.
-public extension EventLoopSCFHandler where Out == Void {
-    func encode(allocator: ByteBufferAllocator, value: Void) throws -> ByteBuffer? {
+extension EventLoopSCFHandler where Out == Void {
+    public func encode(allocator: ByteBufferAllocator, value: Void) throws -> ByteBuffer? {
         nil
     }
 }
@@ -206,8 +206,8 @@ public protocol ByteBufferSCFHandler {
     func shutdown(context: SCF.ShutdownContext) -> EventLoopFuture<Void>
 }
 
-public extension ByteBufferSCFHandler {
-    func shutdown(context: SCF.ShutdownContext) -> EventLoopFuture<Void> {
+extension ByteBufferSCFHandler {
+    public func shutdown(context: SCF.ShutdownContext) -> EventLoopFuture<Void> {
         context.eventLoop.makeSucceededFuture(())
     }
 }

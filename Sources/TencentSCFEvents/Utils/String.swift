@@ -25,8 +25,8 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-internal extension String {
-    func jsonEncoded() -> String {
+extension String {
+    internal func jsonEncoded() -> String {
         var bytes = [UInt8]()
         let stringBytes = self.utf8
         var startCopyIndex = stringBytes.startIndex

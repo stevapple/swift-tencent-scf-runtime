@@ -53,7 +53,7 @@ public enum APIGateway {
     public typealias Response = APIResponse
 }
 
-internal extension APIGateway {
-    static let defaultJSONDecoder = JSONDecoder()
-    static let defaultJSONEncoder = JSONEncoder()
+extension APIGateway {
+    internal static let defaultJSONDecoder = JSONDecoder()
+    internal static let defaultJSONEncoder = JSONEncoder()
 }

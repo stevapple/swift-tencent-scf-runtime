@@ -12,9 +12,9 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import Gzip
 import struct Foundation.Data
 import struct Foundation.Date
+import Gzip
 
 // https://intl.cloud.tencent.com/document/product/583/38845
 
@@ -29,7 +29,7 @@ public enum CLS {
         public init(from decoder: Decoder) throws {
             let rawContainer = try decoder.singleValueContainer()
             let data = try rawContainer.decode(CLS.Raw.self).data.gunzipped()
-            
+
             let _self = try CLS.jsonDecoder.decode(CLS._Logs.self, from: data)
             self.topicId = _self.topicId
             self.topicName = _self.topicName
@@ -49,7 +49,7 @@ public enum CLS {
             case timestamp
             case content
         }
-        
+
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             let timestring = try container.decode(String.self, forKey: .timestamp)

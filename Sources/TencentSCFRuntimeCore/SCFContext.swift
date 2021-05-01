@@ -109,8 +109,7 @@ extension SCF {
         /// The role credential from SCF environment.
         public var credential: TencentCloud.Credential? {
             if let secretId = SCF.Env["TENCENTCLOUD_SECRETID"],
-                let secretKey = SCF.Env["TENCENTCLOUD_SECRETKEY"]
-            {
+               let secretKey = SCF.Env["TENCENTCLOUD_SECRETKEY"] {
                 return TencentCloud.Credential(secretId: secretId,
                                                secretKey: secretKey,
                                                sessionToken: SCF.Env["TENCENTCLOUD_SESSIONTOKEN"])

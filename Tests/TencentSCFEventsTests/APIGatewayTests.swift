@@ -176,8 +176,7 @@ class APIGatewayTests: XCTestCase {
         var data: Data?
         XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
-            let json = String(data: data, encoding: .utf8)
-        {
+           let json = String(data: data, encoding: .utf8) {
             XCTAssertEqual(json, expectedJson)
         } else {
             XCTFail("Expect output JSON")
@@ -198,8 +197,7 @@ class APIGatewayTests: XCTestCase {
         var data: Data?
         XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
-            let json = String(data: data, encoding: .utf8)
-        {
+           let json = String(data: data, encoding: .utf8) {
             XCTAssertEqual(json, expectedJson)
         } else {
             XCTFail("Expect output JSON")
@@ -226,8 +224,7 @@ class APIGatewayTests: XCTestCase {
         var data: Data?
         XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
-            let json = String(data: data, encoding: .utf8)
-        {
+           let json = String(data: data, encoding: .utf8) {
             XCTAssertTrue(expectedJson.contains(json))
         } else {
             XCTFail("Expect output JSON")
@@ -244,8 +241,7 @@ class APIGatewayTests: XCTestCase {
         var data: Data?
         XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
-            let json = String(data: data, encoding: .utf8)
-        {
+           let json = String(data: data, encoding: .utf8) {
             XCTAssertEqual(json, expectedJson)
         } else {
             XCTFail("Expect output JSON")
@@ -267,8 +263,7 @@ class APIGatewayTests: XCTestCase {
         var data: Data?
         XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
-            let json = String(data: data, encoding: .utf8)
-        {
+           let json = String(data: data, encoding: .utf8) {
             XCTAssertEqual(json, expectedJson)
         } else {
             XCTFail("Expect output JSON")
@@ -296,8 +291,7 @@ class APIGatewayTests: XCTestCase {
         var data: Data?
         XCTAssertNoThrow(data = try encoder.encode(resp))
         if let data = data,
-            let json = String(data: data, encoding: .utf8)
-        {
+           let json = String(data: data, encoding: .utf8) {
             XCTAssertEqual(json, expectedJson)
         } else {
             XCTFail("Expect output JSON")

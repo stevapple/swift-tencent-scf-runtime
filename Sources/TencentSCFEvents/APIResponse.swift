@@ -33,7 +33,7 @@ extension APIResponse {
         do {
             rawBody = try body()
         } catch let err {
-            self.headers = headers.merging(["Content-Type": "application/json"]) { (_, default) in `default` }
+            self.headers = headers.merging(["Content-Type": "application/json"]) { _, `default` in `default` }
             self.statusCode = .internalServerError
             self.isBase64Encoded = false
             if let err = err as? EncodingError {
@@ -45,7 +45,7 @@ extension APIResponse {
         }
 
         self.statusCode = statusCode
-        self.headers = headers.merging(["Content-Type": rawBody.defaultMIME]) { (custom, _) in custom }
+        self.headers = headers.merging(["Content-Type": rawBody.defaultMIME]) { custom, _ in custom }
 
         switch rawBody {
         case .data(let dataBody):
@@ -67,7 +67,7 @@ extension APIResponse {
         case null
 
         public static func codable<T: Encodable>(_ body: T) throws -> Self {
-            return .json(String(data: try APIGateway.defaultJSONEncoder.encode(body), encoding: .utf8) ?? "")
+            .json(String(data: try APIGateway.defaultJSONEncoder.encode(body), encoding: .utf8) ?? "")
         }
 
         var defaultMIME: String {
@@ -80,3 +80,4 @@ extension APIResponse {
         }
     }
 }
+

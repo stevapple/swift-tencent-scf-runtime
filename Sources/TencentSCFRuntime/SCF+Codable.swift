@@ -91,31 +91,31 @@ internal struct CodableVoidClosureWrapper<In: Decodable>: SCFHandler {
 }
 
 /// Implementation of  a`ByteBuffer` to `In` decoding.
-public extension EventLoopSCFHandler where In: Decodable {
-    func decode(buffer: ByteBuffer) throws -> In {
+extension EventLoopSCFHandler where In: Decodable {
+    public func decode(buffer: ByteBuffer) throws -> In {
         try self.decoder.decode(In.self, from: buffer)
     }
 }
 
 /// Implementation of  `Out` to `ByteBuffer` encoding.
-public extension EventLoopSCFHandler where Out: Encodable {
-    func encode(allocator: ByteBufferAllocator, value: Out) throws -> ByteBuffer? {
+extension EventLoopSCFHandler where Out: Encodable {
+    public func encode(allocator: ByteBufferAllocator, value: Out) throws -> ByteBuffer? {
         try self.encoder.encode(value, using: allocator)
     }
 }
 
 /// Default `ByteBuffer` to `In` decoder using Foundation's JSONDecoder.
 /// Advanced users that want to inject their own codec can do it by overriding these functions.
-public extension EventLoopSCFHandler where In: Decodable {
-    var decoder: SCFCodableDecoder {
+extension EventLoopSCFHandler where In: Decodable {
+    public var decoder: SCFCodableDecoder {
         SCF.defaultJSONDecoder
     }
 }
 
 /// Default `Out` to `ByteBuffer` encoder using Foundation's JSONEncoder.
 /// Advanced users that want to inject their own codec can do it by overriding these functions.
-public extension EventLoopSCFHandler where Out: Encodable {
-    var encoder: SCFCodableEncoder {
+extension EventLoopSCFHandler where Out: Encodable {
+    public var encoder: SCFCodableEncoder {
         SCF.defaultJSONEncoder
     }
 }
@@ -128,9 +128,9 @@ public protocol SCFCodableEncoder {
     func encode<T: Encodable>(_ value: T, using allocator: ByteBufferAllocator) throws -> ByteBuffer
 }
 
-private extension SCF {
-    static let defaultJSONDecoder = JSONDecoder()
-    static let defaultJSONEncoder = JSONEncoder()
+extension SCF {
+    fileprivate static let defaultJSONDecoder = JSONDecoder()
+    fileprivate static let defaultJSONEncoder = JSONEncoder()
 }
 
 extension JSONDecoder: SCFCodableDecoder {}

@@ -30,7 +30,7 @@ class CLSLogTests: XCTestCase {
       }]
     }
     """
-    
+
     static var eventBody: String {
         let data = try! realBody.data(using: .utf8)!.gzipped().base64EncodedString()
         return """
@@ -57,8 +57,8 @@ class CLSLogTests: XCTestCase {
 
         XCTAssertEqual(record1.content, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
         XCTAssertEqual(record2.content, "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
-        XCTAssertEqual(record1.timestamp, 1605578090000020)
-        XCTAssertEqual(record2.timestamp, 1605578090000040)
+        XCTAssertEqual(record1.timestamp, 1_605_578_090_000_020)
+        XCTAssertEqual(record2.timestamp, 1_605_578_090_000_040)
         XCTAssertEqual(record2.date.timeIntervalSince(record1.date), 0.02, accuracy: 0.0001)
     }
 }

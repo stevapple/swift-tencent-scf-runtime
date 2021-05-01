@@ -16,7 +16,7 @@ import struct Foundation.Data
 
 // https://intl.cloud.tencent.com/document/product/583/38845
 
-extension CLS{
+extension CLS {
     struct _Logs: Decodable {
         let topicId: String
         let topicName: String
@@ -35,6 +35,7 @@ extension CLS{
         enum WrappingCodingKeys: String, CodingKey {
             case logs = "clslogs"
         }
+
         enum CodingKeys: String, CodingKey {
             case data
         }

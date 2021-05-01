@@ -72,15 +72,13 @@ extension SCF {
 
     public static func test(_ closure: @escaping SCF.StringClosure,
                             with event: String,
-                            using config: TestConfig = .init()) throws -> String
-    {
+                            using config: TestConfig = .init()) throws -> String {
         try Self.test(StringClosureWrapper(closure), with: event, using: config)
     }
 
     public static func test(_ closure: @escaping SCF.StringVoidClosure,
                             with event: String,
-                            using config: TestConfig = .init()) throws
-    {
+                            using config: TestConfig = .init()) throws {
         _ = try Self.test(StringVoidClosureWrapper(closure), with: event, using: config)
     }
 

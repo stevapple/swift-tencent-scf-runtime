@@ -132,8 +132,8 @@ extension SCF {
     }
 }
 
-internal extension SCF {
-    enum RuntimeError: Error {
+extension SCF {
+    internal enum RuntimeError: Error {
         case badStatusCode(HTTPResponseStatus)
         case upstreamError(String)
         case invocationMissingHeader(String)
@@ -155,13 +155,13 @@ extension SCF {
             }
 
             guard let memoryLimit = headers.first(name: SCFHeaders.memoryLimit),
-                let memoryLimitInMB = UInt(memoryLimit)
+                  let memoryLimitInMB = UInt(memoryLimit)
             else {
                 throw RuntimeError.invocationMissingHeader(SCFHeaders.memoryLimit)
             }
 
             guard let timeLimit = headers.first(name: SCFHeaders.timeLimit),
-                let timeLimitInMs = UInt(timeLimit)
+                  let timeLimitInMs = UInt(timeLimit)
             else {
                 throw RuntimeError.invocationMissingHeader(SCFHeaders.timeLimit)
             }

@@ -102,7 +102,7 @@ extension SCF {
                 self.run(promise: finishedPromise)
                 return finishedPromise.futureResult.mapResult { (handler, $0) }
             }
-            .flatMap { (handler, runnerResult) -> EventLoopFuture<Int> in
+            .flatMap { handler, runnerResult -> EventLoopFuture<Int> in
                 // After the SCF finishPromise has succeeded or failed we need to shutdown
                 // the handler.
                 let shutdownContext = ShutdownContext(logger: logger, eventLoop: self.eventLoop)
@@ -111,7 +111,7 @@ extension SCF {
                     // it with the runner result.
                     logger.error("Error shutting down handler: \(error)")
                     throw RuntimeError.shutdownError(shutdownError: error, runnerResult: runnerResult)
-                }.flatMapResult { (_) -> Result<Int, Error> in
+                }.flatMapResult { _ -> Result<Int, Error> in
                     // We had no error shutting down the cloud function, so let's return the
                     // runner's result.
                     runnerResult
