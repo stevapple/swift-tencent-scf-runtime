@@ -20,18 +20,16 @@ jobs:
       - name: Test
         run: swift test --enable-test-discovery
       - name: Test CloudFunctions example
-        run: |
-          cd Examples/CloudFunctions
-          swift build
+        working-directory: Examples/CloudFunctions
+        run: swift build
       - name: Test static linking
+        working-directory: Examples/CloudFunctions
         run: |
-          cd Examples/CloudFunctions
-          swift build -c release -Xswiftc -static-executable
+          yum install libxml2-static zlib-static -y
+          swift build --product APIGateway -c release -Xswiftc -static-executable
       - name: Test LocalDebugging example
-        run: |
-          cd Examples/LocalDebugging/MyCloudFunction
-          swift build
-          swift build -c release -Xswiftc -static-executable
+        working-directory: Examples/LocalDebugging/MyCloudFunction
+        run: swift build
 
   test-linux-release:
     name: Test on Linux
@@ -54,18 +52,11 @@ jobs:
       - name: Test
         run: swift test --enable-test-discovery
       - name: Test CloudFunctions example
-        run: |
-          cd Examples/CloudFunctions
-          swift build
-      - name: Test static linking
-        run: |
-          cd Examples/CloudFunctions
-          swift build -c release -Xswiftc -static-executable
+        working-directory: Examples/CloudFunctions
+        run: swift build
       - name: Test LocalDebugging example
-        run: |
-          cd Examples/LocalDebugging/MyCloudFunction
-          swift build
-          swift build -c release -Xswiftc -static-executable
+        working-directory: Examples/LocalDebugging/MyCloudFunction
+        run: swift build
 
   test-linux-nightly:
     name: Test on Linux
@@ -87,18 +78,11 @@ jobs:
       - name: Test
         run: swift test --enable-test-discovery
       - name: Test CloudFunctions example
-        run: |
-          cd Examples/CloudFunctions
-          swift build
-      - name: Test static linking
-        run: |
-          cd Examples/CloudFunctions
-          swift build -c release -Xswiftc -static-executable
+        working-directory: Examples/CloudFunctions
+        run: swift build
       - name: Test LocalDebugging example
-        run: |
-          cd Examples/LocalDebugging/MyCloudFunction
-          swift build
-          swift build -c release -Xswiftc -static-executable
+        working-directory: Examples/LocalDebugging/MyCloudFunction
+        run: swift build
 
   test-macos:
     name: Test on macOS

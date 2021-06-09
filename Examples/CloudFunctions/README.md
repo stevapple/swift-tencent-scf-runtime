@@ -11,6 +11,8 @@ cd swift-tencent-scf-runtime/Examples/CloudFunctions
 
 Note: The example scripts assume you have [jq](https://stedolan.github.io/jq/download/) command line tool installed. You're recommended to deploy with Serverless Framework in your own project.
 
+FIXME: The `CurrencyExchange` example cannot be statically linked currently.
+
 ## Deployment instructions using TCCLI and COSCMD
 
 Steps to deploy this sample to Tencent SCF Platform using TCCLI and COSCMD:
