@@ -46,7 +46,7 @@ echo "-------------------------------------------------------------------------"
 echo "Building \"$executable\" SCF"
 echo "-------------------------------------------------------------------------"
 docker run --rm -v `pwd`/../../..:/workspace -w /workspace/Examples/LocalDebugging/MyCloudFunction builder \
-       bash -cl "swift build --product $executable -c release"
+       bash -cl "swift build --product $executable -c release -Xswiftc -static-executable"
 echo "done"
 
 echo "-------------------------------------------------------------------------"
@@ -59,7 +59,7 @@ echo "done"
 echo "-------------------------------------------------------------------------"
 echo "Uploading \"$executable\" function to COS"
 echo "-------------------------------------------------------------------------"
-coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable/cloud-function.zip" "$executable.zip"
+coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable.zip" "$executable.zip"
 
 echo "-------------------------------------------------------------------------"
 echo "Updating \"$function_name\" to the latest \"$executable\""

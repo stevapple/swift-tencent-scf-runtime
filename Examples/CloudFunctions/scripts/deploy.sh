@@ -33,7 +33,7 @@ read -p "COS bucket to upload (name-appid, eg: examplebucket-1250000000): " cos_
 read -p "COS bucket region (eg: ap-beijing): " cos_region
 cos_region=${cos_region:-ap-beijing} # default for easy testing
 
-coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable/cloud-function.zip" "$executable.zip"
+coscmd -b "$cos_bucket" -r "$cos_region" upload ".build/scf/$executable.zip" "$executable.zip"
 
 echo "-------------------------------------------------------------------------"
 echo "Updating SCF function to use \"$executable\""

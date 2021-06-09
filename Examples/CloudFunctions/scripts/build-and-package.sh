@@ -41,7 +41,7 @@ echo "-------------------------------------------------------------------------"
 echo "Building \"$executable\" SCF"
 echo "-------------------------------------------------------------------------"
 docker run --rm -v "$workspace":/workspace -w /workspace/Examples/CloudFunctions builder \
-       bash -cl "swift build --product $executable -c release"
+       bash -cl "swift build --product $executable -c release -Xswiftc -static-executable"
 echo "done"
 
 echo "-------------------------------------------------------------------------"
