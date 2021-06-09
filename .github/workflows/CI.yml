@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         version:
-          - 5.2.5
           - 5.3.3
           - 5.4.1
           - nightly
@@ -40,7 +39,6 @@ jobs:
           - amazonlinux2
           - centos8
         version:
-          - 5.2.5
           - 5.3.3
           - 5.4.1
     container:
@@ -103,3 +101,22 @@ jobs:
         run: |
           cd Examples/LocalDebugging/MyCloudFunction
           swift build
+
+  test-52:
+    name: Test for Swift 5.2
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - swift:5.2.5-bionic
+          - swift:5.2.5-focal
+          - swift:5.2.5-amazonlinux2
+          - swift:5.2.5-centos8
+          - stevapple/swift-scf:5.2.5
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test --enable-test-discovery
