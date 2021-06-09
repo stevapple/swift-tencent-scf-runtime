@@ -1,4 +1,4 @@
-ARG swift_version=5.3
+ARG swift_version=5.4.1
 FROM stevapple/swift-scf:$swift_version
 # needed to do again after FROM due to docker limitation
 ARG swift_version

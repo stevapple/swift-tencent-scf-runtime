@@ -11,7 +11,7 @@ jobs:
         version:
           - 5.2.5
           - 5.3.3
-          - 5.4
+          - 5.4.1
           - nightly
     container:
       image: stevapple/swift-scf:${{ matrix.version }}
@@ -42,7 +42,7 @@ jobs:
         version:
           - 5.2.5
           - 5.3.3
-          - 5.4
+          - 5.4.1
     container:
       image: swift:${{ matrix.version }}-${{ matrix.os }}
     steps:
