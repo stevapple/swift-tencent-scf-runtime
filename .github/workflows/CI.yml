@@ -23,10 +23,15 @@ jobs:
         run: |
           cd Examples/CloudFunctions
           swift build
+      - name: Test static linking
+        run: |
+          cd Examples/CloudFunctions
+          swift build -c release -Xswiftc -static-executable
       - name: Test LocalDebugging example
         run: |
           cd Examples/LocalDebugging/MyCloudFunction
           swift build
+          swift build -c release -Xswiftc -static-executable
 
   test-linux-release:
     name: Test on Linux
@@ -52,10 +57,15 @@ jobs:
         run: |
           cd Examples/CloudFunctions
           swift build
+      - name: Test static linking
+        run: |
+          cd Examples/CloudFunctions
+          swift build -c release -Xswiftc -static-executable
       - name: Test LocalDebugging example
         run: |
           cd Examples/LocalDebugging/MyCloudFunction
           swift build
+          swift build -c release -Xswiftc -static-executable
 
   test-linux-nightly:
     name: Test on Linux
@@ -80,10 +90,15 @@ jobs:
         run: |
           cd Examples/CloudFunctions
           swift build
+      - name: Test static linking
+        run: |
+          cd Examples/CloudFunctions
+          swift build -c release -Xswiftc -static-executable
       - name: Test LocalDebugging example
         run: |
           cd Examples/LocalDebugging/MyCloudFunction
           swift build
+          swift build -c release -Xswiftc -static-executable
 
   test-macos:
     name: Test on macOS
