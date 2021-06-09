@@ -17,10 +17,10 @@ import struct Foundation.Data
 // https://cloud.tencent.com/document/product/583/12513
 
 public struct APIResponse: Encodable {
-    public let statusCode: HTTPResponseStatus
-    public let headers: HTTPHeaders
-    public let body: String
-    public let isBase64Encoded: Bool
+    public var statusCode: HTTPResponseStatus
+    public var headers: HTTPHeaders
+    public var body: String
+    public var isBase64Encoded: Bool
 
     public init(
         statusCode: HTTPResponseStatus,
