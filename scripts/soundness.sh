@@ -32,8 +32,24 @@ here="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function replace_acceptable_years() {
     # this needs to replace all acceptable forms with 'YEARS'
-    sed -e 's/2020/YEARS/'
+    sed -e 's/2020-2021/YEARS/'
+        -e 's/2020/YEARS/' -e 's/2021/YEARS/'
 }
+printf "=> Checking for unacceptable language... "
+# This greps for unacceptable terminology. The square bracket[s] are so that
+# "git grep" doesn't find the lines that greps :).
+unacceptable_terms=(
+  -e blacklis[t]
+  -e whitelis[t]
+  -e slav[e]
+  -e sanit[y]
+)
+if git grep --color=never -i "${unacceptable_terms[@]}" > /dev/null; then
+  printf "\033[0;31mUnacceptable language found.\033[0m\n"
+  git grep -i "${unacceptable_terms[@]}"
+  exit 1
+fi
+printf "\033[0;32mokay.\033[0m\n"
 
 printf "=> Checking format... "
 FIRST_OUT="$(git status --porcelain)"
@@ -48,7 +64,7 @@ else
 fi
 
 printf "=> Checking license headers for SwiftTencentSCFRuntime\n"
-tmp=$(mktemp /tmp/.swift-aws-lambda-sanity_XXXXXX)
+tmp=$(mktemp /tmp/.swift-tencent-scf-soundness_XXXXXX)
 
 for language in swift-or-c bash dtrace; do
   printf "   * $language... "

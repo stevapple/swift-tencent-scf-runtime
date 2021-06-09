@@ -78,4 +78,3 @@ public struct APIResponse: Encodable {
         }
     }
 }
-
