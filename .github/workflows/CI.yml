@@ -10,7 +10,7 @@ jobs:
       matrix:
         version:
           - 5.3.3
-          - 5.4.1
+          - 5.4.2
           - nightly
     container:
       image: stevapple/swift-scf:${{ matrix.version }}
@@ -22,11 +22,6 @@ jobs:
       - name: Test CloudFunctions example
         working-directory: Examples/CloudFunctions
         run: swift build
-      - name: Test static linking
-        working-directory: Examples/CloudFunctions
-        run: |
-          yum install libxml2-static zlib-static -y
-          swift build --product APIGateway -c release -Xswiftc -static-executable
       - name: Test LocalDebugging example
         working-directory: Examples/LocalDebugging/MyCloudFunction
         run: swift build
@@ -43,7 +38,7 @@ jobs:
           - centos8
         version:
           - 5.3.3
-          - 5.4.1
+          - 5.4.2
     container:
       image: swift:${{ matrix.version }}-${{ matrix.os }}
     steps:

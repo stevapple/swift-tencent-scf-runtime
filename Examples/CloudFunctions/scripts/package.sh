@@ -35,5 +35,7 @@ rm -rf "$target"
 mkdir -p "$target"
 
 cp ".build/release/$executable" "$target/bootstrap"
+ldd ".build/release/$executable" | grep swift | awk '{print $3}' | xargs cp -Lv -t "$target"
+
 cd "$target"
 zip ../$executable.zip *
