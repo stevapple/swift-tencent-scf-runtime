@@ -55,6 +55,19 @@ extension SCF {
             self.logger = logger
             self.allocator = allocator
         }
+
+        /// This interface is not part of the public API and must not be used by adopters.
+        /// This API is not part of semver versioning.
+        public static func __forTestsOnly(
+            logger: Logger,
+            eventLoop: EventLoop
+        ) -> InitializationContext {
+            InitializationContext(
+                logger: logger,
+                eventLoop: eventLoop,
+                allocator: ByteBufferAllocator()
+            )
+        }
     }
 }
 
@@ -184,7 +197,14 @@ extension SCF {
                       eventLoop: EventLoop,
                       allocator: ByteBufferAllocator)
         {
-            self.storage = _Storage(requestID: requestID, memoryLimit: memoryLimit, timeLimit: timeLimit, logger: logger, eventLoop: eventLoop, allocator: allocator)
+            self.storage = _Storage(
+                requestID: requestID,
+                memoryLimit: memoryLimit,
+                timeLimit: timeLimit,
+                logger: logger,
+                eventLoop: eventLoop,
+                allocator: allocator
+            )
             self.storage.logger[metadataKey: "scfRequestID"] = .string(requestID)
         }
 
@@ -198,6 +218,25 @@ extension SCF {
 
         public var debugDescription: String {
             "\(Self.self)(requestID: \(self.requestID), memoryLimit: \(self.memoryLimit)MB, timeLimit: \(self.timeLimit), deadline: \(self.deadline)"
+        }
+
+        /// This interface is not part of the public API and must not be used by adopters.
+        /// This API is not part of semver versioning.
+        public static func __forTestsOnly(
+            requestID: String,
+            memoryLimit: UInt,
+            timeLimit: DispatchTimeInterval,
+            logger: Logger,
+            eventLoop: EventLoop
+        ) -> Context {
+            Context(
+                requestID: requestID,
+                memoryLimit: memoryLimit,
+                timeLimit: timeLimit,
+                logger: logger,
+                eventLoop: eventLoop,
+                allocator: ByteBufferAllocator()
+            )
         }
     }
 

@@ -71,9 +71,9 @@ extension SCF {
 
     public static func test<Handler: SCFHandler>(
         _ handlerType: Handler.Type,
-        with event: Handler.Event,
+        with event: Handler.In,
         using config: TestConfig = .init()
-    ) throws -> Handler.Output {
+    ) throws -> Handler.Out {
         let logger = Logger(label: "test")
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer {
@@ -82,20 +82,17 @@ extension SCF {
         let eventLoop = eventLoopGroup.next()
 
         let promise = eventLoop.makePromise(of: Handler.self)
-        let initContext = SCF.InitializationContext(
+        let initContext = SCF.InitializationContext.__forTestsOnly(
             logger: logger,
-            eventLoop: eventLoop,
-            allocator: ByteBufferAllocator()
+            eventLoop: eventLoop
         )
 
-        let context = SCF.Context(
+        let context = SCF.Context.__forTestsOnly(
             requestID: config.requestID,
-            traceID: config.traceID,
-            invokedFunctionARN: config.invokedFunctionARN,
-            timeout: config.timeout,
+            memoryLimit: config.memoryLimit,
+            timeLimit: config.timeLimit,
             logger: logger,
-            eventLoop: eventLoop,
-            allocator: ByteBufferAllocator()
+            eventLoop: eventLoop
         )
 
         promise.completeWithTask {
@@ -104,7 +101,7 @@ extension SCF {
         let handler = try promise.futureResult.wait()
 
         return try eventLoop.flatSubmit {
-            handler.handle(event, context: context)
+            handler.handle(context: context, event: event)
         }.wait()
     }
 }
