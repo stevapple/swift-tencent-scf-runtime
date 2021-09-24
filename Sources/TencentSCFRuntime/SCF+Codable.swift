@@ -31,65 +31,6 @@ import NIOCore
 import NIOFoundationCompat
 @_exported import TencentSCFRuntimeCore
 
-/// Extension to the `SCF` companion to enable execution of cloud functions that take and return `Codable` events.
-extension SCF {
-    /// An asynchronous SCF Closure that takes a `In: Decodable` and returns a `Result<Out: Encodable, Error>` via a completion handler.
-    public typealias CodableClosure<In: Decodable, Out: Encodable> = (SCF.Context, In, @escaping (Result<Out, Error>) -> Void) -> Void
-
-    /// Run a cloud function defined by implementing the `CodableClosure` function.
-    ///
-    /// - Parameters:
-    ///     - closure: `CodableClosure` based SCF function.
-    ///
-    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
-    public static func run<In: Decodable, Out: Encodable>(_ closure: @escaping CodableClosure<In, Out>) {
-        self.run(CodableClosureWrapper(closure))
-    }
-
-    /// An asynchronous SCF Closure that takes a `In: Decodable` and returns a `Result<Void, Error>` via a completion handler.
-    public typealias CodableVoidClosure<In: Decodable> = (SCF.Context, In, @escaping (Result<Void, Error>) -> Void) -> Void
-
-    /// Run a cloud function defined by implementing the `CodableVoidClosure` function.
-    ///
-    /// - Parameters:
-    ///     - closure: `CodableVoidClosure` based SCF function.
-    ///
-    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
-    public static func run<In: Decodable>(_ closure: @escaping CodableVoidClosure<In>) {
-        self.run(CodableVoidClosureWrapper(closure))
-    }
-}
-
-internal struct CodableClosureWrapper<In: Decodable, Out: Encodable>: SCFHandler {
-    typealias In = In
-    typealias Out = Out
-
-    private let closure: SCF.CodableClosure<In, Out>
-
-    init(_ closure: @escaping SCF.CodableClosure<In, Out>) {
-        self.closure = closure
-    }
-
-    func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
-        self.closure(context, event, callback)
-    }
-}
-
-internal struct CodableVoidClosureWrapper<In: Decodable>: SCFHandler {
-    typealias In = In
-    typealias Out = Void
-
-    private let closure: SCF.CodableVoidClosure<In>
-
-    init(_ closure: @escaping SCF.CodableVoidClosure<In>) {
-        self.closure = closure
-    }
-
-    func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void) {
-        self.closure(context, event, callback)
-    }
-}
-
 /// Implementation of  a`ByteBuffer` to `In` decoding.
 extension EventLoopSCFHandler where In: Decodable {
     @inlinable

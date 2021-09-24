@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -14,7 +14,7 @@
 //
 // This source file was part of the SwiftAWSLambdaRuntime open source project
 //
-// Copyright (c) 2017-2018 Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) 2017-2021 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -29,8 +29,68 @@ import NIOCore
 @testable import TencentSCFRuntimeCore
 import XCTest
 
-class StringSCFTest: XCTestCase {
-    func testCallbackSuccess() {
+class SCFHandlerTest: XCTestCase {
+    #if compiler(>=5.5) && canImport(_Concurrency)
+
+    // MARK: - SCFHandler
+
+    func testBootstrapSuccess() {
+        let server = MockSCFServer(behavior: Behavior())
+        XCTAssertNoThrow(try server.start().wait())
+        defer { XCTAssertNoThrow(try server.stop().wait()) }
+
+        struct TestBootstrapHandler: SCFHandler {
+            typealias In = String
+            typealias Out = String
+
+            var initialized = false
+
+            init(context: SCF.InitializationContext) async throws {
+                XCTAssertFalse(self.initialized)
+                try await Task.sleep(nanoseconds: 100 * 1000 * 1000) // 0.1 seconds
+                self.initialized = true
+            }
+
+            func handle(context: SCF.Context, event: String) async throws -> String {
+                event
+            }
+        }
+
+        let maxTimes = Int.random(in: 10 ... 20)
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
+        let result = SCF.run(configuration: configuration, handlerType: TestBootstrapHandler.self)
+        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
+    }
+
+    func testBootstrapFailure() {
+        let server = MockSCFServer(behavior: FailedBootstrapBehavior())
+        XCTAssertNoThrow(try server.start().wait())
+        defer { XCTAssertNoThrow(try server.stop().wait()) }
+
+        struct TestBootstrapHandler: SCFHandler {
+            typealias In = String
+            typealias Out = Void
+
+            var initialized = false
+
+            init(context: SCF.InitializationContext) async throws {
+                XCTAssertFalse(self.initialized)
+                try await Task.sleep(nanoseconds: 100 * 1000 * 1000) // 0.1 seconds
+                throw TestError("kaboom")
+            }
+
+            func handle(context: SCF.Context, event: String) async throws {
+                XCTFail("How can this be called if init failed")
+            }
+        }
+
+        let maxTimes = Int.random(in: 10 ... 20)
+        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
+        let result = SCF.run(configuration: configuration, handlerType: TestBootstrapHandler.self)
+        assertSCFLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
+    }
+
+    func testHandlerSuccess() {
         let server = MockSCFServer(behavior: Behavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
@@ -39,18 +99,20 @@ class StringSCFTest: XCTestCase {
             typealias In = String
             typealias Out = String
 
-            func handle(context: SCF.Context, event: String, callback: (Result<String, Error>) -> Void) {
-                callback(.success(event))
+            init(context: SCF.InitializationContext) {}
+
+            func handle(context: SCF.Context, event: String) async throws -> String {
+                event
             }
         }
 
         let maxTimes = Int.random(in: 1 ... 10)
         let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = SCF.run(configuration: configuration, handler: Handler())
+        let result = SCF.run(configuration: configuration, handlerType: Handler.self)
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
-    func testVoidCallbackSuccess() {
+    func testVoidHandlerSuccess() {
         let server = MockSCFServer(behavior: Behavior(result: .success(nil)))
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
@@ -59,18 +121,19 @@ class StringSCFTest: XCTestCase {
             typealias In = String
             typealias Out = Void
 
-            func handle(context: SCF.Context, event: String, callback: (Result<Void, Error>) -> Void) {
-                callback(.success(()))
-            }
+            init(context: SCF.InitializationContext) {}
+
+            func handle(context: SCF.Context, event: String) async throws {}
         }
 
         let maxTimes = Int.random(in: 1 ... 10)
         let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = SCF.run(configuration: configuration, handler: Handler())
+
+        let result = SCF.run(configuration: configuration, handlerType: Handler.self)
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
-    func testCallbackFailure() {
+    func testHandlerFailure() {
         let server = MockSCFServer(behavior: Behavior(result: .failure(TestError("boom"))))
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
@@ -79,16 +142,21 @@ class StringSCFTest: XCTestCase {
             typealias In = String
             typealias Out = String
 
-            func handle(context: SCF.Context, event: String, callback: (Result<String, Error>) -> Void) {
-                callback(.failure(TestError("boom")))
+            init(context: SCF.InitializationContext) {}
+
+            func handle(context: SCF.Context, event: String) async throws -> String {
+                throw TestError("boom")
             }
         }
 
         let maxTimes = Int.random(in: 1 ... 10)
         let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = SCF.run(configuration: configuration, handler: Handler())
+        let result = SCF.run(configuration: configuration, handlerType: Handler.self)
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
+    #endif
+
+    // MARK: - EventLoopSCFHandler
 
     func testEventLoopSuccess() {
         let server = MockSCFServer(behavior: Behavior())
@@ -106,7 +174,9 @@ class StringSCFTest: XCTestCase {
 
         let maxTimes = Int.random(in: 1 ... 10)
         let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = SCF.run(configuration: configuration, handler: Handler())
+        let result = SCF.run(configuration: configuration, factory: { context in
+            context.eventLoop.makeSucceededFuture(Handler())
+        })
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
@@ -126,7 +196,9 @@ class StringSCFTest: XCTestCase {
 
         let maxTimes = Int.random(in: 1 ... 10)
         let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = SCF.run(configuration: configuration, handler: Handler())
+        let result = SCF.run(configuration: configuration, factory: { context in
+            context.eventLoop.makeSucceededFuture(Handler())
+        })
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
@@ -146,68 +218,20 @@ class StringSCFTest: XCTestCase {
 
         let maxTimes = Int.random(in: 1 ... 10)
         let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = SCF.run(configuration: configuration, handler: Handler())
+        let result = SCF.run(configuration: configuration, factory: { context in
+            context.eventLoop.makeSucceededFuture(Handler())
+        })
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
-    func testClosureSuccess() {
-        let server = MockSCFServer(behavior: Behavior())
-        XCTAssertNoThrow(try server.start().wait())
-        defer { XCTAssertNoThrow(try server.stop().wait()) }
-
-        let maxTimes = Int.random(in: 1 ... 10)
-        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = SCF.run(configuration: configuration) { (_, event: String, callback) in
-            callback(.success(event))
-        }
-        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
-    }
-
-    func testVoidClosureSuccess() {
-        let server = MockSCFServer(behavior: Behavior(result: .success(nil)))
-        XCTAssertNoThrow(try server.start().wait())
-        defer { XCTAssertNoThrow(try server.stop().wait()) }
-
-        let maxTimes = Int.random(in: 1 ... 10)
-        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result = SCF.run(configuration: configuration) { (_, _: String, callback) in
-            callback(.success(()))
-        }
-        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
-    }
-
-    func testClosureFailure() {
-        let server = MockSCFServer(behavior: Behavior(result: .failure(TestError("boom"))))
-        XCTAssertNoThrow(try server.start().wait())
-        defer { XCTAssertNoThrow(try server.stop().wait()) }
-
-        let maxTimes = Int.random(in: 1 ... 10)
-        let configuration = SCF.Configuration(lifecycle: .init(maxTimes: maxTimes))
-        let result: Result<Int, Error> = SCF.run(configuration: configuration) { (_, _: String, callback: (Result<String, Error>) -> Void) in
-            callback(.failure(TestError("boom")))
-        }
-        assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
-    }
-
-    func testBootstrapFailure() {
+    func testEventLoopBootstrapFailure() {
         let server = MockSCFServer(behavior: FailedBootstrapBehavior())
         XCTAssertNoThrow(try server.start().wait())
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
-        struct Handler: SCFHandler {
-            typealias In = String
-            typealias Out = String
-
-            init(context: SCF.InitializationContext) throws {
-                throw TestError("kaboom")
-            }
-
-            func handle(context: SCF.Context, event: String, callback: (Result<String, Error>) -> Void) {
-                callback(.failure(TestError("should not be called")))
-            }
-        }
-
-        let result = SCF.run(factory: Handler.init)
+        let result = SCF.run(configuration: .init(), factory: { context in
+            context.eventLoop.makeFailedFuture(TestError("kaboom"))
+        })
         assertSCFLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
     }
 }
@@ -228,7 +252,6 @@ private struct Behavior: SCFServerBehavior {
     }
 
     func process(response: String?) -> Result<Void, ProcessResponseError> {
-        XCTAssertEqual(self.requestId, self.requestId, "expecting requestId to match")
         switch self.result {
         case .success(let expected):
             XCTAssertEqual(expected, response, "expecting response to match")
@@ -240,7 +263,6 @@ private struct Behavior: SCFServerBehavior {
     }
 
     func process(error: String) -> Result<Void, ProcessErrorError> {
-        XCTAssertEqual(self.requestId, self.requestId, "expecting requestId to match")
         switch self.result {
         case .success:
             XCTFail("unexpected to succeed, but failed with: \(error)")

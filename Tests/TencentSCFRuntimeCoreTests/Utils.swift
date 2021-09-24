@@ -48,30 +48,6 @@ func runSCF(behavior: SCFServerBehavior, factory: @escaping SCF.HandlerFactory) 
     }.wait()
 }
 
-struct EchoHandler: SCFHandler {
-    typealias In = String
-    typealias Out = String
-
-    func handle(context: SCF.Context, event: String, callback: (Result<String, Error>) -> Void) {
-        callback(.success(event))
-    }
-}
-
-struct FailedHandler: SCFHandler {
-    typealias In = String
-    typealias Out = Void
-
-    private let reason: String
-
-    public init(_ reason: String) {
-        self.reason = reason
-    }
-
-    func handle(context: SCF.Context, event: String, callback: (Result<Void, Error>) -> Void) {
-        callback(.failure(TestError(self.reason)))
-    }
-}
-
 func assertSCFLifecycleResult(_ result: Result<Int, Error>, shoudHaveRun: Int = 0, shouldFailWithError: Error? = nil, file: StaticString = #file, line: UInt = #line) {
     switch result {
     case .success where shouldFailWithError != nil:

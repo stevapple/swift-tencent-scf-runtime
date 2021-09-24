@@ -46,14 +46,12 @@
 //     XCTAssertEqual(result, "echo" + input)
 // }
 
+#if compiler(>=5.5) && canImport(_Concurrency)
 import Dispatch
 import Logging
 import NIOCore
 import NIOPosix
-
-#if DEBUG
-@testable import TencentSCFRuntime
-@testable import TencentSCFRuntimeCore
+import TencentSCFRuntime
 
 extension SCF {
     public struct TestConfig {
@@ -71,54 +69,42 @@ extension SCF {
         }
     }
 
-    public static func test(_ closure: @escaping SCF.StringClosure,
-                            with event: String,
-                            using config: TestConfig = .init()) throws -> String {
-        try Self.test(StringClosureWrapper(closure), with: event, using: config)
-    }
-
-    public static func test(_ closure: @escaping SCF.StringVoidClosure,
-                            with event: String,
-                            using config: TestConfig = .init()) throws {
-        _ = try Self.test(StringVoidClosureWrapper(closure), with: event, using: config)
-    }
-
-    public static func test<In: Decodable, Out: Encodable>(
-        _ closure: @escaping SCF.CodableClosure<In, Out>,
-        with event: In,
+    public static func test<Handler: SCFHandler>(
+        _ handlerType: Handler.Type,
+        with event: Handler.Event,
         using config: TestConfig = .init()
-    ) throws -> Out {
-        try Self.test(CodableClosureWrapper(closure), with: event, using: config)
-    }
-
-    public static func test<In: Decodable>(
-        _ closure: @escaping SCF.CodableVoidClosure<In>,
-        with event: In,
-        using config: TestConfig = .init()
-    ) throws {
-        _ = try Self.test(CodableVoidClosureWrapper(closure), with: event, using: config)
-    }
-
-    public static func test<In, Out, Handler: EventLoopSCFHandler>(
-        _ handler: Handler,
-        with event: In,
-        using config: TestConfig = .init()
-    ) throws -> Out where Handler.In == In, Handler.Out == Out {
+    ) throws -> Handler.Output {
         let logger = Logger(label: "test")
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer {
             try! eventLoopGroup.syncShutdownGracefully()
         }
         let eventLoop = eventLoopGroup.next()
-        let context = Context(requestID: config.requestID,
-                              memoryLimit: config.memoryLimit,
-                              timeLimit: config.timeLimit,
-                              logger: logger,
-                              eventLoop: eventLoop,
-                              allocator: ByteBufferAllocator())
+
+        let promise = eventLoop.makePromise(of: Handler.self)
+        let initContext = SCF.InitializationContext(
+            logger: logger,
+            eventLoop: eventLoop,
+            allocator: ByteBufferAllocator()
+        )
+
+        let context = SCF.Context(
+            requestID: config.requestID,
+            traceID: config.traceID,
+            invokedFunctionARN: config.invokedFunctionARN,
+            timeout: config.timeout,
+            logger: logger,
+            eventLoop: eventLoop,
+            allocator: ByteBufferAllocator()
+        )
+
+        promise.completeWithTask {
+            try await Handler(context: initContext)
+        }
+        let handler = try promise.futureResult.wait()
 
         return try eventLoop.flatSubmit {
-            handler.handle(context: context, event: event)
+            handler.handle(event, context: context)
         }.wait()
     }
 }

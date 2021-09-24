@@ -37,16 +37,6 @@ public enum SCF {
     /// A function that takes a `InitializationContext` and returns an `EventLoopFuture` of a `ByteBufferSCFHandler`.
     public typealias HandlerFactory = (InitializationContext) -> EventLoopFuture<Handler>
 
-    /// Run a cloud function defined by implementing the `SCFHandler` protocol.
-    ///
-    /// - Parameters:
-    ///     - handler: `ByteBufferSCFHandler` based SCF function.
-    ///
-    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
-    public static func run(_ handler: Handler) {
-        self.run(handler: handler)
-    }
-
     /// Run a cloud function defined by implementing the `SCFHandler` protocol provided via a `SCFHandlerFactory`.
     /// Use this to initialize all your resources that you want to cache between invocations. This could be database connections and HTTP clients for example.
     /// It is encouraged to use the given `EventLoop`'s conformance to `EventLoopGroup` when initializing NIO dependencies. This will improve overall performance.
@@ -59,39 +49,18 @@ public enum SCF {
         self.run(factory: factory)
     }
 
-    /// Run a cloud function defined by implementing the `SCFHandler` protocol provided via a factory, typically a constructor.
-    ///
-    /// - Parameters:
-    ///     - factory: A `ByteBufferSCFHandler` factory.
-    ///
-    /// - Note: This is a blocking operation that will run forever, as its lifecycle is managed by the Tencent SCF Runtime Engine.
-    public static func run(_ factory: @escaping (InitializationContext) throws -> Handler) {
-        self.run(factory: factory)
-    }
-
+    #if compiler(>=5.5) && canImport(_Concurrency)
     // for testing and internal use
-    @discardableResult
-    internal static func run(configuration: Configuration = .init(), handler: Handler) -> Result<Int, Error> {
-        self.run(configuration: configuration, factory: { $0.eventLoop.makeSucceededFuture(handler) })
-    }
-
-    // for testing and internal use
-    @discardableResult
-    internal static func run(configuration: Configuration = .init(), factory: @escaping (InitializationContext) throws -> Handler) -> Result<Int, Error> {
-        self.run(configuration: configuration, factory: { context -> EventLoopFuture<Handler> in
-            let promise = context.eventLoop.makePromise(of: Handler.self)
-            // If we have a callback based handler factory, we offload the creation of the handler
-            // onto the default offload queue, to ensure that the eventloop is never blocked.
-            SCF.defaultOffloadQueue.async {
-                do {
-                    promise.succeed(try factory(context))
-                } catch {
-                    promise.fail(error)
-                }
+    internal static func run<Handler: SCFHandler>(configuration: Configuration = .init(), handlerType: Handler.Type) -> Result<Int, Error> {
+        self.run(configuration: configuration, factory: { context -> EventLoopFuture<ByteBufferSCFHandler> in
+            let promise = context.eventLoop.makePromise(of: ByteBufferSCFHandler.self)
+            promise.completeWithTask {
+                try await Handler(context: context)
             }
             return promise.futureResult
         })
     }
+    #endif
 
     // for testing and internal use
     @discardableResult

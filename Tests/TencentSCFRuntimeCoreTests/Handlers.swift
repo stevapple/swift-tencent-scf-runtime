@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -14,7 +14,7 @@
 //
 // This source file was part of the SwiftAWSLambdaRuntime open source project
 //
-// Copyright (c) 2017-2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) 2021 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -26,26 +26,28 @@
 //===------------------------------------------------------------------------------------===//
 
 import NIOCore
-import TencentSCFRuntime
+import TencentSCFRuntimeCore
 
-struct Request: Decodable {
-    let body: String
-}
+struct EchoHandler: EventLoopSCFHandler {
+    typealias In = String
+    typealias Out = String
 
-struct Response: Encodable {
-    let body: String
-}
-
-// In this example we are receiving and responding with codables.  Request and Response
-// above are examples of how to use codables to model your reqeuest and response objects.
-struct Handler: EventLoopSCFHandler {
-    typealias In = Request
-    typealias Out = Response
-
-    func handle(context: SCF.Context, event: Request) -> EventLoopFuture<Response> {
-        // As an example, respond with the input event's reversed body.
-        context.eventLoop.makeSucceededFuture(Response(body: String(event.body.reversed())))
+    func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
+        context.eventLoop.makeSucceededFuture(event)
     }
 }
 
-SCF.run { $0.eventLoop.makeSucceededFuture(Handler()) }
+struct FailedHandler: EventLoopSCFHandler {
+    typealias In = String
+    typealias Out = Void
+
+    private let reason: String
+
+    init(_ reason: String) {
+        self.reason = reason
+    }
+
+    func handle(context: SCF.Context, event: String) -> EventLoopFuture<Void> {
+        context.eventLoop.makeFailedFuture(TestError(self.reason))
+    }
+}

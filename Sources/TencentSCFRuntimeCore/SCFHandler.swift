@@ -30,72 +30,44 @@ import NIOCore
 
 // MARK: - SCFHandler
 
-/// Strongly typed, callback based processing protocol for an SCF function that takes a user defined `In` and returns a user defined `Out` asynchronously.
-/// `SCFHandler` implements `EventLoopSCFHandler`, performing callback to `EventLoopFuture` mapping, over a `DispatchQueue` for safety.
-///
-/// - Note: To implement a cloud function, implement either `SCFHandler` or the `EventLoopSCFHandler` protocol.
-///         The `SCFHandler` will offload the SCF execution to a `DispatchQueue` making processing safer but slower.
-///         The `EventLoopSCFHandler` will execute the cloud function on the same `EventLoop` as the core runtime engine, making the processing faster but requires more care from the implementation to never block the `EventLoop`.
+#if compiler(>=5.5) && canImport(_Concurrency)
+/// Strongly typed, processing protocol for a cloud function that takes a user defined `Event` and returns a user defined `Output` async.
 public protocol SCFHandler: EventLoopSCFHandler {
-    /// Defines to which `DispatchQueue` the SCF execution is offloaded to.
-    var offloadQueue: DispatchQueue { get }
+    /// The SCF initialization method
+    /// Use this method to initialize resources that will be used in every request.
+    ///
+    /// Examples for this can be HTTP or database clients.
+    /// - parameters:
+    ///     - context: Runtime `InitializationContext`.
+    init(context: SCF.InitializationContext) async throws
 
-    /// The SCF handling method.
+    /// The SCF handling method
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
-    /// - Parameters:
+    /// - parameters:
     ///     - context: Runtime `Context`.
     ///     - event: Event of type `In` representing the event or request.
-    ///     - callback: Completion handler to report the result of the SCF function back to the runtime engine.
-    ///                 The completion handler expects a `Result` with either a response of type `Out` or an `Error`.
-    func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void)
-}
-
-extension SCF {
-    @usableFromInline
-    internal static let defaultOffloadQueue = DispatchQueue(label: "SCFHandler.offload")
+    ///
+    /// - Returns: An SCF result ot type `Output`.
+    func handle(context: SCF.Context, event: In) async throws -> Output
 }
 
 extension SCFHandler {
-    /// The queue on which `handle` is invoked on.
-    public var offloadQueue: DispatchQueue {
-        SCF.defaultOffloadQueue
-    }
-
-    /// `SCFHandler` is offloading the processing to a `DispatchQueue`.
-    /// This is slower but safer, in case the implementation blocks the `EventLoop`.
-    /// Performance sensitive cloud functions should be based on `EventLoopSCFHandler` which does not offload.
-    @inlinable
-    public func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out> {
-        let promise = context.eventLoop.makePromise(of: Out.self)
-        // FIXME: reusable DispatchQueue
-        self.offloadQueue.async {
-            self.handle(context: context, event: event, callback: promise.completeWith)
+    public func handle(context: SCF.Context, event: In) -> EventLoopFuture<Output> {
+        let promise = context.eventLoop.makePromise(of: Output.self)
+        promise.completeWithTask {
+            try await self.handle(event, context: context)
         }
         return promise.futureResult
     }
 }
 
 extension SCFHandler {
-    public func shutdown(context: SCF.ShutdownContext) -> EventLoopFuture<Void> {
-        let promise = context.eventLoop.makePromise(of: Void.self)
-        self.offloadQueue.async {
-            do {
-                try self.syncShutdown(context: context)
-                promise.succeed(())
-            } catch {
-                promise.fail(error)
-            }
-        }
-        return promise.futureResult
-    }
-
-    /// Clean up the SCF resources synchronously.
-    /// Concrete SCF handlers implement this method to shutdown resources like `HTTPClient`s and database connections.
-    public func syncShutdown(context: SCF.ShutdownContext) throws {
-        // noop
+    public static func main() {
+        _ = SCF.run(handlerType: Self.self)
     }
 }
+#endif
 
 // MARK: - EventLoopSCFHandler
 

@@ -39,12 +39,4 @@ struct Handler: EventLoopSCFHandler {
     }
 }
 
-SCF.run(Handler())
-
-// MARK: - this can also be expressed as a closure:
-
-/*
- SCF.run { (_, event: String, callback) in
-   callback(.success(String(event.reversed())))
- }
- */
+SCF.run { $0.eventLoop.makeSucceededFuture(Handler()) }
