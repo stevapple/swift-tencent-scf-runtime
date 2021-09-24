@@ -25,12 +25,19 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import Shared
 import TencentSCFRuntime
 
-// Set LOCAL_SCF_SERVER_ENABLED env variable to "true" to start a local server simulator
-// which will allow local debugging.
-SCF.run { (_, request: Request, callback: @escaping (Result<Response, Error>) -> Void) in
-    // TODO: something useful
-    callback(.success(Response(message: "Hello, \(request.name)!")))
+// Introductory example, the obligatory "Hello, world!"
+@main
+struct HelloWorldHandler: SCFHandler {
+    typealias In = String
+    typealias Out = String
+
+    init(context: SCF.InitializationContext) async throws {
+        // setup your resources that you want to reuse here.
+    }
+
+    func handle(context: SCF.Context, event: String) async throws -> String {
+        "hello, world"
+    }
 }

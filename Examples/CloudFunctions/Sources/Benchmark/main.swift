@@ -25,13 +25,13 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import NIO
+import NIOCore
 import TencentSCFRuntimeCore
 
 // If you would like to benchmark Swift's SCF Runtime, use this example which is more performant.
 // `EventLoopSCFHandler` does not offload the cloud function processing to a separate thread
 // while the Closure-based handlers do.
-SCF.run(BenchmarkHandler())
+SCF.run { $0.eventLoop.makeSucceededFuture(BenchmarkHandler()) }
 
 struct BenchmarkHandler: EventLoopSCFHandler {
     typealias In = String

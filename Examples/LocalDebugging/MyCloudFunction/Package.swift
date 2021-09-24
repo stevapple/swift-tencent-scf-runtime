@@ -1,11 +1,11 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 
 import PackageDescription
 
 let package = Package(
     name: "MyCloudFunction",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v12),
     ],
     products: [
         .executable(name: "MyCloudFunction", targets: ["MyCloudFunction"]),
@@ -18,7 +18,7 @@ let package = Package(
         .package(name: "Shared", path: "../Shared"),
     ],
     targets: [
-        .target(
+        .executableTarget(
             name: "MyCloudFunction", dependencies: [
                 .product(name: "TencentSCFRuntime", package: "swift-tencent-scf-runtime"),
                 .product(name: "Shared", package: "Shared"),

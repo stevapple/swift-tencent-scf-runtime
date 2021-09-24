@@ -2,24 +2,11 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
 // See CONTRIBUTORS.txt for the list of SwiftTencentSCFRuntime project authors
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-//===------------------------------------------------------------------------------------===//
-//
-// This source file was part of the SwiftAWSLambdaRuntime open source project
-//
-// Copyright (c) 2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See http://github.com/swift-server/swift-aws-lambda-runtime/blob/main/CONTRIBUTORS.txt
-// for the list of SwiftAWSLambdaRuntime project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -32,26 +19,36 @@ struct ContentView: View {
     @State var name: String = ""
     @State var password: String = ""
     @State var response: String = ""
+    @State private var isLoading: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             TextField("Username", text: $name)
             SecureField("Password", text: $password)
-            Button(
-                action: self.register,
-                label: {
-                    Text("Register")
-                        .padding()
-                        .foregroundColor(.white)
-                        .background(Color.black)
-                        .border(Color.black, width: 2)
+            Button {
+                Task {
+                    isLoading = true
+                    response = await register()
+                    isLoading = false
                 }
-            )
+            } label: {
+                Text("Register")
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Color.black)
+                    .border(Color.black, width: 2)
+                    .opacity(isLoading ? 0 : 1)
+                    .overlay {
+                        if isLoading {
+                            ProgressView()
+                        }
+                    }
+            }
             Text(response)
         }.padding(100)
     }
 
-    func register() {
+    func register() async -> String {
         guard let url = URL(string: "http://localhost:9001/invoke") else {
             fatalError("invalid url")
         }
@@ -63,32 +60,20 @@ struct ContentView: View {
         }
         request.httpBody = jsonRequest
 
-        let task = URLSession.shared.dataTask(with: request as URLRequest) { data, response, error in
-            do {
-                if let error = error {
-                    throw CommunicationError(reason: error.localizedDescription)
-                }
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    throw CommunicationError(reason: "invalid response, expected HTTPURLResponse")
-                }
-                guard httpResponse.statusCode == 200 else {
-                    throw CommunicationError(reason: "invalid response code: \(httpResponse.statusCode)")
-                }
-                guard let data = data else {
-                    throw CommunicationError(reason: "invald response, empty body")
-                }
-                let response = try JSONDecoder().decode(Response.self, from: data)
-                self.setResponse(response.message)
-            } catch {
-                self.setResponse("\(error)")
-            }
-        }
-        task.resume()
-    }
+        do {
+            let (data, urlResponse) = try await URLSession.shared.data(for: request)
 
-    func setResponse(_ text: String) {
-        DispatchQueue.main.async {
-            self.response = text
+            guard let httpResponse = urlResponse as? HTTPURLResponse else {
+                return "invalid response, expected HTTPURLResponse"
+            }
+            guard httpResponse.statusCode == 200 else {
+                return "invalid response code: \(httpResponse.statusCode)"
+            }
+
+            let response = try JSONDecoder().decode(Response.self, from: data)
+            return response.message
+        } catch {
+            return error.localizedDescription
         }
     }
 }
@@ -97,8 +82,4 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
     }
-}
-
-struct CommunicationError: Error {
-    let reason: String
 }

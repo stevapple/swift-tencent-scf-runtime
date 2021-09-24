@@ -8,18 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version:
-          - 5.3.3
-          - 5.4.3
+        swift:
           - 5.5
           - nightly
     container:
-      image: stevapple/swift-scf:${{ matrix.version }}
+      image: stevapple/swift-scf:${{ matrix.swift }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        run: swift test --enable-test-discovery
+        run: swift test
       - name: Test CloudFunctions example
         working-directory: Examples/CloudFunctions
         run: swift build
@@ -32,22 +30,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os:
+        distro:
           - bionic
           - focal
           - amazonlinux2
           - centos8
-        version:
-          - 5.3.3
-          - 5.4.3
+        swift:
           - 5.5
     container:
-      image: swift:${{ matrix.version }}-${{ matrix.os }}
+      image: swift:${{ matrix.swift }}-${{ matrix.distro }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        run: swift test --enable-test-discovery
+        run: swift test
       - name: Test CloudFunctions example
         working-directory: Examples/CloudFunctions
         run: swift build
@@ -60,20 +56,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os:
+        distro:
           - bionic
           - focal
           - amazonlinux2
           - centos8
-        version:
+        swift:
           - nightly
     container:
-      image: swiftlang/swift:${{ matrix.version }}-${{ matrix.os }}
+      image: swiftlang/swift:${{ matrix.swift }}-${{ matrix.distro }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
-        run: swift test --enable-test-discovery
+        run: swift test
       - name: Test CloudFunctions example
         working-directory: Examples/CloudFunctions
         run: swift build
@@ -84,33 +80,52 @@ jobs:
   test-macos:
     name: Test on macOS
     runs-on: macos-latest
+    if: ${{ false }} # Disabled until macOS 12 is available
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test
         run: swift test
       - name: Test CloudFunctions example
-        run: |
-          cd Examples/CloudFunctions
-          swift build
+        working-directory: Examples/CloudFunctions
+        run: swift build
       - name: Test LocalDebugging example
-        run: |
-          cd Examples/LocalDebugging/MyCloudFunction
-          swift build
+        working-directory: Examples/LocalDebugging/MyCloudFunction
+        run: swift build
 
-  test-52:
-    name: Test for Swift 5.2
+  test-legacy:
+    name: Test for Swift (Legacy)
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image:
-          - swift:5.2.5-bionic
-          - swift:5.2.5-focal
-          - swift:5.2.5-amazonlinux2
-          - swift:5.2.5-centos8
-          - stevapple/swift-scf:5.2.5
+        distro:
+          - bionic
+          - focal
+          - amazonlinux2
+          - centos8
+        swift:
+          - 5.2.5
+          - 5.3.3
+          - 5.4.3
     container:
-      image: ${{ matrix.image }}
+      image: swift:${{ matrix.swift }}-${{ matrix.distro }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Test
+        run: swift test --enable-test-discovery
+
+  test-scf-legacy:
+    name: Test for SCF (Legacy)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        swift:
+          - 5.2.5
+          - 5.3.3
+          - 5.4.3
+    container:
+      image: stevapple/swift-scf:${{ matrix.swift }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

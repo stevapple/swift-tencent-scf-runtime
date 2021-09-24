@@ -25,22 +25,21 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import NIO
+import NIOCore
 import TencentSCFEvents
-import TencentSCFRuntime
+import TencentSCFRuntimeCore
 
 // MARK: - Run SCF function
 
-SCF.run(APIGatewayProxySCF())
+SCF.run { $0.eventLoop.makeSucceededFuture(APIGatewayProxyHandler()) }
 
 // MARK: - Handler, Request and Response
 
-// FIXME: Use proper Event abstractions once added to TencentSCFRuntime
-struct APIGatewayProxySCF: EventLoopSCFHandler {
-    public typealias In = APIGateway.Request<String>
-    public typealias Out = APIGateway.Response
+struct APIGatewayProxyHandler: EventLoopSCFHandler {
+    typealias In = APIGateway.Request<String>
+    typealias Out = APIGateway.Response
 
-    public func handle(context: SCF.Context, event: APIGateway.Request<String>) -> EventLoopFuture<APIGateway.Response> {
+    func handle(context: SCF.Context, event: APIGateway.Request<String>) -> EventLoopFuture<APIGateway.Response> {
         context.logger.debug("hello, api gateway!")
         return context.eventLoop.makeSucceededFuture(APIGateway.Response(statusCode: .ok, body: .string("Hello, world!")))
     }

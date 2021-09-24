@@ -1,11 +1,11 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 
 import PackageDescription
 
 let package = Package(
     name: "swift-tencent-scf-runtime-samples",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v12),
     ],
     products: [
         // Introductory example.
@@ -26,20 +26,20 @@ let package = Package(
         .package(name: "swift-tencent-scf-runtime", path: "../.."),
     ],
     targets: [
-        .target(name: "HelloWorld", dependencies: [
+        .executableTarget(name: "HelloWorld", dependencies: [
             .product(name: "TencentSCFRuntime", package: "swift-tencent-scf-runtime"),
         ]),
-        .target(name: "Benchmark", dependencies: [
+        .executableTarget(name: "Benchmark", dependencies: [
             .product(name: "TencentSCFRuntimeCore", package: "swift-tencent-scf-runtime"),
         ]),
-        .target(name: "ErrorHandling", dependencies: [
+        .executableTarget(name: "ErrorHandling", dependencies: [
             .product(name: "TencentSCFRuntime", package: "swift-tencent-scf-runtime"),
         ]),
-        .target(name: "APIGateway", dependencies: [
+        .executableTarget(name: "APIGateway", dependencies: [
             .product(name: "TencentSCFRuntime", package: "swift-tencent-scf-runtime"),
             .product(name: "TencentSCFEvents", package: "swift-tencent-scf-runtime"),
         ]),
-        .target(name: "CurrencyExchange", dependencies: [
+        .executableTarget(name: "CurrencyExchange", dependencies: [
             .product(name: "TencentSCFRuntime", package: "swift-tencent-scf-runtime"),
         ]),
     ]
