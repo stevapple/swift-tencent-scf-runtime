@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2020-2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -14,7 +14,7 @@
 //
 // This source file was part of the SwiftAWSLambdaRuntime open source project
 //
-// Copyright (c) 2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) 2020-2021 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -36,15 +36,15 @@ struct ErrorsHappenHandler: SCFHandler {
 
     init(context: SCF.InitializationContext) async throws {}
 
-    func handle(_ request: Request) async throws -> Response {
+    func handle(context: SCF.Context, event: Request) async throws -> Response {
         // switch over the error type "requested" by the request, and trigger such error accordingly
-        switch request.error {
+        switch event.error {
         // no error here!
         case .none:
-            return Response(awsRequestID: context.requestID, requestID: request.requestID, status: .ok)
+            return Response(scfRequestID: context.requestID, requestID: event.requestID, status: .ok)
         // trigger a "managed" error - domain specific business logic failure
         case .managed:
-            return Response(awsRequestID: context.requestID, requestID: request.requestID, status: .error)
+            return Response(scfRequestID: context.requestID, requestID: event.requestID, status: .error)
         // trigger an "unmanaged" error - an unexpected Swift Error triggered while processing the request
         case .unmanaged(let error):
             throw UnmanagedError(description: error)

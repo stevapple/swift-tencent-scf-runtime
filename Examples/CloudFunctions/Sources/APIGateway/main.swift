@@ -27,7 +27,7 @@
 
 import NIOCore
 import TencentSCFEvents
-import TencentSCFRuntimeCore
+import TencentSCFRuntime
 
 // MARK: - Run SCF function
 
