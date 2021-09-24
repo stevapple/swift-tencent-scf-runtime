@@ -26,8 +26,9 @@
 //===------------------------------------------------------------------------------------===//
 
 import Logging
-import NIO
+import NIOCore
 import NIOFoundationCompat
+import NIOPosix
 @testable import TencentSCFRuntime
 @testable import TencentSCFRuntimeCore
 import XCTest

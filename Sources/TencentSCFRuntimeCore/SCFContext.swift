@@ -27,7 +27,7 @@
 
 import Dispatch
 import Logging
-import NIO
+import NIOCore
 import TencentCloudCore
 
 // MARK: - InitializationContext

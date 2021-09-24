@@ -27,7 +27,7 @@
 
 import Dispatch
 import Logging
-import NIO
+import NIOCore
 
 extension SCF {
     /// `SCF.Runner` manages the SCF runtime workflow, or business logic.

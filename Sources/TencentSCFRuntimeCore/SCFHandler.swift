@@ -26,7 +26,7 @@
 //===------------------------------------------------------------------------------------===//
 
 import Dispatch
-import NIO
+import NIOCore
 
 // MARK: - SCFHandler
 

@@ -26,8 +26,8 @@
 //===------------------------------------------------------------------------------------===//
 
 import Logging
-import NIO
 import NIOConcurrencyHelpers
+import NIOCore
 
 extension SCF {
     /// `Lifecycle` manages the SCF process lifecycle.

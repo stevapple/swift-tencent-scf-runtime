@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2020-2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -14,7 +14,7 @@
 //
 // This source file was part of the SwiftAWSLambdaRuntime open source project
 //
-// Copyright (c) 2017-2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) 2017-2021 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -27,7 +27,7 @@
 
 import Dispatch
 import Logging
-import NIO
+import NIOCore
 
 extension SCF {
     internal struct Configuration: CustomStringConvertible {
@@ -77,7 +77,6 @@ extension SCF {
         struct RuntimeEngine: CustomStringConvertible {
             let ip: String
             let port: Int
-            let keepAlive: Bool
             let requestTimeout: TimeAmount?
 
             init(address: String? = nil, keepAlive: Bool? = nil, requestTimeout: TimeAmount? = nil) {
@@ -91,12 +90,11 @@ extension SCF {
                     self.ip = Env["SCF_RUNTIME_API"] ?? "127.0.0.1"
                     self.port = Env["SCF_RUNTIME_API_PORT"].flatMap(Int.init) ?? 9001
                 }
-                self.keepAlive = keepAlive ?? Env["KEEP_ALIVE"].flatMap(Bool.init) ?? true
                 self.requestTimeout = requestTimeout ?? Env["REQUEST_TIMEOUT"].flatMap(Int64.init).flatMap { .milliseconds($0) }
             }
 
             var description: String {
-                "\(RuntimeEngine.self)(ip: \(self.ip), port: \(self.port), keepAlive: \(self.keepAlive), requestTimeout: \(String(describing: self.requestTimeout))"
+                "\(RuntimeEngine.self)(ip: \(self.ip), port: \(self.port), requestTimeout: \(String(describing: self.requestTimeout))"
             }
         }
 

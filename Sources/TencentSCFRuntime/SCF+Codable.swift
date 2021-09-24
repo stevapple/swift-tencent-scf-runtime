@@ -27,7 +27,7 @@
 
 import class Foundation.JSONDecoder
 import class Foundation.JSONEncoder
-import NIO
+import NIOCore
 import NIOFoundationCompat
 @_exported import TencentSCFRuntimeCore
 

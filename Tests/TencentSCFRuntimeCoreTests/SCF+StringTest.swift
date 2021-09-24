@@ -25,7 +25,7 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import NIO
+import NIOCore
 @testable import TencentSCFRuntimeCore
 import XCTest
 

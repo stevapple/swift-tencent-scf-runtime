@@ -111,10 +111,9 @@ Performance sensitive cloud functions may choose to use a more complex API which
 
 ```swift
 // Import the modules.
+import NIOCore
 import TencentSCFRuntime
 import TencentSCFEvents
-import NIO
-
 // Our SCF handler, conforms to EventLoopSCFHandler.
 struct Handler: EventLoopSCFHandler {
     typealias In = COS.Event // Request type

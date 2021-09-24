@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2020-2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -14,7 +14,7 @@
 //
 // This source file was part of the SwiftAWSLambdaRuntime open source project
 //
-// Copyright (c) 2017-2018 Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) 2017-2021 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -26,7 +26,8 @@
 //===------------------------------------------------------------------------------------===//
 
 import Logging
-import NIO
+import NIOCore
+import NIOPosix
 @testable import TencentSCFRuntimeCore
 import XCTest
 
@@ -35,7 +36,7 @@ func runSCF(behavior: SCFServerBehavior, handler: SCF.Handler) throws {
 }
 
 func runSCF(behavior: SCFServerBehavior, factory: @escaping SCF.HandlerFactory) throws {
-    let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
+    let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     defer { XCTAssertNoThrow(try eventLoopGroup.syncShutdownGracefully()) }
     let logger = Logger(label: "TestLogger")
     let configuration = SCF.Configuration(runtimeEngine: .init(requestTimeout: .milliseconds(100)))

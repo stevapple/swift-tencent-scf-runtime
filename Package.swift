@@ -18,7 +18,7 @@ let package = Package(
         .library(name: "TencentSCFTesting", targets: ["TencentSCFTesting"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.17.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.32.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/swift-server/swift-backtrace.git", from: "1.1.0"),
         .package(url: "https://github.com/stevapple/tencent-cloud-core.git", .upToNextMinor(from: "0.2.0")),
@@ -27,7 +27,7 @@ let package = Package(
     targets: [
         .target(name: "TencentSCFRuntime", dependencies: [
             .byName(name: "TencentSCFRuntimeCore"),
-            .product(name: "NIO", package: "swift-nio"),
+            .product(name: "NIOCore", package: "swift-nio"),
             .product(name: "NIOFoundationCompat", package: "swift-nio"),
         ]),
         .testTarget(name: "TencentSCFRuntimeTests", dependencies: [
@@ -39,6 +39,9 @@ let package = Package(
             .product(name: "Logging", package: "swift-log"),
             .product(name: "Backtrace", package: "swift-backtrace"),
             .product(name: "NIOHTTP1", package: "swift-nio"),
+            .product(name: "NIOCore", package: "swift-nio"),
+            .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+            .product(name: "NIOPosix", package: "swift-nio"),
         ]),
         .testTarget(name: "TencentSCFRuntimeCoreTests", dependencies: [
             .byName(name: "TencentSCFRuntimeCore"),
@@ -58,8 +61,12 @@ let package = Package(
         // for perf testing
         .target(name: "MockServer", dependencies: [
             .product(name: "NIOHTTP1", package: "swift-nio"),
+            .product(name: "NIO", package: "swift-nio"),
         ]),
         .target(name: "StringSample", dependencies: ["TencentSCFRuntime"]),
-        .target(name: "CodableSample", dependencies: ["TencentSCFRuntime"]),
+        .target(name: "CodableSample", dependencies: [
+            .byName(name: "TencentSCFRuntime"),
+            .product(name: "NIO", package: "swift-nio"),
+        ]),
     ]
 )

@@ -13,7 +13,8 @@
 //===------------------------------------------------------------------------------------===//
 
 import Logging
-import NIO
+import NIOCore
+import NIOPosix
 @testable import TencentCloudCore
 @testable import TencentSCFRuntimeCore
 import XCTest

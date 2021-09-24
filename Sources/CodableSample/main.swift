@@ -25,7 +25,7 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import NIO
+import NIOCore
 import TencentSCFRuntime
 
 struct Request: Decodable {

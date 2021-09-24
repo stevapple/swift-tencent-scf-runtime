@@ -48,7 +48,8 @@
 
 import Dispatch
 import Logging
-import NIO
+import NIOCore
+import NIOPosix
 
 #if DEBUG
 @testable import TencentSCFRuntime

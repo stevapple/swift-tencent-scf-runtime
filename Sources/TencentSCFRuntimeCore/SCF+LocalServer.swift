@@ -29,9 +29,10 @@
 import Dispatch
 import struct Foundation.UUID
 import Logging
-import NIO
 import NIOConcurrencyHelpers
+import NIOCore
 import NIOHTTP1
+import NIOPosix
 
 // This functionality is designed for local testing hence beind a #if DEBUG flag.
 // For example:

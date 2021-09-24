@@ -27,7 +27,8 @@
 
 import Backtrace
 import Logging
-import NIO
+import NIOCore
+import NIOPosix
 
 public enum SCF {
     public typealias Handler = ByteBufferSCFHandler

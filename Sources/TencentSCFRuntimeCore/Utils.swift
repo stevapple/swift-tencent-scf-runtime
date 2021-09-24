@@ -26,7 +26,7 @@
 //===------------------------------------------------------------------------------------===//
 
 import Dispatch
-import NIO
+import NIOPosix
 
 /// Tencent SCF Custom Runtime API endpoints.
 internal enum Endpoint {

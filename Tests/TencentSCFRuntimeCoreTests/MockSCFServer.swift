@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2020-2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -14,7 +14,7 @@
 //
 // This source file was part of the SwiftAWSLambdaRuntime open source project
 //
-// Copyright (c) 2017-2018 Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) 2017-2021 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -27,8 +27,9 @@
 
 import Foundation // for JSON
 import Logging
-import NIO
+import NIOCore
 import NIOHTTP1
+import NIOPosix
 @testable import TencentSCFRuntimeCore
 
 internal final class MockSCFServer {
@@ -43,7 +44,7 @@ internal final class MockSCFServer {
     private var shutdown = false
 
     public init(behavior: SCFServerBehavior, host: String = "127.0.0.1", port: Int = 9001, keepAlive: Bool = true) {
-        self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
+        self.group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         self.behavior = behavior
         self.host = host
         self.port = port

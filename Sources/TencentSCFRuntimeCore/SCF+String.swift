@@ -25,7 +25,7 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import NIO
+import NIOCore
 
 /// Extension to the `SCF` companion to enable execution of cloud functions that take and return `String` events.
 extension SCF {

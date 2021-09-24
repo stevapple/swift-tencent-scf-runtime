@@ -25,7 +25,7 @@
 //
 //===------------------------------------------------------------------------------------===//
 
-import NIO
+import NIOCore
 import TencentSCFRuntimeCore
 
 // In this example we are receiving and responding with strings.

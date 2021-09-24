@@ -26,9 +26,10 @@
 //===------------------------------------------------------------------------------------===//
 
 import Logging
-import NIO
+import NIOCore
 import NIOFoundationCompat
 import NIOHTTP1
+import NIOPosix
 import NIOTestUtils
 @testable import TencentSCFRuntimeCore
 import XCTest

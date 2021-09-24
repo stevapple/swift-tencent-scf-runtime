@@ -26,7 +26,7 @@
 //===------------------------------------------------------------------------------------===//
 
 import Logging
-import NIO
+import NIOCore
 import NIOHTTP1
 
 /// An HTTP based client for SCF Runtime Engine. This encapsulates the RESTful methods exposed by the runtime engine:
