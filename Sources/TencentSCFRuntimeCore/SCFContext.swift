@@ -35,7 +35,7 @@ import TencentCloudCore
 extension SCF {
     /// SCF runtime initialization context.
     /// The `SCF.runtime` generates and passes the `InitializationContext` to the SCF factory as an argument.
-    public final class InitializationContext {
+    public struct InitializationContext {
         /// `Logger` to log with.
         ///
         /// - Note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
@@ -63,18 +63,55 @@ extension SCF {
 extension SCF {
     /// SCF runtime context.
     /// The SCF runtime generates and passes the `Context` to the SCF handler as an argument.
-    public final class Context: CustomDebugStringConvertible {
+    public struct Context: CustomDebugStringConvertible {
+        final class _Storage {
+            var requestID: String
+            var memoryLimit: UInt
+            var timeLimit: DispatchTimeInterval
+            var deadline: DispatchWallTime
+            var logger: Logger
+            var eventLoop: EventLoop
+            var allocator: ByteBufferAllocator
+
+            init(
+                requestID: String,
+                memoryLimit: UInt,
+                timeLimit: DispatchTimeInterval,
+                logger: Logger,
+                eventLoop: EventLoop,
+                allocator: ByteBufferAllocator
+            ) {
+                self.requestID = requestID
+                self.memoryLimit = memoryLimit
+                self.timeLimit = timeLimit
+                self.deadline = .now() + timeLimit
+                self.logger = logger
+                self.eventLoop = eventLoop
+                self.allocator = allocator
+            }
+        }
+
+        private var storage: _Storage
+
         /// The request ID, which identifies the request that triggered the function invocation.
-        public let requestID: String
+        public var requestID: String {
+            self.storage.requestID
+        }
 
         /// The memory limit of the cloud function in MB.
-        public let memoryLimit: UInt
+        public var memoryLimit: UInt {
+            self.storage.memoryLimit
+        }
 
         /// The time limit of the cloud function event in ms.
-        public let timeLimit: DispatchTimeInterval
+        public var timeLimit: DispatchTimeInterval {
+            self.storage.timeLimit
+        }
 
         /// The timestamp that the function times out.
-        public let deadline: DispatchWallTime
+        public var deadline: DispatchWallTime {
+            self.storage.deadline
+        }
 
         /// The UIN of cloud function actor.
         public var uin: String {
@@ -121,18 +158,24 @@ extension SCF {
         /// `Logger` to log with.
         ///
         /// - Note: The `LogLevel` can be configured using the `LOG_LEVEL` environment variable.
-        public let logger: Logger
+        public var logger: Logger {
+            self.storage.logger
+        }
 
         /// The `EventLoop` the SCF function is executed on. Use this to schedule work with.
         /// This is useful when implementing the `EventLoopSCFHandler` protocol.
         ///
         /// - Note: The `EventLoop` is shared with the SCF Runtime Engine and should be handled with extra care.
         ///         Most importantly the `EventLoop` must never be blocked.
-        public let eventLoop: EventLoop
+        public var eventLoop: EventLoop {
+            self.storage.eventLoop
+        }
 
         /// `ByteBufferAllocator` to allocate `ByteBuffer`.
         /// This is useful when implementing `EventLoopSCFHandler`.
-        public let allocator: ByteBufferAllocator
+        public var allocator: ByteBufferAllocator {
+            self.storage.allocator
+        }
 
         internal init(requestID: String,
                       memoryLimit: UInt,
@@ -141,17 +184,8 @@ extension SCF {
                       eventLoop: EventLoop,
                       allocator: ByteBufferAllocator)
         {
-            self.requestID = requestID
-            self.memoryLimit = memoryLimit
-            self.deadline = DispatchWallTime.now() + timeLimit
-            self.timeLimit = timeLimit
-            // utilities
-            self.eventLoop = eventLoop
-            self.allocator = allocator
-            // Mutate logger with context.
-            var logger = logger
-            logger[metadataKey: "scfRequestID"] = .string(requestID)
-            self.logger = logger
+            self.storage = _Storage(requestID: requestID, memoryLimit: memoryLimit, timeLimit: timeLimit, logger: logger, eventLoop: eventLoop, allocator: allocator)
+            self.storage.logger[metadataKey: "scfRequestID"] = .string(requestID)
         }
 
         public func getRemainingTime() -> TimeAmount {

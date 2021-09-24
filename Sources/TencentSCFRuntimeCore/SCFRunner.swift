@@ -118,7 +118,7 @@ extension SCF {
 }
 
 extension SCF.Context {
-    fileprivate convenience init(logger: Logger, eventLoop: EventLoop, allocator: ByteBufferAllocator, invocation: SCF.Invocation) {
+    init(logger: Logger, eventLoop: EventLoop, allocator: ByteBufferAllocator, invocation: SCF.Invocation) {
         self.init(requestID: invocation.requestID,
                   memoryLimit: invocation.memoryLimit,
                   timeLimit: .milliseconds(Int(invocation.timeLimit)),
