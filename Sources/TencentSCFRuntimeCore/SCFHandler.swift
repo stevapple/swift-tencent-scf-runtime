@@ -2,7 +2,7 @@
 //
 // This source file is part of the SwiftTencentSCFRuntime open source project
 //
-// Copyright (c) 2020 stevapple and the SwiftTencentSCFRuntime project authors
+// Copyright (c) 2020-2021 stevapple and the SwiftTencentSCFRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -14,7 +14,7 @@
 //
 // This source file was part of the SwiftAWSLambdaRuntime open source project
 //
-// Copyright (c) 2017-2020 Apple Inc. and the SwiftAWSLambdaRuntime project authors
+// Copyright (c) 2017-2021 Apple Inc. and the SwiftAWSLambdaRuntime project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -31,7 +31,7 @@ import NIOCore
 // MARK: - SCFHandler
 
 #if compiler(>=5.5) && canImport(_Concurrency)
-/// Strongly typed, processing protocol for a cloud function that takes a user defined `Event` and returns a user defined `Output` async.
+/// Strongly typed, processing protocol for a cloud function that takes a user defined `In` and returns a user defined `Out` async.
 public protocol SCFHandler: EventLoopSCFHandler {
     /// The SCF initialization method
     /// Use this method to initialize resources that will be used in every request.
@@ -48,15 +48,15 @@ public protocol SCFHandler: EventLoopSCFHandler {
     ///     - context: Runtime `Context`.
     ///     - event: Event of type `In` representing the event or request.
     ///
-    /// - Returns: An SCF result ot type `Output`.
-    func handle(context: SCF.Context, event: In) async throws -> Output
+    /// - Returns: An SCF result ot type `Out`.
+    func handle(context: SCF.Context, event: In) async throws -> Out
 }
 
 extension SCFHandler {
-    public func handle(context: SCF.Context, event: In) -> EventLoopFuture<Output> {
-        let promise = context.eventLoop.makePromise(of: Output.self)
+    public func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out> {
+        let promise = context.eventLoop.makePromise(of: Out.self)
         promise.completeWithTask {
-            try await self.handle(event, context: context)
+            try await self.handle(context: context, event: event)
         }
         return promise.futureResult
     }
