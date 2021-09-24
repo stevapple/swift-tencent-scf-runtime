@@ -52,6 +52,7 @@ public protocol SCFHandler: EventLoopSCFHandler {
 }
 
 extension SCF {
+    @usableFromInline
     internal static let defaultOffloadQueue = DispatchQueue(label: "SCFHandler.offload")
 }
 
@@ -64,6 +65,7 @@ extension SCFHandler {
     /// `SCFHandler` is offloading the processing to a `DispatchQueue`.
     /// This is slower but safer, in case the implementation blocks the `EventLoop`.
     /// Performance sensitive cloud functions should be based on `EventLoopSCFHandler` which does not offload.
+    @inlinable
     public func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out> {
         let promise = context.eventLoop.makePromise(of: Out.self)
         // FIXME: reusable DispatchQueue
@@ -140,18 +142,19 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
 
 extension EventLoopSCFHandler {
     /// Driver for `ByteBuffer` -> `In` decoding and `Out` -> `ByteBuffer` encoding
+    @inlinable
     public func handle(context: SCF.Context, event: ByteBuffer) -> EventLoopFuture<ByteBuffer?> {
-        switch self.decodeIn(buffer: event) {
-        case .failure(let error):
+        let input: In
+        do { input = try self.decode(buffer: event) }
+        catch {
             return context.eventLoop.makeFailedFuture(CodecError.requestDecoding(error))
-        case .success(let `in`):
-            return self.handle(context: context, event: `in`).flatMapThrowing { out in
-                switch self.encodeOut(allocator: context.allocator, value: out) {
-                case .failure(let error):
-                    throw CodecError.responseEncoding(error)
-                case .success(let buffer):
-                    return buffer
-                }
+        }
+
+        return self.handle(context: context, event: input).flatMapThrowing { output in
+            do {
+                return try self.encode(allocator: context.allocator, value: output)
+            } catch {
+                throw CodecError.responseEncoding(error)
             }
         }
     }
@@ -175,6 +178,7 @@ extension EventLoopSCFHandler {
 
 /// Implementation of  `ByteBuffer` to `Void` decoding.
 extension EventLoopSCFHandler where Out == Void {
+    @inlinable
     public func encode(allocator: ByteBufferAllocator, value: Void) throws -> ByteBuffer? {
         nil
     }
@@ -212,7 +216,8 @@ extension ByteBufferSCFHandler {
     }
 }
 
-private enum CodecError: Error {
+@usableFromInline
+enum CodecError: Error {
     case requestDecoding(Error)
     case responseEncoding(Error)
 }

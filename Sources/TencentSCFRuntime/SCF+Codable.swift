@@ -92,6 +92,7 @@ internal struct CodableVoidClosureWrapper<In: Decodable>: SCFHandler {
 
 /// Implementation of  a`ByteBuffer` to `In` decoding.
 extension EventLoopSCFHandler where In: Decodable {
+    @inlinable
     public func decode(buffer: ByteBuffer) throws -> In {
         try self.decoder.decode(In.self, from: buffer)
     }
@@ -99,6 +100,7 @@ extension EventLoopSCFHandler where In: Decodable {
 
 /// Implementation of  `Out` to `ByteBuffer` encoding.
 extension EventLoopSCFHandler where Out: Encodable {
+    @inlinable
     public func encode(allocator: ByteBufferAllocator, value: Out) throws -> ByteBuffer? {
         try self.encoder.encode(value, using: allocator)
     }

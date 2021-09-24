@@ -100,6 +100,7 @@ internal struct StringVoidClosureWrapper: SCFHandler {
 
 extension EventLoopSCFHandler where In == String {
     /// Implementation of a `ByteBuffer` to `String` decoding.
+    @inlinable
     public func decode(buffer: ByteBuffer) throws -> String {
         var buffer = buffer
         guard let string = buffer.readString(length: buffer.readableBytes) else {
@@ -111,6 +112,7 @@ extension EventLoopSCFHandler where In == String {
 
 extension EventLoopSCFHandler where Out == String {
     /// Implementation of `String` to `ByteBuffer` encoding.
+    @inlinable
     public func encode(allocator: ByteBufferAllocator, value: String) throws -> ByteBuffer? {
         // FIXME: reusable buffer
         var buffer = allocator.buffer(capacity: value.utf8.count)
