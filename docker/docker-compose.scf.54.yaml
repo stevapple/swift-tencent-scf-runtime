@@ -3,16 +3,16 @@ version: "3"
 services:
 
   runtime-setup:
-    image: swift-tencent-scf:scf-5.4.1
+    image: swift-tencent-scf:scf-5.4.3
     build:
       args:
-        swift_version: "5.4.1"
+        swift_version: "5.4.3"
 
   test:
-    image: swift-tencent-scf:scf-5.4.1
+    image: swift-tencent-scf:scf-5.4.3
 
   test-samples:
-    image: swift-tencent-scf:scf-5.4.1
+    image: swift-tencent-scf:scf-5.4.3
 
   shell:
-    image: swift-tencent-scf:scf-5.4.1
+    image: swift-tencent-scf:scf-5.4.3
