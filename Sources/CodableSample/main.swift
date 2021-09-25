@@ -39,8 +39,8 @@ struct Response: Encodable {
 // In this example we are receiving and responding with codables.  Request and Response
 // above are examples of how to use codables to model your reqeuest and response objects.
 struct Handler: EventLoopSCFHandler {
-    typealias In = Request
-    typealias Out = Response
+    typealias Event = Request
+    typealias Output = Response
 
     func handle(context: SCF.Context, event: Request) -> EventLoopFuture<Response> {
         // As an example, respond with the input event's reversed body.

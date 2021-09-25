@@ -38,8 +38,8 @@ import Logging
 
 @main
 struct CurrencyExchangeHandler: SCFHandler {
-    typealias In = Request
-    typealias Out = [Exchange]
+    typealias Event = Request
+    typealias Output = [Exchange]
 
     let calculator: ExchangeRatesCalculator
 

@@ -32,8 +32,8 @@ import TencentSCFRuntime
 // which will allow local debugging.
 @main
 struct MySCFHandler: SCFHandler {
-    typealias In = Request
-    typealias Out = Response
+    typealias Event = Request
+    typealias Output = Response
 
     init(context: SCF.InitializationContext) async throws {
         // setup your resources that you want to reuse for every invocation here.

@@ -30,8 +30,8 @@ import TencentSCFRuntimeCore
 
 // In this example we are receiving and responding with strings.
 struct Handler: EventLoopSCFHandler {
-    typealias In = String
-    typealias Out = String
+    typealias Event = String
+    typealias Output = String
 
     func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
         // As an example, respond with the event's reversed body.

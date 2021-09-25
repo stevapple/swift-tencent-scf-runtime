@@ -116,11 +116,11 @@ import TencentSCFRuntime
 import TencentSCFEvents
 // Our SCF handler, conforms to EventLoopSCFHandler.
 struct Handler: EventLoopSCFHandler {
-    typealias In = COS.Event // Request type
-    typealias Out = Void // Response type
+    typealias Event = COS.Event // Request type
+    typealias Output = Void // Response type
 
     // In this example we are receiving a COS Event, with no response (Void).
-    func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out> {
+    func handle(context: SCF.Context, event: Event) -> EventLoopFuture<Output> {
         ...
         context.eventLoop.makeSucceededFuture(Void())
     }
@@ -177,52 +177,52 @@ public protocol ByteBufferSCFHandler {
 
 `EventLoopSCFHandler` is a strongly typed, `EventLoopFuture` based asynchronous processing protocol for an SCF function that takes a user defined In and returns a user defined Out.
 
-`EventLoopSCFHandler` extends `ByteBufferSCFHandler`, providing `ByteBuffer` -> `In` decoding and `Out` -> `ByteBuffer?` encoding for `Codable` and String.
+`EventLoopSCFHandler` extends `ByteBufferSCFHandler`, providing `ByteBuffer` -> `Event` decoding and `Output` -> `ByteBuffer?` encoding for `Codable` and String.
 
 `EventLoopSCFHandler` executes the user provided cloud function on the same `EventLoop` as the core runtime engine, making the processing fast but requires more care from the implementation to never block the `EventLoop`. It it designed for performance sensitive applications that use `Codable` or String based cloud functions.
 
 ```swift
 public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
-    associatedtype In
-    associatedtype Out
+    associatedtype Event
+    associatedtype Output
 
     /// The SCF handling method.
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
     /// - Parameters:
     ///     - context: Runtime `Context`.
-    ///     - event: Event of type `In` representing the event or request.
+    ///     - event: Event of type `Event` representing the event or request.
     ///
     /// - Returns: An `EventLoopFuture` to report the result of the SCF function back to the runtime engine.
-    ///            The `EventLoopFuture` should be completed with either a response of type `Out` or an `Error`.
-    func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out>
+    ///            The `EventLoopFuture` should be completed with either a response of type `Output` or an `Error`.
+    func handle(context: SCF.Context, event: Event) -> EventLoopFuture<Output>
 
-    /// Encode a response of type `Out` to `ByteBuffer`.
+    /// Encode a response of type `Output` to `ByteBuffer`.
     /// Concrete SCF handlers implement this method to provide coding functionality.
     ///
     /// - Parameters:
     ///     - allocator: A `ByteBufferAllocator` to help allocate the `ByteBuffer`.
-    ///     - value: Response of type `Out`.
+    ///     - value: Response of type `Output`.
     ///
     /// - Returns: A `ByteBuffer` with the encoded version of the `value`.
-    func encode(allocator: ByteBufferAllocator, value: Out) throws -> ByteBuffer?
+    func encode(allocator: ByteBufferAllocator, value: Output) throws -> ByteBuffer?
 
-    /// Decode a`ByteBuffer` to a request or event of type `In`
+    /// Decode a`ByteBuffer` to a request or event of type `Event`
     /// Concrete SCF handlers implement this method to provide coding functionality.
     ///
     /// - Parameters:
     ///     - buffer: The `ByteBuffer` to decode.
     ///
-    /// - Returns: A request or event of type `In`.
-    func decode(buffer: ByteBuffer) throws -> In
+    /// - Returns: A request or event of type `Event`.
+    func decode(buffer: ByteBuffer) throws -> Event
 }
 ```
 
 ### SCFHandler
 
-`SCFHandler` is a strongly typed, completion handler based asynchronous processing protocol for an SCF function that takes a user defined In and returns a user defined Out.
+`SCFHandler` is a strongly typed, completion handler based asynchronous processing protocol for an SCF function that takes a user defined `Event` and returns a user defined `Output`.
 
-`SCFHandler` extends `ByteBufferSCFHandler`, performing `ByteBuffer` -> `In` decoding and `Out` -> `ByteBuffer` encoding for `Codable` and String.
+`SCFHandler` extends `ByteBufferSCFHandler`, performing `ByteBuffer` -> `Event` decoding and `Output` -> `ByteBuffer` encoding for `Codable` and String.
 
 `SCFHandler` offloads the user provided SCF execution to a `DispatchQueue` making processing safer but slower.
 
@@ -236,10 +236,10 @@ public protocol SCFHandler: EventLoopSCFHandler {
     ///
     /// - Parameters:
     ///     - context: Runtime `Context`.
-    ///     - event: Event of type `In` representing the event or request.
+    ///     - event: Event of type `Event` representing the event or request.
     ///     - callback: Completion handler to report the result of the SCF function back to the runtime engine.
-    ///                 The completion handler expects a `Result` with either a response of type `Out` or an `Error`.
-    func handle(context: SCF.Context, event: In, callback: @escaping (Result<Out, Error>) -> Void)
+    ///                 The completion handler expects a `Result` with either a response of type `Output` or an `Error`.
+    func handle(context: SCF.Context, event: Event, callback: @escaping (Result<Out, Error>) -> Void)
 }
 ```
 
@@ -257,7 +257,7 @@ public typealias CodableClosure<In: Decodable, Out: Encodable> = (SCF.Context, I
 public typealias StringClosure = (SCF.Context, String, @escaping (Result<String, Error>) -> Void) -> Void
 ```
 
-This design allows for additional event types as well, and such SCF implementation can extend one of the above protocols and provided their own `ByteBuffer` -> `In` decoding and `Out` -> `ByteBuffer` encoding.
+This design allows for additional event types as well, and such SCF implementation can extend one of the above protocols and provided their own `ByteBuffer` -> `Event` decoding and `Output` -> `ByteBuffer` encoding.
 
 ### Context
 
@@ -372,11 +372,11 @@ A single SCF execution workflow is made of the following steps:
 
 1. The library calls SCF Runtime Engine `/next` endpoint to retrieve the next invocation request.
 2. The library parses the response HTTP headers and populate the Context object.
-3. The library reads the `/next` response body and attempt to decode it. Typically it decodes to user provided `In` type which extends `Decodable`, but users may choose to write SCF functions that receive the input as String or `ByteBuffer` which require less, or no decoding.
-4. The library hands off the `Context` and `In` event to the user provided handler. In the case of `SCFHandler` based handler this is done on a dedicated `DispatchQueue`, providing isolation between user's and the library's code.
+3. The library reads the `/next` response body and attempt to decode it. Typically it decodes to user provided `Event` type which extends `Decodable`, but users may choose to write SCF functions that receive the input as String or `ByteBuffer` which require less, or no decoding.
+4. The library hands off the `Context` and `Event` event to the user provided handler. In the case of `SCFHandler` based handler this is done on a dedicated `DispatchQueue`, providing isolation between user's and the library's code.
 5. User provided handler processes the request asynchronously, invoking a callback or returning a future upon completion, which returns a Result type with the Out or Error populated.
-6.  In case of error, the library posts to SCF Runtime Engine `/error` endpoint to provide the error details, which will show up on SCF logs.
-7. In case of success, the library will attempt to encode the response. Typically it encodes from user provided `Out` type which extends `Encodable`, but users may choose to write SCF functions that return a String or `ByteBuffer`, which require less, or no encoding. The library then posts the response to SCF Runtime Engine `/response` endpoint to provide the response to the callee.
+6. In case of error, the library posts to SCF Runtime Engine `/error` endpoint to provide the error details, which will show up on SCF logs.
+7. In case of success, the library will attempt to encode the response. Typically it encodes from user provided `Output` type which extends `Encodable`, but users may choose to write SCF functions that return a String or `ByteBuffer`, which require less, or no encoding. The library then posts the response to SCF Runtime Engine `/response` endpoint to provide the response to the callee.
 
 The library encapsulates the workflow via the internal `SCFRuntimeClient` and `SCFRunner` structs respectively.
 

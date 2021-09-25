@@ -32,7 +32,7 @@ import TencentSCFTesting
 import XCTest
 
 @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
-class LambdaTestingTests: XCTestCase {
+class SCFTestingTests: XCTestCase {
     func testCodableClosure() {
         struct Request: Codable {
             let name: String
@@ -43,8 +43,8 @@ class LambdaTestingTests: XCTestCase {
         }
 
         struct MyCloudFunction: SCFHandler {
-            typealias In = Request
-            typealias Out = Response
+            typealias Event = Request
+            typealias Output = Response
 
             init(context: SCF.InitializationContext) {}
 
@@ -67,13 +67,13 @@ class LambdaTestingTests: XCTestCase {
         }
 
         struct MyCloudFunction: SCFHandler {
-            typealias In = Request
-            typealias Out = Void
+            typealias Event = Request
+            typealias Output = Void
 
             init(context: SCF.InitializationContext) {}
 
             func handle(context: SCF.Context, event: Request) async throws {
-                LambdaTestingTests.VoidSCFHandlerInvokeCount += 1
+                SCFTestingTests.VoidSCFHandlerInvokeCount += 1
             }
         }
 
@@ -87,8 +87,8 @@ class LambdaTestingTests: XCTestCase {
         struct MyError: Error {}
 
         struct MyCloudFunction: SCFHandler {
-            typealias In = String
-            typealias Out = Void
+            typealias Event = String
+            typealias Output = Void
 
             init(context: SCF.InitializationContext) {}
 
@@ -104,8 +104,8 @@ class LambdaTestingTests: XCTestCase {
 
     func testAsyncLongRunning() {
         struct MyCloudFunction: SCFHandler {
-            typealias In = String
-            typealias Out = String
+            typealias Event = String
+            typealias Output = String
 
             init(context: SCF.InitializationContext) {}
 

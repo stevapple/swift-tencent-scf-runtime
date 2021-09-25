@@ -31,8 +31,8 @@ import TencentSCFRuntime
 
 @main
 struct ErrorsHappenHandler: SCFHandler {
-    typealias In = Request
-    typealias Out = Response
+    typealias Event = Request
+    typealias Output = Response
 
     init(context: SCF.InitializationContext) async throws {}
 

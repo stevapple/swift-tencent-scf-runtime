@@ -38,9 +38,7 @@ import NIOPosix
 // For example:
 //
 // try SCF.withLocalServer {
-//     SCF.run { (context: SCF.Context, event: String, callback: @escaping (Result<String, Error>) -> Void) in
-//         callback(.success("Hello, \(event)!"))
-//     }
+//     SCF.run { $0.eventLoop.makeSucceededFuture(CustomSCFHandler()) }
 // }
 extension SCF {
     /// Execute code in the context of a mock SCF server.

@@ -27,7 +27,7 @@
 
 import NIOCore
 
-extension EventLoopSCFHandler where In == String {
+extension EventLoopSCFHandler where Event == String {
     /// Implementation of a `ByteBuffer` to `String` decoding.
     @inlinable
     public func decode(buffer: ByteBuffer) throws -> String {
@@ -39,7 +39,7 @@ extension EventLoopSCFHandler where In == String {
     }
 }
 
-extension EventLoopSCFHandler where Out == String {
+extension EventLoopSCFHandler where Output == String {
     /// Implementation of `String` to `ByteBuffer` encoding.
     @inlinable
     public func encode(allocator: ByteBufferAllocator, value: String) throws -> ByteBuffer? {

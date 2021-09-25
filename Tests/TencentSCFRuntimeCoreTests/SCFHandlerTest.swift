@@ -41,8 +41,8 @@ class SCFHandlerTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         struct TestBootstrapHandler: SCFHandler {
-            typealias In = String
-            typealias Out = String
+            typealias Event = String
+            typealias Output = String
 
             var initialized = false
 
@@ -70,8 +70,8 @@ class SCFHandlerTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         struct TestBootstrapHandler: SCFHandler {
-            typealias In = String
-            typealias Out = Void
+            typealias Event = String
+            typealias Output = Void
 
             var initialized = false
 
@@ -99,8 +99,8 @@ class SCFHandlerTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         struct Handler: SCFHandler {
-            typealias In = String
-            typealias Out = String
+            typealias Event = String
+            typealias Output = String
 
             init(context: SCF.InitializationContext) {}
 
@@ -122,8 +122,8 @@ class SCFHandlerTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         struct Handler: SCFHandler {
-            typealias In = String
-            typealias Out = Void
+            typealias Event = String
+            typealias Output = Void
 
             init(context: SCF.InitializationContext) {}
 
@@ -144,8 +144,8 @@ class SCFHandlerTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         struct Handler: SCFHandler {
-            typealias In = String
-            typealias Out = String
+            typealias Event = String
+            typealias Output = String
 
             init(context: SCF.InitializationContext) {}
 
@@ -169,8 +169,8 @@ class SCFHandlerTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         struct Handler: EventLoopSCFHandler {
-            typealias In = String
-            typealias Out = String
+            typealias Event = String
+            typealias Output = String
 
             func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
                 context.eventLoop.makeSucceededFuture(event)
@@ -191,8 +191,8 @@ class SCFHandlerTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         struct Handler: EventLoopSCFHandler {
-            typealias In = String
-            typealias Out = Void
+            typealias Event = String
+            typealias Output = Void
 
             func handle(context: SCF.Context, event: String) -> EventLoopFuture<Void> {
                 context.eventLoop.makeSucceededFuture(())
@@ -213,8 +213,8 @@ class SCFHandlerTest: XCTestCase {
         defer { XCTAssertNoThrow(try server.stop().wait()) }
 
         struct Handler: EventLoopSCFHandler {
-            typealias In = String
-            typealias Out = String
+            typealias Event = String
+            typealias Output = String
 
             func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
                 context.eventLoop.makeFailedFuture(TestError("boom"))

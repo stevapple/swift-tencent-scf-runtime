@@ -31,33 +31,33 @@ import NIOCore
 import NIOFoundationCompat
 @_exported import TencentSCFRuntimeCore
 
-/// Implementation of  a`ByteBuffer` to `In` decoding.
-extension EventLoopSCFHandler where In: Decodable {
+/// Implementation of  a`ByteBuffer` to `Event` decoding.
+extension EventLoopSCFHandler where Event: Decodable {
     @inlinable
-    public func decode(buffer: ByteBuffer) throws -> In {
-        try self.decoder.decode(In.self, from: buffer)
+    public func decode(buffer: ByteBuffer) throws -> Event {
+        try self.decoder.decode(Event.self, from: buffer)
     }
 }
 
-/// Implementation of  `Out` to `ByteBuffer` encoding.
-extension EventLoopSCFHandler where Out: Encodable {
+/// Implementation of  `Output` to `ByteBuffer` encoding.
+extension EventLoopSCFHandler where Output: Encodable {
     @inlinable
-    public func encode(allocator: ByteBufferAllocator, value: Out) throws -> ByteBuffer? {
+    public func encode(allocator: ByteBufferAllocator, value: Output) throws -> ByteBuffer? {
         try self.encoder.encode(value, using: allocator)
     }
 }
 
-/// Default `ByteBuffer` to `In` decoder using Foundation's JSONDecoder.
+/// Default `ByteBuffer` to `Event` decoder using Foundation's JSONDecoder.
 /// Advanced users that want to inject their own codec can do it by overriding these functions.
-extension EventLoopSCFHandler where In: Decodable {
+extension EventLoopSCFHandler where Event: Decodable {
     public var decoder: SCFCodableDecoder {
         SCF.defaultJSONDecoder
     }
 }
 
-/// Default `Out` to `ByteBuffer` encoder using Foundation's JSONEncoder.
+/// Default `Output` to `ByteBuffer` encoder using Foundation's JSONEncoder.
 /// Advanced users that want to inject their own codec can do it by overriding these functions.
-extension EventLoopSCFHandler where Out: Encodable {
+extension EventLoopSCFHandler where Output: Encodable {
     public var encoder: SCFCodableEncoder {
         SCF.defaultJSONEncoder
     }

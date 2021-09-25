@@ -31,7 +31,7 @@ import NIOCore
 // MARK: - SCFHandler
 
 #if compiler(>=5.5) && canImport(_Concurrency)
-/// Strongly typed, processing protocol for a cloud function that takes a user defined `In` and returns a user defined `Out` async.
+/// Strongly typed, processing protocol for a cloud function that takes a user defined `Event` and returns a user defined `Output` async.
 @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 public protocol SCFHandler: EventLoopSCFHandler {
     /// The SCF initialization method
@@ -47,16 +47,16 @@ public protocol SCFHandler: EventLoopSCFHandler {
     ///
     /// - parameters:
     ///     - context: Runtime `Context`.
-    ///     - event: Event of type `In` representing the event or request.
+    ///     - event: Event of type `Event` representing the event or request.
     ///
-    /// - Returns: An SCF result ot type `Out`.
-    func handle(context: SCF.Context, event: In) async throws -> Out
+    /// - Returns: An SCF result ot type `Output`.
+    func handle(context: SCF.Context, event: Event) async throws -> Output
 }
 
 @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 extension SCFHandler {
-    public func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out> {
-        let promise = context.eventLoop.makePromise(of: Out.self)
+    public func handle(context: SCF.Context, event: Event) -> EventLoopFuture<Output> {
+        let promise = context.eventLoop.makePromise(of: Output.self)
         promise.completeWithTask {
             try await self.handle(context: context, event: event)
         }
@@ -74,52 +74,52 @@ extension SCFHandler {
 
 // MARK: - EventLoopSCFHandler
 
-/// Strongly typed, `EventLoopFuture` based processing protocol for an SCF function that takes a user defined `In` and returns a user defined `Out` asynchronously.
-/// `EventLoopSCFHandler` extends `ByteBufferSCFHandler`, performing `ByteBuffer` -> `In` decoding and `Out` -> `ByteBuffer` encoding.
+/// Strongly typed, `EventLoopFuture` based processing protocol for an SCF function that takes a user defined `Event` and returns a user defined `Output` asynchronously.
+/// `EventLoopSCFHandler` extends `ByteBufferSCFHandler`, performing `ByteBuffer` -> `Event` decoding and `Output` -> `ByteBuffer` encoding.
 ///
 /// - Note: To implement a cloud function, implement either `SCFHandler` or the `EventLoopSCFHandler` protocol.
 ///         The `SCFHandler` will offload the SCF execution to a `DispatchQueue` making processing safer but slower
 ///         The `EventLoopSCFHandler` will execute the cloud function on the same `EventLoop` as the core runtime engine, making the processing faster but requires more care from the implementation to never block the `EventLoop`.
 public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
-    associatedtype In
-    associatedtype Out
+    associatedtype Event
+    associatedtype Output
 
     /// The SCF handling method.
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
     /// - Parameters:
     ///     - context: Runtime `Context`.
-    ///     - event: Event of type `In` representing the event or request.
+    ///     - event: Event of type `Event` representing the event or request.
     ///
     /// - Returns: An `EventLoopFuture` to report the result of the SCF function back to the runtime engine.
-    ///            The `EventLoopFuture` should be completed with either a response of type `Out` or an `Error`.
-    func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out>
+    ///            The `EventLoopFuture` should be completed with either a response of type `Output` or an `Error`.
+    func handle(context: SCF.Context, event: Event) -> EventLoopFuture<Output>
 
-    /// Encode a response of type `Out` to `ByteBuffer`.
+    /// Encode a response of type `Output` to `ByteBuffer`.
     /// Concrete SCF handlers implement this method to provide coding functionality.
     ///
     /// - Parameters:
     ///     - allocator: A `ByteBufferAllocator` to help allocate the `ByteBuffer`.
-    ///     - value: Response of type `Out`.
+    ///     - value: Response of type `Output`.
     ///
     /// - Returns: A `ByteBuffer` with the encoded version of the `value`.
-    func encode(allocator: ByteBufferAllocator, value: Out) throws -> ByteBuffer?
+    func encode(allocator: ByteBufferAllocator, value: Output) throws -> ByteBuffer?
 
-    /// Decode a`ByteBuffer` to a request or event of type `In`
+    /// Decode a`ByteBuffer` to a request or event of type `Event`
     /// Concrete SCF handlers implement this method to provide coding functionality.
     ///
     /// - Parameters:
     ///     - buffer: The `ByteBuffer` to decode.
     ///
-    /// - Returns: A request or event of type `In`.
-    func decode(buffer: ByteBuffer) throws -> In
+    /// - Returns: A request or event of type `Event`.
+    func decode(buffer: ByteBuffer) throws -> Event
 }
 
 extension EventLoopSCFHandler {
-    /// Driver for `ByteBuffer` -> `In` decoding and `Out` -> `ByteBuffer` encoding
+    /// Driver for `ByteBuffer` -> `Event` decoding and `Output` -> `ByteBuffer` encoding
     @inlinable
     public func handle(context: SCF.Context, event: ByteBuffer) -> EventLoopFuture<ByteBuffer?> {
-        let input: In
+        let input: Event
         do { input = try self.decode(buffer: event) }
         catch {
             return context.eventLoop.makeFailedFuture(CodecError.requestDecoding(error))
@@ -134,7 +134,7 @@ extension EventLoopSCFHandler {
         }
     }
 
-    private func decodeIn(buffer: ByteBuffer) -> Result<In, Error> {
+    private func decodeIn(buffer: ByteBuffer) -> Result<Event, Error> {
         do {
             return .success(try self.decode(buffer: buffer))
         } catch {
@@ -142,7 +142,7 @@ extension EventLoopSCFHandler {
         }
     }
 
-    private func encodeOut(allocator: ByteBufferAllocator, value: Out) -> Result<ByteBuffer?, Error> {
+    private func encodeOut(allocator: ByteBufferAllocator, value: Output) -> Result<ByteBuffer?, Error> {
         do {
             return .success(try self.encode(allocator: allocator, value: value))
         } catch {
@@ -152,7 +152,7 @@ extension EventLoopSCFHandler {
 }
 
 /// Implementation of  `ByteBuffer` to `Void` decoding.
-extension EventLoopSCFHandler where Out == Void {
+extension EventLoopSCFHandler where Output == Void {
     @inlinable
     public func encode(allocator: ByteBufferAllocator, value: Void) throws -> ByteBuffer? {
         nil

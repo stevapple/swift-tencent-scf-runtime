@@ -32,8 +32,8 @@
 //
 // func test() {
 //     struct MyCloudFunction: EventLoopSCFHandler {
-//         typealias In = String
-//         typealias Out = String
+//         typealias Event = String
+//         typealias Output = String
 //
 //         func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
 //             return context.eventLoop.makeSucceededFuture("echo" + event)
@@ -72,9 +72,9 @@ extension SCF {
 
     public static func test<Handler: SCFHandler>(
         _ handlerType: Handler.Type,
-        with event: Handler.In,
+        with event: Handler.Event,
         using config: TestConfig = .init()
-    ) throws -> Handler.Out {
+    ) throws -> Handler.Output {
         let logger = Logger(label: "test")
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer {

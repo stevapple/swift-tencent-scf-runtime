@@ -34,8 +34,8 @@ import TencentSCFRuntimeCore
 SCF.run { $0.eventLoop.makeSucceededFuture(BenchmarkHandler()) }
 
 struct BenchmarkHandler: EventLoopSCFHandler {
-    typealias In = String
-    typealias Out = String
+    typealias Event = String
+    typealias Output = String
 
     func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
         context.eventLoop.makeSucceededFuture("Hello, world!")

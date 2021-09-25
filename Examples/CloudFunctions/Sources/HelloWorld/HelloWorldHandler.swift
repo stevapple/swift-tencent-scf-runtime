@@ -30,8 +30,8 @@ import TencentSCFRuntime
 // Introductory example, the obligatory "Hello, world!"
 @main
 struct HelloWorldHandler: SCFHandler {
-    typealias In = String
-    typealias Out = String
+    typealias Event = String
+    typealias Output = String
 
     init(context: SCF.InitializationContext) async throws {
         // setup your resources that you want to reuse here.

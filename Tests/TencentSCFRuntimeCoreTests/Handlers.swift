@@ -29,8 +29,8 @@ import NIOCore
 import TencentSCFRuntimeCore
 
 struct EchoHandler: EventLoopSCFHandler {
-    typealias In = String
-    typealias Out = String
+    typealias Event = String
+    typealias Output = String
 
     func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
         context.eventLoop.makeSucceededFuture(event)
@@ -38,8 +38,8 @@ struct EchoHandler: EventLoopSCFHandler {
 }
 
 struct FailedHandler: EventLoopSCFHandler {
-    typealias In = String
-    typealias Out = Void
+    typealias Event = String
+    typealias Output = Void
 
     private let reason: String
 
