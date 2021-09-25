@@ -52,7 +52,7 @@ class SCFHandlerTest: XCTestCase {
                 self.initialized = true
             }
 
-            func handle(context: SCF.Context, event: String) async throws -> String {
+            func handle(_ event: String, context: SCF.Context) async throws -> String {
                 event
             }
         }
@@ -81,7 +81,7 @@ class SCFHandlerTest: XCTestCase {
                 throw TestError("kaboom")
             }
 
-            func handle(context: SCF.Context, event: String) async throws {
+            func handle(_ event: String, context: SCF.Context) async throws {
                 XCTFail("How can this be called if init failed")
             }
         }
@@ -104,7 +104,7 @@ class SCFHandlerTest: XCTestCase {
 
             init(context: SCF.InitializationContext) {}
 
-            func handle(context: SCF.Context, event: String) async throws -> String {
+            func handle(_ event: String, context: SCF.Context) async throws -> String {
                 event
             }
         }
@@ -127,7 +127,7 @@ class SCFHandlerTest: XCTestCase {
 
             init(context: SCF.InitializationContext) {}
 
-            func handle(context: SCF.Context, event: String) async throws {}
+            func handle(_ event: String, context: SCF.Context) async throws {}
         }
 
         let maxTimes = Int.random(in: 1 ... 10)
@@ -149,7 +149,7 @@ class SCFHandlerTest: XCTestCase {
 
             init(context: SCF.InitializationContext) {}
 
-            func handle(context: SCF.Context, event: String) async throws -> String {
+            func handle(_ event: String, context: SCF.Context) async throws -> String {
                 throw TestError("boom")
             }
         }
@@ -172,7 +172,7 @@ class SCFHandlerTest: XCTestCase {
             typealias Event = String
             typealias Output = String
 
-            func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
+            func handle(_ event: String, context: SCF.Context) -> EventLoopFuture<String> {
                 context.eventLoop.makeSucceededFuture(event)
             }
         }
@@ -194,7 +194,7 @@ class SCFHandlerTest: XCTestCase {
             typealias Event = String
             typealias Output = Void
 
-            func handle(context: SCF.Context, event: String) -> EventLoopFuture<Void> {
+            func handle(_ event: String, context: SCF.Context) -> EventLoopFuture<Void> {
                 context.eventLoop.makeSucceededFuture(())
             }
         }
@@ -216,7 +216,7 @@ class SCFHandlerTest: XCTestCase {
             typealias Event = String
             typealias Output = String
 
-            func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
+            func handle(_ event: String, context: SCF.Context) -> EventLoopFuture<String> {
                 context.eventLoop.makeFailedFuture(TestError("boom"))
             }
         }

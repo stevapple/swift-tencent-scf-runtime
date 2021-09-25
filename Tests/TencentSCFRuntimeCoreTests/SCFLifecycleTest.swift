@@ -67,7 +67,7 @@ class SCFLifecycleTest: XCTestCase {
             self.shutdown = shutdown
         }
 
-        func handle(context: SCF.Context, event: ByteBuffer) -> EventLoopFuture<ByteBuffer?> {
+        func handle(_ event: ByteBuffer, context: SCF.Context) -> EventLoopFuture<ByteBuffer?> {
             self.handler(context, event)
         }
 

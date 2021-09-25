@@ -78,7 +78,7 @@ extension SCF {
             self.isGettingNextInvocation = true
             return self.runtimeClient.getNextInvocation(logger: logger).peekError { error in
                 logger.error("could not fetch work from scf runtime engine: \(error)")
-            }.flatMap { invocation, event in
+            }.flatMap { invocation, bytes in
                 // 2. Send invocation to the handler;
                 self.isGettingNextInvocation = false
                 let context = Context(logger: logger,
@@ -86,7 +86,7 @@ extension SCF {
                                       allocator: self.allocator,
                                       invocation: invocation)
                 logger.debug("sending invocation to scf handler \(handler)")
-                return handler.handle(context: context, event: event)
+                return handler.handle(bytes, context: context)
                     // Hopping back to "our" EventLoop is important in case the factory returns a future
                     // that originated from a foreign EventLoop/EventLoopGroup.
                     // This can happen if the factory uses a library (let's say a database client) that

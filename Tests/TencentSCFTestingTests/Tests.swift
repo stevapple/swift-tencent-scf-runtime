@@ -48,7 +48,7 @@ class SCFTestingTests: XCTestCase {
 
             init(context: SCF.InitializationContext) {}
 
-            func handle(context: SCF.Context, event: Request) async throws -> Response {
+            func handle(_ event: Request, context: SCF.Context) async throws -> Response {
                 Response(message: "echo" + event.name)
             }
         }
@@ -72,7 +72,7 @@ class SCFTestingTests: XCTestCase {
 
             init(context: SCF.InitializationContext) {}
 
-            func handle(context: SCF.Context, event: Request) async throws {
+            func handle(_ event: Request, context: SCF.Context) async throws {
                 SCFTestingTests.VoidSCFHandlerInvokeCount += 1
             }
         }
@@ -92,7 +92,7 @@ class SCFTestingTests: XCTestCase {
 
             init(context: SCF.InitializationContext) {}
 
-            func handle(context: SCF.Context, event: String) async throws {
+            func handle(_ event: String, context: SCF.Context) async throws {
                 throw MyError()
             }
         }
@@ -109,7 +109,7 @@ class SCFTestingTests: XCTestCase {
 
             init(context: SCF.InitializationContext) {}
 
-            func handle(context: SCF.Context, event: String) async throws -> String {
+            func handle(_ event: String, context: SCF.Context) async throws -> String {
                 try await Task.sleep(nanoseconds: 500 * 1000 * 1000)
                 return event
             }

@@ -37,7 +37,7 @@ struct BenchmarkHandler: EventLoopSCFHandler {
     typealias Event = String
     typealias Output = String
 
-    func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
+    func handle(_ event: String, context: SCF.Context) -> EventLoopFuture<String> {
         context.eventLoop.makeSucceededFuture("Hello, world!")
     }
 }

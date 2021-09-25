@@ -39,7 +39,7 @@ struct APIGatewayProxyHandler: EventLoopSCFHandler {
     typealias Event = APIGateway.Request<String>
     typealias Output = APIGateway.Response
 
-    func handle(context: SCF.Context, event: APIGateway.Request<String>) -> EventLoopFuture<APIGateway.Response> {
+    func handle(_ event: APIGateway.Request<String>, context: SCF.Context) -> EventLoopFuture<APIGateway.Response> {
         context.logger.debug("hello, api gateway!")
         return context.eventLoop.makeSucceededFuture(APIGateway.Response(statusCode: .ok, body: .string("Hello, world!")))
     }

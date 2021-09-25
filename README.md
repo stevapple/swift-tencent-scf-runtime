@@ -120,7 +120,7 @@ struct Handler: EventLoopSCFHandler {
     typealias Output = Void // Response type
 
     // In this example we are receiving a COS Event, with no response (Void).
-    func handle(context: SCF.Context, event: Event) -> EventLoopFuture<Output> {
+    func handle(_ event: Event, context: SCF.Context) -> EventLoopFuture<Output> {
         ...
         context.eventLoop.makeSucceededFuture(Void())
     }
@@ -162,7 +162,7 @@ public protocol ByteBufferSCFHandler {
     ///
     /// - Returns: An `EventLoopFuture` to report the result of the SCF function back to the runtime engine.
     ///            The `EventLoopFuture` should be completed with either a response encoded as `ByteBuffer` or an `Error`.
-    func handle(context: SCF.Context, event: ByteBuffer) -> EventLoopFuture<ByteBuffer?>
+    func handle(_ event: ByteBuffer, context: SCF.Context) -> EventLoopFuture<ByteBuffer?>
 
     /// Clean up the SCF resources asynchronously.
     /// Concrete SCF handlers implement this method to shutdown resources like `HTTPClient`s and database connections.
@@ -195,7 +195,7 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
     ///
     /// - Returns: An `EventLoopFuture` to report the result of the SCF function back to the runtime engine.
     ///            The `EventLoopFuture` should be completed with either a response of type `Output` or an `Error`.
-    func handle(context: SCF.Context, event: Event) -> EventLoopFuture<Output>
+    func handle(_ event: Event, context: SCF.Context) -> EventLoopFuture<Output>
 
     /// Encode a response of type `Output` to `ByteBuffer`.
     /// Concrete SCF handlers implement this method to provide coding functionality.
@@ -239,7 +239,7 @@ public protocol SCFHandler: EventLoopSCFHandler {
     ///     - event: Event of type `Event` representing the event or request.
     ///     - callback: Completion handler to report the result of the SCF function back to the runtime engine.
     ///                 The completion handler expects a `Result` with either a response of type `Output` or an `Error`.
-    func handle(context: SCF.Context, event: Event, callback: @escaping (Result<Out, Error>) -> Void)
+    func handle(_ event: Event, callback: @escaping (Result<Out, Error>) -> Void)
 }
 ```
 

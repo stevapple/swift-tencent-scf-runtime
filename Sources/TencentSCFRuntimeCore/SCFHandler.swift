@@ -46,19 +46,19 @@ public protocol SCFHandler: EventLoopSCFHandler {
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
     /// - parameters:
-    ///     - context: Runtime `Context`.
     ///     - event: Event of type `Event` representing the event or request.
+    ///     - context: Runtime `Context`.
     ///
     /// - Returns: An SCF result ot type `Output`.
-    func handle(context: SCF.Context, event: Event) async throws -> Output
+    func handle(_ event: Event, context: SCF.Context) async throws -> Output
 }
 
 @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 extension SCFHandler {
-    public func handle(context: SCF.Context, event: Event) -> EventLoopFuture<Output> {
+    public func handle(_ event: Event, context: SCF.Context) -> EventLoopFuture<Output> {
         let promise = context.eventLoop.makePromise(of: Output.self)
         promise.completeWithTask {
-            try await self.handle(context: context, event: event)
+            try await self.handle(event, context: context)
         }
         return promise.futureResult
     }
@@ -88,12 +88,12 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
     /// - Parameters:
-    ///     - context: Runtime `Context`.
     ///     - event: Event of type `Event` representing the event or request.
+    ///     - context: Runtime `Context`.
     ///
     /// - Returns: An `EventLoopFuture` to report the result of the SCF function back to the runtime engine.
     ///            The `EventLoopFuture` should be completed with either a response of type `Output` or an `Error`.
-    func handle(context: SCF.Context, event: Event) -> EventLoopFuture<Output>
+    func handle(_ event: Event, context: SCF.Context) -> EventLoopFuture<Output>
 
     /// Encode a response of type `Output` to `ByteBuffer`.
     /// Concrete SCF handlers implement this method to provide coding functionality.
@@ -118,14 +118,14 @@ public protocol EventLoopSCFHandler: ByteBufferSCFHandler {
 extension EventLoopSCFHandler {
     /// Driver for `ByteBuffer` -> `Event` decoding and `Output` -> `ByteBuffer` encoding
     @inlinable
-    public func handle(context: SCF.Context, event: ByteBuffer) -> EventLoopFuture<ByteBuffer?> {
+    public func handle(_ event: ByteBuffer, context: SCF.Context) -> EventLoopFuture<ByteBuffer?> {
         let input: Event
         do { input = try self.decode(buffer: event) }
         catch {
             return context.eventLoop.makeFailedFuture(CodecError.requestDecoding(error))
         }
 
-        return self.handle(context: context, event: input).flatMapThrowing { output in
+        return self.handle(input, context: context).flatMapThrowing { output in
             do {
                 return try self.encode(allocator: context.allocator, value: output)
             } catch {
@@ -170,12 +170,12 @@ public protocol ByteBufferSCFHandler {
     /// Concrete SCF handlers implement this method to provide the SCF functionality.
     ///
     /// - Parameters:
-    ///     - context: Runtime `Context`.
     ///     - event: The event or input payload encoded as `ByteBuffer`.
+    ///     - context: Runtime `Context`.
     ///
     /// - Returns: An `EventLoopFuture` to report the result of the SCF function back to the runtime engine.
     ///            The `EventLoopFuture` should be completed with either a response encoded as `ByteBuffer` or an `Error`.
-    func handle(context: SCF.Context, event: ByteBuffer) -> EventLoopFuture<ByteBuffer?>
+    func handle(_ event: ByteBuffer, context: SCF.Context) -> EventLoopFuture<ByteBuffer?>
 
     /// Clean up the SCF resources asynchronously.
     /// Concrete SCF handlers implement this method to shutdown resources like `HTTPClient`s and database connections.

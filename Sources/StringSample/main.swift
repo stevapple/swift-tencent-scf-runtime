@@ -33,7 +33,7 @@ struct Handler: EventLoopSCFHandler {
     typealias Event = String
     typealias Output = String
 
-    func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
+    func handle(_ event: String, context: SCF.Context) -> EventLoopFuture<String> {
         // As an example, respond with the event's reversed body.
         context.eventLoop.makeSucceededFuture(String(event.reversed()))
     }

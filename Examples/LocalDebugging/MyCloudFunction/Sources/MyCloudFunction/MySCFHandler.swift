@@ -39,7 +39,7 @@ struct MySCFHandler: SCFHandler {
         // setup your resources that you want to reuse for every invocation here.
     }
 
-    func handle(context: SCF.Context, event: Request) async throws -> Response {
+    func handle(_ event: Request, context: SCF.Context) async throws -> Response {
         // TODO: something useful
         Response(message: "Hello, \(event.name)!")
     }

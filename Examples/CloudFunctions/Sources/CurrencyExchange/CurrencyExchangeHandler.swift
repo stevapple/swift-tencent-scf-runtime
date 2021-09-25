@@ -48,7 +48,7 @@ struct CurrencyExchangeHandler: SCFHandler {
         self.calculator = ExchangeRatesCalculator()
     }
 
-    func handle(context: SCF.Context, event: Request) async throws -> [Exchange] {
+    func handle(_ event: Request, context: SCF.Context) async throws -> [Exchange] {
         try await withCheckedThrowingContinuation { continuation in
             self.calculator.run(logger: context.logger) { result in
                 switch result {

@@ -56,7 +56,7 @@ class CodableSCFTest: XCTestCase {
 
             init(context: SCF.InitializationContext) async throws {}
 
-            func handle(context: SCF.Context, event: Request) async throws {
+            func handle(_ event: Request, context: SCF.Context) async throws {
                 XCTAssertEqual(event, self.expected)
             }
         }
@@ -70,7 +70,7 @@ class CodableSCFTest: XCTestCase {
             handler.expected = request
 
             XCTAssertNoThrow(inputBuffer = try JSONEncoder().encode(request, using: self.allocator))
-            XCTAssertNoThrow(outputBuffer = try handler.handle(context: self.newContext(), event: XCTUnwrap(inputBuffer)).wait())
+            XCTAssertNoThrow(outputBuffer = try handler.handle(XCTUnwrap(inputBuffer), context: self.newContext()).wait())
             XCTAssertNil(outputBuffer)
         }
     }
@@ -85,7 +85,7 @@ class CodableSCFTest: XCTestCase {
 
             init(context: SCF.InitializationContext) async throws {}
 
-            func handle(context: SCF.Context, event: Request) async throws -> Response {
+            func handle(_ event: Request, context: SCF.Context) async throws -> Response {
                 XCTAssertEqual(event, self.expected)
                 return Response(requestId: event.requestId)
             }
@@ -101,7 +101,7 @@ class CodableSCFTest: XCTestCase {
             handler.expected = request
 
             XCTAssertNoThrow(inputBuffer = try JSONEncoder().encode(request, using: self.allocator))
-            XCTAssertNoThrow(outputBuffer = try handler.handle(context: self.newContext(), event: XCTUnwrap(inputBuffer)).wait())
+            XCTAssertNoThrow(outputBuffer = try handler.handle(XCTUnwrap(inputBuffer), context: self.newContext()).wait())
             XCTAssertNoThrow(response = try JSONDecoder().decode(Response.self, from: XCTUnwrap(outputBuffer)))
             XCTAssertEqual(response?.requestId, request.requestId)
         }

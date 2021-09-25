@@ -36,7 +36,7 @@ struct ErrorsHappenHandler: SCFHandler {
 
     init(context: SCF.InitializationContext) async throws {}
 
-    func handle(context: SCF.Context, event: Request) async throws -> Response {
+    func handle(_ event: Request, context: SCF.Context) async throws -> Response {
         // switch over the error type "requested" by the request, and trigger such error accordingly
         switch event.error {
         // no error here!

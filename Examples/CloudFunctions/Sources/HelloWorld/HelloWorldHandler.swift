@@ -37,7 +37,7 @@ struct HelloWorldHandler: SCFHandler {
         // setup your resources that you want to reuse here.
     }
 
-    func handle(context: SCF.Context, event: String) async throws -> String {
+    func handle(_ event: String, context: SCF.Context) async throws -> String {
         "hello, world"
     }
 }

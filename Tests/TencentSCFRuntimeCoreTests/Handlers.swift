@@ -32,7 +32,7 @@ struct EchoHandler: EventLoopSCFHandler {
     typealias Event = String
     typealias Output = String
 
-    func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
+    func handle(_ event: String, context: SCF.Context) -> EventLoopFuture<String> {
         context.eventLoop.makeSucceededFuture(event)
     }
 }
@@ -47,7 +47,7 @@ struct FailedHandler: EventLoopSCFHandler {
         self.reason = reason
     }
 
-    func handle(context: SCF.Context, event: String) -> EventLoopFuture<Void> {
+    func handle(_ event: String, context: SCF.Context) -> EventLoopFuture<Void> {
         context.eventLoop.makeFailedFuture(TestError(self.reason))
     }
 }

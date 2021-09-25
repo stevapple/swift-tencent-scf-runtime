@@ -35,7 +35,7 @@
 //         typealias Event = String
 //         typealias Output = String
 //
-//         func handle(context: SCF.Context, event: String) -> EventLoopFuture<String> {
+//         func handle(_ event: String) -> EventLoopFuture<String> {
 //             return context.eventLoop.makeSucceededFuture("echo" + event)
 //         }
 //     }
@@ -102,7 +102,7 @@ extension SCF {
         let handler = try promise.futureResult.wait()
 
         return try eventLoop.flatSubmit {
-            handler.handle(context: context, event: event)
+            handler.handle(event, context: context)
         }.wait()
     }
 }
