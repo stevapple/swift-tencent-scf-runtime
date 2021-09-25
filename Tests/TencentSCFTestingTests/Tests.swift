@@ -31,6 +31,7 @@ import TencentSCFRuntime
 import TencentSCFTesting
 import XCTest
 
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 class LambdaTestingTests: XCTestCase {
     func testCodableClosure() {
         struct Request: Codable {

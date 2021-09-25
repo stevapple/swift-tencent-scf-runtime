@@ -34,6 +34,7 @@ class SCFHandlerTest: XCTestCase {
 
     // MARK: - SCFHandler
 
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     func testBootstrapSuccess() {
         let server = MockSCFServer(behavior: Behavior())
         XCTAssertNoThrow(try server.start().wait())
@@ -62,6 +63,7 @@ class SCFHandlerTest: XCTestCase {
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     func testBootstrapFailure() {
         let server = MockSCFServer(behavior: FailedBootstrapBehavior())
         XCTAssertNoThrow(try server.start().wait())
@@ -90,6 +92,7 @@ class SCFHandlerTest: XCTestCase {
         assertSCFLifecycleResult(result, shouldFailWithError: TestError("kaboom"))
     }
 
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     func testHandlerSuccess() {
         let server = MockSCFServer(behavior: Behavior())
         XCTAssertNoThrow(try server.start().wait())
@@ -112,6 +115,7 @@ class SCFHandlerTest: XCTestCase {
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     func testVoidHandlerSuccess() {
         let server = MockSCFServer(behavior: Behavior(result: .success(nil)))
         XCTAssertNoThrow(try server.start().wait())
@@ -133,6 +137,7 @@ class SCFHandlerTest: XCTestCase {
         assertSCFLifecycleResult(result, shoudHaveRun: maxTimes)
     }
 
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     func testHandlerFailure() {
         let server = MockSCFServer(behavior: Behavior(result: .failure(TestError("boom"))))
         XCTAssertNoThrow(try server.start().wait())

@@ -46,6 +46,7 @@ class CodableSCFTest: XCTestCase {
     }
 
     #if compiler(>=5.5) && canImport(_Concurrency)
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     func testCodableVoidHandler() {
         struct Handler: SCFHandler {
             typealias In = Request
@@ -74,6 +75,7 @@ class CodableSCFTest: XCTestCase {
         }
     }
 
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     func testCodableHandler() {
         struct Handler: SCFHandler {
             typealias In = Request
@@ -140,6 +142,7 @@ private struct Response: Codable, Equatable {
 #if compiler(>=5.5) && canImport(_Concurrency)
 // NOTE: workaround until we have async test support on linux
 //         https://github.com/apple/swift-corelibs-xctest/pull/326
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 extension XCTestCase {
     func XCTAsyncTest(
         expectationDescription: String = "Async operation",

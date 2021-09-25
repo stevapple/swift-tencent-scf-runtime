@@ -51,6 +51,7 @@ public enum SCF {
 
     #if compiler(>=5.5) && canImport(_Concurrency)
     // for testing and internal use
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
     internal static func run<Handler: SCFHandler>(configuration: Configuration = .init(), handlerType: Handler.Type) -> Result<Int, Error> {
         self.run(configuration: configuration, factory: { context -> EventLoopFuture<ByteBufferSCFHandler> in
             let promise = context.eventLoop.makePromise(of: ByteBufferSCFHandler.self)

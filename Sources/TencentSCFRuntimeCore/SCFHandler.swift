@@ -32,6 +32,7 @@ import NIOCore
 
 #if compiler(>=5.5) && canImport(_Concurrency)
 /// Strongly typed, processing protocol for a cloud function that takes a user defined `In` and returns a user defined `Out` async.
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 public protocol SCFHandler: EventLoopSCFHandler {
     /// The SCF initialization method
     /// Use this method to initialize resources that will be used in every request.
@@ -52,6 +53,7 @@ public protocol SCFHandler: EventLoopSCFHandler {
     func handle(context: SCF.Context, event: In) async throws -> Out
 }
 
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 extension SCFHandler {
     public func handle(context: SCF.Context, event: In) -> EventLoopFuture<Out> {
         let promise = context.eventLoop.makePromise(of: Out.self)
@@ -62,6 +64,7 @@ extension SCFHandler {
     }
 }
 
+@available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
 extension SCFHandler {
     public static func main() {
         _ = SCF.run(handlerType: Self.self)
